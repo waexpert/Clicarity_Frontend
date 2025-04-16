@@ -1,0 +1,37 @@
+.profile{
+    width: 50px;
+    height: 50px;
+    background-color: pink;
+    border-radius: 50%;
+}
+
+.headerWrapper{
+    width:calc(100vw - 6rem);
+    /* background-color: bisque; */
+    padding: .5rem 3rem;
+}
+
+.header1{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #ccc;
+}
+
+
+.header2{
+    display: flex;
+    height: 2rem;
+    border-bottom: 1px solid #ccc;
+}
+.option{
+    display: flex;
+    align-items: center;
+    width: 5rem;
+    justify-content: space-between;
+    /* background-color: blanchedalmond; */
+    padding: .25rem .5rem;
+    
+}

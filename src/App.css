@@ -50,6 +50,17 @@
   margin-top: 10px;
 }
 
+.btn-med{
+  background-color: #4388c1;
+  color: white;
+  padding: 10px;
+  font-size: 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 .submit-btn:hover {
   background-color: #005ccc;
 }

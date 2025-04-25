@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import '../css/Login.css';
+import { userLogin } from '../features/userMethod/userSlice';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -7,10 +11,26 @@ const Login = () => {
   const [recaptchaChecked, setRecaptchaChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Login Submitted');
-    console.log({ email, password, recaptchaChecked });
+    console.log("Before API call", email,password);
+
+    try {
+      const res = await axios.post("http://localhost:3000/users/login", {email,password});
+      const userData = res.data.user;
+
+      dispatch(userLogin(userData)); // Update state with backend response
+
+      alert("Form submitted successfully!");
+      console.log("User after registration:", userData);
+      navigate("/verify-mfa")
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("Registration failed! Please try again.");
+    }
   };
 
   return (
@@ -64,7 +84,7 @@ const Login = () => {
         <button type="submit" className="signin-btn">Sign In</button>
 
         <p className="bottom-text">
-          Don’t have an account ? <a href="#">Signup</a>
+          Don’t have an account ? <a href="/register">Signup</a>
         </p>
 
         <p className="terms">

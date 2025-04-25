@@ -1,6 +1,7 @@
 import React from 'react'
 import { GoHome } from "react-icons/go";
 import "../css/Header.css"
+import LogoutButton from './Logout';
 
 const Header = () => {
   return (
@@ -10,6 +11,7 @@ const Header = () => {
                 <img src="/Images/logo.png" alt="logo" className='logo'/>
             </div>
             <div className="menus">
+                <LogoutButton/>
                 <div className="profile">
               
                 </div>

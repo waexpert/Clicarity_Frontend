@@ -5,11 +5,10 @@
     border-radius: 50%;
 }
 
-.headerWrapper{
+/* .headerWrapper{
     width:calc(100vw - 6rem);
-    /* background-color: bisque; */
     padding: .5rem 3rem;
-}
+} */
 
 .header1{
     display: flex;
@@ -34,4 +33,13 @@
     /* background-color: blanchedalmond; */
     padding: .25rem .5rem;
     
+}
+
+.logo{
+    width: 18rem;
+}
+
+.menus{
+    display: flex;
+    gap: 1rem;
 }

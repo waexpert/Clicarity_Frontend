@@ -1,0 +1,58 @@
+.schema-dashboard {
+    padding: 20px;
+  }
+  .header{
+    display: flex;
+    align-items: center;
+    height: 5rem;
+    /* background: pink; */
+  }
+  
+  .search-input {
+    padding: 8px;
+    width: 400px;
+    height: 40px;
+  }
+  
+  .schema-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .schema-table th,
+  .schema-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .schema-table th {
+    background-color: #f8f8f8;
+  }
+  
+  .btn {
+    padding: 6px 10px;
+    margin-right: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-radius: 4px;
+  }
+  
+  .browse {
+    background-color: #e6f0ff;
+    color: #0052cc;
+  }
+  
+  .edit {
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #ccc;
+  }
+  
+  .delete {
+    background-color: #ffe6e6;
+    color: #d11a2a;
+    border: 1px solid #d11a2a;
+  }
+  

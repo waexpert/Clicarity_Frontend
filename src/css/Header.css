@@ -15,9 +15,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 5rem;
+    height: 8rem;
     padding: 1rem 0;
-    border-bottom: 1px solid #ccc;
+}
+
+.headerWrapper{
+    margin-bottom: 2rem;
 }
 
 
@@ -43,4 +46,5 @@
 .menus{
     display: flex;
     gap: 1rem;
+    align-items: center;
 }

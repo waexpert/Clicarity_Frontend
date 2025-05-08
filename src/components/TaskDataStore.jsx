@@ -1,9 +1,50 @@
-import { MdLock } from "react-icons/md";
-
 import React, { useState } from 'react';
 import '../css/components/NewDataStore.css';
 import { useSelector } from "react-redux";
 import axios from "axios";
+
+// Lucide React icons
+import { 
+  Lock, 
+  Plus, 
+  X, 
+  Database, 
+  Save
+} from "lucide-react";
+
+// Shadcn UI components
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 
@@ -26,7 +67,7 @@ const predefinedFields = [
   { name: 'auditor_to_completed_remarks', type: 'Text', label: 'Completed Remarks', defaultValue: '-', locked: true },
 ];
 
-const TaskDataStore = () => {
+const TaskDataStore = ({ setShowDialog }) => {
   const [title, setTitle] = useState('');
   const [customFields, setCustomFields] = useState([]);
   const [showInChat, setShowInChat] = useState(false);
@@ -51,91 +92,212 @@ const TaskDataStore = () => {
 
   const handleSubmit = async () => {
     const allFields = [...predefinedFields, ...customFields];
-    const data = { table_name:title, fields: allFields,schema_name,id};
+    const data = { table_name: title, fields: allFields, schema_name, id };
     console.log('Creating Data Store:', data);
     try {
       const res = await axios.post("http://localhost:3000/secure/createTable", data);
-      // const userData = res.data.user;
-
-      // dispatch(userRegistration(userData)); // Update state with backend response
-
       alert("Form submitted successfully!");
-      // console.log("User after registration:", userData);
+      setShowDialog(0); // Close the dialog after successful submission
     } catch (error) {
-      console.error("Registration failed:", error);
-      alert("Registration failed! Please try again.");
+      console.error("Creation failed:", error);
+      alert("Creation failed! Please try again.");
     }
-
-    // Send this data to backend to create a table in PostgreSQL
   };
 
   return (
-    <div className="wrapper">
-      <div className="new-data-store">
-        <h2>New Data Store</h2>
-
-        <input
-          type="text"
-          placeholder="Enter Data Store Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="input title-input"
-        />
-
-        <h4>Predefined Fields (Locked)</h4>
-        {predefinedFields.map((field, index) => (
-          <div key={index} className="field-row locked">
-            <input type="text" value={field.name} readOnly className="input" />
-            <select value={field.type} disabled className="select">
-              <option>{field.type}</option>
-            </select>
-            <input type="text" value={field.label} readOnly className="input" />
-            <input type="text" value={field.defaultValue} readOnly className="input" />
-            <span className="locked-tag"><MdLock /></span>
-          </div>
-        ))}
-
-        <h4>Custom Fields</h4>
-        {customFields.map((field, index) => (
-          <div key={index} className="field-row">
-            <input
-              type="text"
-              placeholder="Field Name"
-              value={field.name}
-              onChange={(e) => handleCustomFieldChange(index, 'name', e.target.value)}
-              className="input"
+    <Card className="w-full max-w-4xl mx-auto shadow-md">
+      <CardHeader className="pb-4 border-b">
+        <div className="flex items-center gap-2">
+          <Database className="h-5 w-5 text-[#4285B4]" />
+          <CardTitle>New Data Store</CardTitle>
+        </div>
+        <CardDescription>
+          Configure your task management data store with custom fields
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="pt-6">
+        <div className="space-y-6">
+          {/* Title input */}
+          <div className="space-y-2">
+            <Label htmlFor="title">Data Store Title</Label>
+            <Input
+              id="title"
+              placeholder="Enter Data Store Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="max-w-md"
             />
-            <select
-              value={field.type}
-              onChange={(e) => handleCustomFieldChange(index, 'type', e.target.value)}
-              className="select"
+          </div>
+          
+          {/* Optional Show in Chat checkbox */}
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="showInChat" 
+              checked={showInChat}
+              onCheckedChange={setShowInChat}
+            />
+            <Label 
+              htmlFor="showInChat"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              {fieldTypes.map((type) => (
-                <option key={type}>{type}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Label"
-              value={field.label}
-              onChange={(e) => handleCustomFieldChange(index, 'label', e.target.value)}
-              className="input"
-            />
-            <input
-              type="text"
-              placeholder="Default Value"
-              value={field.defaultValue}
-              onChange={(e) => handleCustomFieldChange(index, 'defaultValue', e.target.value)}
-              className="input"
-            />
-            <button className="remove-btn" onClick={() => removeField(index)}>✕</button>
+              Show in Chat Interface
+            </Label>
           </div>
-        ))}
-
-        <div className="add-field" onClick={addField}>Add Field</div>
-        <button className="submit-btn" onClick={handleSubmit}>Create Data Store</button>
-      </div>
-    </div>
+          
+          <Separator />
+          
+          {/* Predefined Fields Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-medium">Predefined Fields</h3>
+              <Badge variant="outline" className="bg-slate-100">
+                <Lock className="h-3 w-3 mr-1" /> Locked
+              </Badge>
+            </div>
+            
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Field Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Label</TableHead>
+                    <TableHead>Default Value</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {predefinedFields.map((field, index) => (
+                    <TableRow key={index} className="bg-slate-50/50">
+                      <TableCell className="font-medium text-slate-500">
+                        {field.name}
+                      </TableCell>
+                      <TableCell className="text-slate-500">
+                        {field.type}
+                      </TableCell>
+                      <TableCell className="text-slate-500">
+                        {field.label}
+                      </TableCell>
+                      <TableCell className="text-slate-500">
+                        {field.defaultValue || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Lock className="h-3.5 w-3.5 text-slate-400" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Custom Fields Section */}
+          <div>
+            <h3 className="text-lg font-medium mb-4">Custom Fields</h3>
+            
+            {customFields.length > 0 ? (
+              <div className="rounded-md border mb-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Field Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Label</TableHead>
+                      <TableHead>Default Value</TableHead>
+                      <TableHead className="w-[80px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {customFields.map((field, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Input
+                            placeholder="Field Name"
+                            value={field.name}
+                            onChange={(e) => handleCustomFieldChange(index, 'name', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={field.type}
+                            onValueChange={(value) => handleCustomFieldChange(index, 'type', value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {fieldTypes.map((type) => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Label"
+                            value={field.label}
+                            onChange={(e) => handleCustomFieldChange(index, 'label', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Default Value"
+                            value={field.defaultValue}
+                            onChange={(e) => handleCustomFieldChange(index, 'defaultValue', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => removeField(index)}
+                            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8 border rounded-md bg-slate-50">
+                <p className="text-slate-500">No custom fields added yet</p>
+                <p className="text-sm text-slate-400 mt-1">Click "Add Field" to create custom fields</p>
+              </div>
+            )}
+            
+            <Button 
+              variant="outline" 
+              onClick={addField} 
+              className="gap-2 mt-2"
+            >
+              <Plus className="h-4 w-4" /> Add Field
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+      
+      <CardFooter className="flex justify-between border-t pt-4 mt-6">
+        <Button 
+          variant="outline" 
+          onClick={() => setShowDialog(0)}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit}
+          className="gap-2 bg-[#4285B4] hover:bg-[#3778b4]"
+          disabled={!title}
+        >
+          <Save className="h-4 w-4" /> Create Data Store
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

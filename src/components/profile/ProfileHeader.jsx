@@ -10,7 +10,7 @@ const ProfileHeader = () => {
   const navigate = useNavigate();
   return (
     <div>
-        <div className="headerMenu">
+        {/* <div className="headerMenu">
             <button className="menu" onClick={()=> navigate("/")}>
             <AiFillProduct />
             <p>All Products</p>
@@ -25,7 +25,7 @@ const ProfileHeader = () => {
             <BsMicrosoftTeams />
             <p>Team Member</p>
             </button>
-        </div>
+        </div> */}
     </div>
   )
 }

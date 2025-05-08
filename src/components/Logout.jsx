@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { userLogout } from '../features/userMethod/userSlice'; // assuming you're using Redux slice
+import { Button } from './ui/button';
 
 const LogoutButton = () => {
   const dispatch = useDispatch();
@@ -18,7 +19,7 @@ const LogoutButton = () => {
     }
   };
 
-  return <button className='submit-btn' onClick={handleLogout}>Logout</button>;
+  return <Button className='submit-btn' onClick={handleLogout}>Logout</Button>;
 };
 
 export default LogoutButton;

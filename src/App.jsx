@@ -14,6 +14,9 @@ import Browse from "./pages/Browse";
 import Profile from "./pages/Profile";
 import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
+import Task from "./pages/Task";
+import RecordsDashboard from "./pages/RecordDashboard";
+import TaskManagementTable from "./pages/TaskManagementTable";
 
 function App() {
   const location = useLocation();
@@ -40,7 +43,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-                <Route
+        <Route
           path="/profile/teamMember"
           element={
             <ProtectedRoute>
@@ -48,7 +51,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-                        <Route
+        <Route
           path="/profile/permissions"
           element={
             <ProtectedRoute>
@@ -73,7 +76,31 @@ function App() {
           }
         />
         <Route
-          path="/db-connection"
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Task />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/record"
+          element={
+            <ProtectedRoute>
+              <RecordsDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/record/create"
+          element={
+            <ProtectedRoute>
+              <TaskManagementTable />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/database"
           element={
             <ProtectedRoute>
               <DbConnection />

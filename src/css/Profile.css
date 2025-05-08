@@ -1,0 +1,22 @@
+.headerMenu{
+    display: flex;
+}
+
+.menu{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 2rem;
+    background: none;
+    border: none;
+}
+
+.menu:hover{
+color: lightblue ;
+}
+
+.table-wrapper{
+    width: 110rem;
+    height: 40rem;
+    background-color: bisque;
+}

@@ -11,6 +11,9 @@ import PublicRoute from "./components/PublicRoute";
 import DbConnection from "./pages/DbConnection";
 import SchemaDashboard from "./pages/SchemaDashboard"
 import Browse from "./pages/Browse";
+import Profile from "./pages/Profile";
+import TeamMember from "./components/profile/TeamMember";
+import RolesPermissions from "./components/profile/RolesPermissions";
 
 function App() {
   const location = useLocation();
@@ -29,7 +32,31 @@ function App() {
             </ProtectedRoute>
           }
         />
-               <Route
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+                <Route
+          path="/profile/teamMember"
+          element={
+            <ProtectedRoute>
+              <TeamMember />
+            </ProtectedRoute>
+          }
+        />
+                        <Route
+          path="/profile/permissions"
+          element={
+            <ProtectedRoute>
+              <RolesPermissions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/browse"
           element={
             <ProtectedRoute>
@@ -41,7 +68,7 @@ function App() {
           path="/db/:id"
           element={
             <ProtectedRoute>
-            <SchemaDashboard/>
+              <SchemaDashboard />
             </ProtectedRoute>
           }
         />

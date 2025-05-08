@@ -68,3 +68,7 @@
 .logo{
   width: 300px;
 }
+
+.b-1-gray{
+  border: 1px solid gray;
+}

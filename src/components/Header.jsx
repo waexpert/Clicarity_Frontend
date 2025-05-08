@@ -2,8 +2,11 @@ import React from 'react'
 import { GoHome } from "react-icons/go";
 import "../css/Header.css"
 import LogoutButton from './Logout';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+
+    const navigate = useNavigate();
   return (
     <div className='headerWrapper'>
         <div className="header1">
@@ -12,18 +15,17 @@ const Header = () => {
             </div>
             <div className="menus">
                 <LogoutButton/>
-                <div className="profile">
+                <button onClick={()=> navigate("/profile")} className="profile">
               
-                </div>
+                </button>
             </div>
         </div>
-        <div className="header2">
+        {/* <div className="header2">
             <div className="option">
             <GoHome />
             <p>Home</p>
             </div>
-
-        </div>
+        </div> */}
     </div>
   )
 }

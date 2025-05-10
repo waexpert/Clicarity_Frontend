@@ -1,5 +1,8 @@
+// Updated RecordsDashboard component with working refresh, search, and filter functionality
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Papa from 'papaparse';
 
 // Shadcn UI components
 import {
@@ -26,6 +29,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 
 // Lucide React icons
@@ -43,11 +47,14 @@ import {
   FileSpreadsheet,
   FileDown,
   RefreshCw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Check
 } from 'lucide-react';
+import axios from 'axios';
 
 const RecordsDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [originalRecords, setOriginalRecords] = useState([]); // Store original data for filtering
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRecords, setSelectedRecords] = useState([]);
@@ -58,75 +65,36 @@ const RecordsDashboard = () => {
   const [columns, setColumns] = useState([]);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
+  // Add filter states
+  const [statusFilter, setStatusFilter] = useState([]);
+  const [priorityFilter, setPriorityFilter] = useState([]);
   const navigate = useNavigate();
 
-  // Mock data for demonstration
-  const mockData = [
-    {
-      "task_name": "Review Quarterly Report",
-      "task_file": "report_q1_2025.pdf",
-      "notes": "Please prioritize this task.",
-      "assigned_to": "john.doe@example.com",
-      "assigned_by": "manager@example.com",
-      "department": "Finance",
-      "priority": "High",
-      "status": "Pending",
-      "due_date": "25-05-25",
-      "auditor_date": "27-05-2025",
-      "completion_date": "29-05-2025",
-      "rating": "Excellent",
-      "pending_to_auditor_remarks": "Waiting for approval",
-      "auditor_to_completed_remarks": "Approved and closed",
-      "us_id": "a002"
-    },
-    {
-      "task_name": "Update Marketing Materials",
-      "task_file": "marketing_materials.docx",
-      "notes": "New branding guidelines to be followed.",
-      "assigned_to": "sarah.smith@example.com",
-      "assigned_by": "director@example.com",
-      "department": "Marketing",
-      "priority": "Medium",
-      "status": "In Progress",
-      "due_date": "15-05-25",
-      "auditor_date": "17-05-2025",
-      "completion_date": "",
-      "rating": "",
-      "pending_to_auditor_remarks": "",
-      "auditor_to_completed_remarks": "",
-      "us_id": "a003"
-    },
-    {
-      "task_name": "Prepare Monthly Budget",
-      "task_file": "budget_may_2025.xlsx",
-      "notes": "Include the new project allocations.",
-      "assigned_to": "finance.team@example.com",
-      "assigned_by": "cfo@example.com",
-      "department": "Finance",
-      "priority": "High",
-      "status": "Completed",
-      "due_date": "05-05-25",
-      "auditor_date": "07-05-2025",
-      "completion_date": "04-05-2025",
-      "rating": "Good",
-      "pending_to_auditor_remarks": "Expedited for early completion",
-      "auditor_to_completed_remarks": "Approved with minor adjustments",
-      "us_id": "a004"
-    }
-  ];
+  // API data parameters
+  const apiParams = {
+    "schemaName": "wa_expert",
+    "tableName": "tasktesting"
+  };
 
-  // Initialize data and columns on component mount
-  useEffect(() => {
-    // Simulate API call to fetch data
-    setTimeout(() => {
-      setRecords(mockData);
-      setLoading(false);
-      setTotalRecords(mockData.length);
-      setTotalPages(Math.ceil(mockData.length / pageSize));
+  // Fetch data from API
+  const fetchData = async () => {
+    try {
+      setLoading(true);
       
-      // Dynamically set columns based on the first record
-      if (mockData.length > 0) {
-        const firstRecord = mockData[0];
+      const response = await axios.post("http://localhost:3000/data/getAllData", apiParams);
+      const fetchedData = response.data;
+      
+      // Store both original and filtered data
+      setOriginalRecords(fetchedData);
+      setRecords(fetchedData);
+      
+      // Calculate pagination
+      setTotalRecords(fetchedData.length);
+      setTotalPages(Math.ceil(fetchedData.length / pageSize));
+      
+      // Dynamically set columns
+      if (fetchedData.length > 0) {
+        const firstRecord = fetchedData[0];
         const dynamicColumns = Object.keys(firstRecord).map(key => ({
           id: key,
           name: formatColumnName(key),
@@ -136,8 +104,23 @@ const RecordsDashboard = () => {
         }));
         setColumns(dynamicColumns);
       }
-    }, 500);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Optionally show an error notification
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize data and columns on component mount
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  // Apply filters and search when they change
+  useEffect(() => {
+    applyFiltersAndSearch();
+  }, [searchTerm, statusFilter, priorityFilter, originalRecords]);
 
   // Helper function to format column names
   const formatColumnName = (key) => {
@@ -147,10 +130,78 @@ const RecordsDashboard = () => {
       .join(' ');
   };
 
-  // Handle search
+  // Function to apply filters and search
+  const applyFiltersAndSearch = () => {
+    if (!originalRecords.length) return;
+    
+    let filteredResults = [...originalRecords];
+    
+    // Apply search filter
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase();
+      filteredResults = filteredResults.filter(item => 
+        Object.values(item).some(value => 
+          String(value).toLowerCase().includes(term)
+        )
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter.length > 0) {
+      filteredResults = filteredResults.filter(item => 
+        statusFilter.includes(item.status)
+      );
+    }
+    
+    // Apply priority filter
+    if (priorityFilter.length > 0) {
+      filteredResults = filteredResults.filter(item => 
+        priorityFilter.includes(item.priority)
+      );
+    }
+    
+    // Update records and pagination
+    setRecords(filteredResults);
+    setTotalRecords(filteredResults.length);
+    setTotalPages(Math.ceil(filteredResults.length / pageSize));
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  };
+
+  // Handle search input
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    // In a real app, this would trigger an API call with the search term
+  };
+
+  // Handle refresh button
+  const handleRefresh = () => {
+    fetchData();
+    // Clear filters and search
+    setSearchTerm('');
+    setStatusFilter([]);
+    setPriorityFilter([]);
+  };
+
+  // Toggle status filter
+  const toggleStatusFilter = (status) => {
+    setStatusFilter(prev => {
+      if (prev.includes(status)) {
+        return prev.filter(s => s !== status);
+      } else {
+        return [...prev, status];
+      }
+    });
+  };
+
+  // Toggle priority filter
+  const togglePriorityFilter = (priority) => {
+    setPriorityFilter(prev => {
+      if (prev.includes(priority)) {
+        return prev.filter(p => p !== priority);
+      } else {
+        return [...prev, priority];
+      }
+    });
   };
 
   // Handle record selection
@@ -179,13 +230,87 @@ const RecordsDashboard = () => {
       setSortColumn(column);
       setSortDirection('asc');
     }
-    // In a real app, this would trigger an API call with sort parameters
+    
+    // Apply sorting to records
+    const sortedRecords = [...records].sort((a, b) => {
+      const valueA = a[column] || '';
+      const valueB = b[column] || '';
+      
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return sortDirection === 'asc' 
+          ? valueA.localeCompare(valueB) 
+          : valueB.localeCompare(valueA);
+      } else {
+        return sortDirection === 'asc' 
+          ? valueA - valueB 
+          : valueB - valueA;
+      }
+    });
+    
+    setRecords(sortedRecords);
   };
 
   // Export to CSV function
   const exportToCSV = () => {
-    // In a real app, this would generate and download a CSV file
-    alert('Exporting to CSV...');
+    if (!records.length) {
+      alert('No records to export');
+      return;
+    }
+    
+    try {
+      // Determine which data to export (filtered records or all records)
+      const dataToExport = records;
+      
+      // Optional: Only include visible columns
+      const exportData = dataToExport.map(record => {
+        const filteredRecord = {};
+        visibleColumns.forEach(column => {
+          filteredRecord[column.name] = record[column.id];
+        });
+        return filteredRecord;
+      });
+      
+      // Convert JSON to CSV
+      const csv = Papa.unparse(exportData, {
+        quotes: true, // Use quotes around all fields
+        quoteChar: '"',
+        escapeChar: '"',
+        delimiter: ",",
+        header: true,
+        newline: "\n"
+      });
+      
+      // Create a blob with the CSV data
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      
+      // Create a URL for the blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create a temporary link element to trigger the download
+      const link = document.createElement('a');
+      
+      // Generate a filename with current date
+      const date = new Date().toISOString().slice(0, 10);
+      const filename = `records_export_${date}.csv`;
+      
+      // Set link attributes
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.display = 'none';
+      
+      // Add to DOM, trigger download and clean up
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Release the blob URL
+      URL.revokeObjectURL(url);
+      
+      console.log(`Exported ${exportData.length} records to CSV`);
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      alert('Failed to export CSV. Please try again.');
+    }
   };
 
   // Export to PDF function
@@ -240,8 +365,19 @@ const RecordsDashboard = () => {
     }
   };
 
+  // Get unique statuses for filters
+  const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);
+  
+  // Get unique priorities for filters
+  const uniquePriorities = Array.from(new Set(originalRecords.map(record => record.priority))).filter(Boolean);
+
   // Filter visible columns
   const visibleColumns = columns.filter(column => column.visible);
+
+  // Get current page data
+  const indexOfLastRecord = currentPage * pageSize;
+  const indexOfFirstRecord = indexOfLastRecord - pageSize;
+  const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
 
   return (
     <Card className="shadow-sm border-slate-200">
@@ -276,7 +412,7 @@ const RecordsDashboard = () => {
               variant="outline" 
               size="sm" 
               className="flex items-center gap-2"
-              onClick={() => setRecords(mockData)}
+              onClick={handleRefresh}
             >
               <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Refresh</span>
@@ -287,18 +423,67 @@ const RecordsDashboard = () => {
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
                   <span className="hidden sm:inline">Filters</span>
+                  {(statusFilter.length > 0 || priorityFilter.length > 0) && (
+                    <Badge className="ml-1 py-0 px-1.5 h-5 min-w-5 bg-blue-500 text-white rounded-full">
+                      {statusFilter.length + priorityFilter.length}
+                    </Badge>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                <DropdownMenuItem>Pending</DropdownMenuItem>
-                <DropdownMenuItem>In Progress</DropdownMenuItem>
-                <DropdownMenuItem>Completed</DropdownMenuItem>
+                <DropdownMenuLabel className="flex justify-between items-center">
+                  <span>Filter by Status</span>
+                  {statusFilter.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => setStatusFilter([])}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </DropdownMenuLabel>
+                {uniqueStatuses.map(status => (
+                  <DropdownMenuCheckboxItem
+                    key={status}
+                    checked={statusFilter.includes(status)}
+                    onCheckedChange={() => toggleStatusFilter(status)}
+                  >
+                    <Badge className={`font-medium mr-2 ${getStatusBadgeColor(status)}`}>
+                      {status}
+                    </Badge>
+                    <span>{status}</span>
+                  </DropdownMenuCheckboxItem>
+                ))}
+                
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
-                <DropdownMenuItem>High</DropdownMenuItem>
-                <DropdownMenuItem>Medium</DropdownMenuItem>
-                <DropdownMenuItem>Low</DropdownMenuItem>
+                
+                <DropdownMenuLabel className="flex justify-between items-center">
+                  <span>Filter by Priority</span>
+                  {priorityFilter.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => setPriorityFilter([])}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </DropdownMenuLabel>
+                {uniquePriorities.map(priority => (
+                  <DropdownMenuCheckboxItem
+                    key={priority}
+                    checked={priorityFilter.includes(priority)}
+                    onCheckedChange={() => togglePriorityFilter(priority)}
+                  >
+                    <Badge className={`font-medium mr-2 ${getPriorityBadgeColor(priority)}`}>
+                      {priority}
+                    </Badge>
+                    <span>{priority}</span>
+                  </DropdownMenuCheckboxItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -351,7 +536,7 @@ const RecordsDashboard = () => {
             </Button>
             
             <div className="relative">
-              <input
+              {/* <input
                 type="file"
                 id="csvUpload"
                 accept=".csv"
@@ -365,7 +550,7 @@ const RecordsDashboard = () => {
               >
                 <Upload className="h-4 w-4" />
                 <span className="hidden sm:inline">Upload CSV</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -413,11 +598,12 @@ const RecordsDashboard = () => {
                 ) : records.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
-                      No records found.
+                      No records found. {searchTerm || statusFilter.length > 0 || priorityFilter.length > 0 ? 
+                        <Button variant="link" onClick={handleRefresh}>Clear filters?</Button> : ''}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  records.map((record, index) => (
+                  currentRecords.map((record, index) => (
                     <TableRow key={record.us_id || index} className="hover:bg-slate-50">
                       <TableCell className="w-[40px]">
                         <Checkbox 
@@ -482,7 +668,7 @@ const RecordsDashboard = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-slate-500">
-            Showing <span className="font-medium">{records.length}</span> of <span className="font-medium">{totalRecords}</span> records
+            Showing <span className="font-medium">{Math.min(records.length, pageSize)}</span> of <span className="font-medium">{totalRecords}</span> records
           </div>
           
           <Pagination>

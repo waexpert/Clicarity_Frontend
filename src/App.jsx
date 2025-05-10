@@ -15,7 +15,7 @@ import Profile from "./pages/Profile";
 import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
 import Task from "./pages/Task";
-import RecordsDashboard from "./pages/RecordDashboard";
+import RecordsDashboard from "./pages/RecordTaskDashboard";
 import TaskManagementTable from "./pages/TaskManagementTable";
 
 function App() {

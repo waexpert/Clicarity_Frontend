@@ -52,7 +52,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-const RecordTaskDashboard = () => {
+const RecordJobDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]); // Store original data for filtering
   const [records, setRecords] = useState([]);
@@ -717,4 +717,4 @@ const RecordTaskDashboard = () => {
   );
 };
 
-export default RecordTaskDashboard;
+export default RecordJobDashboard;

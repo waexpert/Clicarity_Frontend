@@ -4,6 +4,7 @@ import '../css/SchemaDashboard.css';
 import { useNavigate } from 'react-router-dom';
 import NewDataStore from '../components/NewDataStore';
 import TaskDataStore from '../components/TaskDataStore';
+import JobStatusReportDataStore from '../components/JobStatusReportDataStore';
 
 // Import Shadcn UI components
 import {
@@ -50,6 +51,7 @@ const SchemaDashboard = () => {
   const componentMap = {
     1: <NewDataStore setShowDialog={setShowDialog} />,
     2: <TaskDataStore setShowDialog={setShowDialog} />,
+    8: <JobStatusReportDataStore setShowDialog={setShowDialog} />
   };
 
   const schemas = [
@@ -92,6 +94,13 @@ const SchemaDashboard = () => {
       "id": "7",
       "title": "Birthday Reminder",
       "fieldsCount": 4,
+      "createdAt": "2024-10-18T15:35:00Z",
+      "updatedAt": "2024-10-18T15:35:00Z"
+    },
+        {
+      "id": "8",
+      "title": "Job Status Report",
+      "fieldsCount": 8,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     }

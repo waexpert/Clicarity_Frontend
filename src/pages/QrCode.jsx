@@ -15,7 +15,7 @@ const QRSetup = () => {
     const fetchQRCode = async () => {
         try {
           const res = await axios.post(
-            'http://localhost:3000/mfa/setup',
+            `${import.meta.env.VITE_APP_BASE_URL}/mfa/setup`,
             { user_id },
             { withCredentials: true }
           );

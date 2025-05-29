@@ -15,7 +15,7 @@ const VerifyMFA = () => {
 
     try {
       const res = await axios.post(
-        'http://localhost:3000/mfa/verify',
+        `${import.meta.env.VITE_APP_BASE_URL}/mfa/verify`,
         { user_id, token: code },
         { withCredentials: true }
       );

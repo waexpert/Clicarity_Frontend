@@ -11,7 +11,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:3000/users/logout', {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/logout`, {}, { withCredentials: true });
       dispatch(userLogout()); // Clear Redux user state
       navigate('/login');
     } catch (err) {

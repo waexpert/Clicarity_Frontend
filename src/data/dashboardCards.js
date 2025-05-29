@@ -6,7 +6,8 @@ import {
     BellRing,
     Search,
     UserX,
-    DatabaseZap
+    DatabaseZap,
+    Network
   } from "lucide-react";
   
   const dashboardCards = [
@@ -73,6 +74,14 @@ import {
         icon: "database",
         iconColor: "#4285B4",
         route: "/database"
+      },
+          {
+        id: 9,
+        title: "Job Status Report",
+        description: "Organize and manage all your processes efficentily.",
+        icon: "network",
+        iconColor: "#4285B4",
+        route: "/jobs"
       }
   ];
   
@@ -95,6 +104,8 @@ import {
         return UserX;
       case "database":
         return DatabaseZap;
+      case "network":
+        return Network;
       default:
         return DatabaseZap;
     }

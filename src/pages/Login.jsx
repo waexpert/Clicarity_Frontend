@@ -19,7 +19,7 @@
 //     console.log("Before API call", email,password);
 
 //     try {
-//       const res = await axios.post("http://localhost:3000/users/login", {email,password});
+//       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, {email,password});
 //       const userData = res.data.user;
 
 //       dispatch(userLogin(userData)); // Update state with backend response
@@ -131,7 +131,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const res = await axios.post("http://localhost:3000/users/login", { email, password });
+      const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, { email, password });
       const userData = res.data.user;
 
       dispatch(userLogin(userData));

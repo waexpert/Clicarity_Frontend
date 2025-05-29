@@ -418,7 +418,7 @@ const TaskManagementTable = () => {
   
     const data = {
       "schemaName": "wa_expert",
-      "tableName": "tasktesting",
+      "tableName": "tasks",
       "records": formattedData  
     }
   

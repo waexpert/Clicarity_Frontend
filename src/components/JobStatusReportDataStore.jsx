@@ -50,25 +50,28 @@ const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 
 // Predefined system fields (locked)
 const predefinedFields = [
-  { name: 'id', type: 'Number', label: 'ID', defaultValue: 'Auto', locked: true },
-  { name: 'task_name', type: 'Text', label: 'Task Name', defaultValue: '-', locked: true },
-  { name: 'task_file', type: 'Text', label: 'Task File', defaultValue: '-', locked: true },
-  { name: 'notes', type: 'Text', label: 'Notes', defaultValue: '-', locked: true },
+  { name: 'id', type: 'Text', label: 'ID', defaultValue: 'Auto', locked: true },
+  { name: 'client_id', type: 'Text', label: 'Client ID', defaultValue: '-', locked: true },
   { name: 'assigned_to', type: 'Text', label: 'Assigned To', defaultValue: '-', locked: true },
-  { name: 'assigned_by', type: 'Text', label: 'Assigned By', defaultValue: '-', locked: true },
-  { name: 'department', type: 'Text', label: 'Department', defaultValue: '-', locked: true },
-  { name: 'priority', type: 'Text', label: 'Priority', defaultValue: '-', locked: true },
-  { name: 'status', type: 'Text', label: 'Status', defaultValue: 'Pending', locked: true },
-  { name: 'due_date', type: 'Date', label: 'Due Date', locked: true },
-  { name: 'auditor_date', type: 'Date', label: 'Auditor Date', locked: true },
-  { name: 'completion_date', type: 'Date', label: 'Completion Date', locked: true },
-  { name: 'rating', type: 'Text', label: 'Rating', defaultValue: '-', locked: true },
-  { name: 'pending_to_auditor_remarks', type: 'Text', label: 'Auditor Remarks', defaultValue: '-', locked: true },
-  { name: 'auditor_to_completed_remarks', type: 'Text', label: 'Completed Remarks', defaultValue: '-', locked: true },
+  // { name: 'notes', type: 'Text', label: 'Notes', defaultValue: '-', locked: true },
+  // { name: 'assigned_to', type: 'Text', label: 'Assigned To', defaultValue: '-', locked: true },
+  // { name: 'assigned_by', type: 'Text', label: 'Assigned By', defaultValue: '-', locked: true },
+  // { name: 'department', type: 'Text', label: 'Department', defaultValue: '-', locked: true },
+  // { name: 'priority', type: 'Text', label: 'Priority', defaultValue: '-', locked: true },
+  // { name: 'status', type: 'Text', label: 'Status', defaultValue: 'Pending', locked: true },
+  // { name: 'due_date', type: 'Date', label: 'Due Date', locked: true },
+  // { name: 'auditor_date', type: 'Date', label: 'Auditor Date', locked: true },
+  // { name: 'completion_date', type: 'Date', label: 'Completion Date', locked: true },
+  // { name: 'rating', type: 'Text', label: 'Rating', defaultValue: '-', locked: true },
+  // { name: 'pending_to_auditor_remarks', type: 'Text', label: 'Auditor Remarks', defaultValue: '-', locked: true },
+  // { name: 'auditor_to_completed_remarks', type: 'Text', label: 'Completed Remarks', defaultValue: '-', locked: true },
 ];
 
-const TaskDataStore = ({ setShowDialog }) => {
-  const [title, setTitle] = useState('');
+const JobStatusReportDataStore = ({ setShowDialog }) => {
+
+  const [showCaptureWebhook,setShowCaptureWebhook] = useState('');
+
+  const [title, setTitle] = useState('jobStatus');
   const [customFields, setCustomFields] = useState([]);
   const [showInChat, setShowInChat] = useState(false);
   const user = useSelector((state) => state.user);
@@ -125,6 +128,7 @@ const TaskDataStore = ({ setShowDialog }) => {
               id="title"
               placeholder="Enter Data Store Title"
               value={title}
+              disabled
               onChange={(e) => setTitle(e.target.value)}
               className="max-w-md"
             />
@@ -301,4 +305,4 @@ const TaskDataStore = ({ setShowDialog }) => {
   );
 };
 
-export default TaskDataStore;
+export default JobStatusReportDataStore;

@@ -33,7 +33,7 @@
 //     console.log("Before API call", formData);
 
 //     try {
-//       const res = await axios.post("http://localhost:3000/users/register", formData);
+//       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/register`, formData);
 //       const userData = res.data.user;
 
 //       dispatch(userRegistration(userData)); // Update state with backend response
@@ -179,7 +179,7 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      const res = await axios.post("http://localhost:3000/users/register", formData);
+      const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/register`, formData);
       const userData = res.data.user;
 
       dispatch(userRegistration(userData));

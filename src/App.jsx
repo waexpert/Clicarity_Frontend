@@ -15,8 +15,11 @@ import Profile from "./pages/Profile";
 import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
 import Task from "./pages/Task";
-import RecordsDashboard from "./pages/RecordTaskDashboard";
+import RecordTaskDashboard from "./pages/RecordTaskDashboard";
+import RecordJobDashboard from "./pages/RecordJobDashboard"
 import TaskManagementTable from "./pages/TaskManagementTable";
+import Job from "./pages/Job"
+import CaptureWebhook from "./components/CaptureWebhook";
 
 function App() {
   const location = useLocation();
@@ -75,6 +78,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Task Management */}
         <Route
           path="/tasks"
           element={
@@ -87,7 +91,7 @@ function App() {
           path="/tasks/record"
           element={
             <ProtectedRoute>
-              <RecordsDashboard />
+              <RecordTaskDashboard />
             </ProtectedRoute>
           }
         />
@@ -96,6 +100,25 @@ function App() {
           element={
             <ProtectedRoute>
               <TaskManagementTable />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Job Status */}
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <Job />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/jobs/record"
+          element={
+            <ProtectedRoute>
+              <RecordJobDashboard />
             </ProtectedRoute>
           }
         />
@@ -140,6 +163,8 @@ function App() {
             </PublicRoute>
           }
         />
+
+        <Route path="/testing" element={<CaptureWebhook/>} />
       </Routes>
     </>
   );

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../css/components/NewDataStore.css';
-import { useSelector } from "react-redux";
 import axios from "axios";
+import { useSelector, useDispatch } from 'react-redux';
+import { setDynamicData, addDynamicField, setLoading, setError } from '../features/productMethod/jobStatusSlice';
 
 // Lucide React icons
-import { 
-  Lock, 
-  Plus, 
-  X, 
-  Database, 
+import {
+  Lock,
+  Plus,
+  X,
+  Database,
   Save
 } from "lucide-react";
 
@@ -35,12 +36,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -48,11 +49,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 
+
 // Predefined system fields (locked)
 const predefinedFields = [
-  { name: 'id', type: 'Text', label: 'ID', defaultValue: 'Auto', locked: true },
-  { name: 'client_id', type: 'Text', label: 'Client ID', defaultValue: '-', locked: true },
-  { name: 'assigned_to', type: 'Text', label: 'Assigned To', defaultValue: '-', locked: true },
+  { name: 'id', type: 'Text', defaultValue: 'Auto', locked: true },
+  { name: 'client_id', type: 'Text', defaultValue: '-', locked: true },
+  { name: 'assigned_to', type: 'Text', defaultValue: '-', locked: true },
   // { name: 'notes', type: 'Text', label: 'Notes', defaultValue: '-', locked: true },
   // { name: 'assigned_to', type: 'Text', label: 'Assigned To', defaultValue: '-', locked: true },
   // { name: 'assigned_by', type: 'Text', label: 'Assigned By', defaultValue: '-', locked: true },
@@ -67,16 +69,61 @@ const predefinedFields = [
   // { name: 'auditor_to_completed_remarks', type: 'Text', label: 'Completed Remarks', defaultValue: '-', locked: true },
 ];
 
-const JobStatusReportDataStore = ({ setShowDialog }) => {
+const JobStatusReportDataStore = ({ setShowDialog, columnFields }) => {
 
-  const [showCaptureWebhook,setShowCaptureWebhook] = useState('');
+  const [showCaptureWebhook, setShowCaptureWebhook] = useState('');
 
+   const dispatch = useDispatch();
   const [title, setTitle] = useState('jobStatus');
   const [customFields, setCustomFields] = useState([]);
   const [showInChat, setShowInChat] = useState(false);
   const user = useSelector((state) => state.user);
   const id = user.id;
   const schema_name = user.schema_name;
+  const [columns, setColumns] = useState(columnFields);
+
+  const [actualData, setActualData] = useState([])
+
+  function capitalizeFirstLetter(str) {
+    if (!str) {
+      return str;
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  const convertWithMapping = (message) => {
+    const typeMapping = {
+      'character varying': 'text',
+      'text': 'text',
+      'character': 'text',
+      'timestamp with time zone': 'timestamp',
+      'ARRAY': 'array'
+    };
+
+    const converted = message.map(element => ({
+      name: element.column_name,
+      type: capitalizeFirstLetter(typeMapping[element.data_type] || element.data_type)
+    }));
+
+    console.log('Alternative approach:', converted);
+    return converted;
+  }
+
+
+  useEffect(() => {
+    const getTableStructure = async () => {
+      const { data } = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/getTableStructure`, {
+        schemaName: schema_name,
+        tableName: 'jobStatus'
+      });
+
+      setActualData(convertWithMapping(data.data));
+      dispatch(setDynamicData({jobStatusStructure: convertWithMapping(data.data)}))
+      console.log(data.data);
+    }
+    getTableStructure();
+  }, []);
+
 
   const handleCustomFieldChange = (index, key, value) => {
     const updated = [...customFields];
@@ -118,7 +165,7 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
           Configure your task management data store with custom fields
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="pt-6">
         <div className="space-y-6">
           {/* Title input */}
@@ -133,24 +180,24 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
               className="max-w-md"
             />
           </div>
-          
+
           {/* Optional Show in Chat checkbox */}
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="showInChat" 
+            <Checkbox
+              id="showInChat"
               checked={showInChat}
               onCheckedChange={setShowInChat}
             />
-            <Label 
+            <Label
               htmlFor="showInChat"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Show in Chat Interface
             </Label>
           </div>
-          
+
           <Separator />
-          
+
           {/* Predefined Fields Section */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -159,20 +206,20 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                 <Lock className="h-3 w-3 mr-1" /> Locked
               </Badge>
             </div>
-            
+
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Field Name</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Label</TableHead>
+                    {/* <TableHead>Label</TableHead> */}
                     <TableHead>Default Value</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {predefinedFields.map((field, index) => (
+                  {(actualData.length > 0 ? actualData : predefinedFields).map((field, index) => (
                     <TableRow key={index} className="bg-slate-50/50">
                       <TableCell className="font-medium text-slate-500">
                         {field.name}
@@ -195,13 +242,13 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
               </Table>
             </div>
           </div>
-          
+
           <Separator />
-          
+
           {/* Custom Fields Section */}
           <div>
             <h3 className="text-lg font-medium mb-4">Custom Fields</h3>
-            
+
             {customFields.length > 0 ? (
               <div className="rounded-md border mb-4">
                 <Table>
@@ -209,7 +256,7 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                     <TableRow>
                       <TableHead>Field Name</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>Label</TableHead>
+                      {/* <TableHead>Label</TableHead> */}
                       <TableHead>Default Value</TableHead>
                       <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
@@ -218,11 +265,25 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                     {customFields.map((field, index) => (
                       <TableRow key={index}>
                         <TableCell>
-                          <Input
+                          {/* <Input
                             placeholder="Field Name"
                             value={field.name}
                             onChange={(e) => handleCustomFieldChange(index, 'name', e.target.value)}
-                          />
+                          /> */}
+                          {console.log(columnFields)}
+                          <Select
+                            value={field.name}
+                            onValueChange={(value) => handleCustomFieldChange(index, 'name', value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {columnFields.map((columns) => (
+                                <SelectItem key={columns} value={columns}>{columns}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell>
                           <Select
@@ -239,13 +300,13 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           <Input
                             placeholder="Label"
                             value={field.label}
                             onChange={(e) => handleCustomFieldChange(index, 'label', e.target.value)}
                           />
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>
                           <Input
                             placeholder="Default Value"
@@ -254,9 +315,9 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => removeField(index)}
                             className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
                           >
@@ -274,10 +335,10 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
                 <p className="text-sm text-slate-400 mt-1">Click "Add Field" to create custom fields</p>
               </div>
             )}
-            
-            <Button 
-              variant="outline" 
-              onClick={addField} 
+
+            <Button
+              variant="outline"
+              onClick={addField}
               className="gap-2 mt-2"
             >
               <Plus className="h-4 w-4" /> Add Field
@@ -285,15 +346,15 @@ const JobStatusReportDataStore = ({ setShowDialog }) => {
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between border-t pt-4 mt-6">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => setShowDialog(0)}
         >
           Cancel
         </Button>
-        <Button 
+        <Button
           onClick={handleSubmit}
           className="gap-2 bg-[#4285B4] hover:bg-[#3778b4]"
           disabled={!title}

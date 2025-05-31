@@ -27,6 +27,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store, persistor } from './store/store'; // Import store and persistor from store
 import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate from redux-persist
+import { Toaster } from "@/components/ui/sonner"
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -34,6 +35,7 @@ root.render(
     <BrowserRouter>
       <PersistGate loading={null} persistor={persistor}>
         <App />
+        <Toaster />
       </PersistGate>
     </BrowserRouter>
   </Provider>

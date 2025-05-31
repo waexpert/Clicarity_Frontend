@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import NewDataStore from '../components/NewDataStore';
 import TaskDataStore from '../components/TaskDataStore';
 import JobStatusReportDataStore from '../components/JobStatusReportDataStore';
+import { useSelector } from "react-redux";
 
 // Import Shadcn UI components
 import {
@@ -42,11 +43,14 @@ import {
   Clock,
   Database
 } from 'lucide-react';
+import CaptureWebhook from '../components/CaptureWebhook';
 
 const SchemaDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const [showDialog, setShowDialog] = useState(0);
+  const [showCapture,setCapture] = useState(true);
+  const [dropDown,setDropDown] = useState([]); 
 
   const componentMap = {
     1: <NewDataStore setShowDialog={setShowDialog} />,
@@ -54,51 +58,56 @@ const SchemaDashboard = () => {
     8: <JobStatusReportDataStore setShowDialog={setShowDialog} />
   };
 
+   const user = useSelector((state) => state.user);
+  const ownerId = user.id;
+
+  const products = ['task_management','expense_tracker','lead_management','project_management','support_ticket','birthday_reminder','job_status']
+
   const schemas = [
     {
-      "id": "2",
+      "id": "1",
       "title": "Task Management",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
-      "id": "3",
+      "id": "2",
       "title": "Expense Tracker",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
-      "id": "4",
+      "id": "3",
       "title": "Lead Management",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
-      "id": "5",
+      "id": "4",
       "title": "Project Management",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
-      "id": "6",
+      "id": "5",
       "title": "Support Ticket",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
-      "id": "7",
+      "id": "6",
       "title": "Birthday Reminder",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
         {
-      "id": "8",
+      "id": "7",
       "title": "Job Status Report",
       "fieldsCount": 8,
       "createdAt": "2024-10-18T15:35:00Z",
@@ -118,8 +127,10 @@ const SchemaDashboard = () => {
     };
   };
 
-  return (
+  return (<>
+  {/* {showCapture? <CaptureWebhook/> :""} */}
     <Card className="shadow-sm border-slate-200">
+      
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
@@ -212,7 +223,9 @@ const SchemaDashboard = () => {
                         size="sm" 
                         className="h-8 w-8 p-0" 
                         title="Edit"
-                        onClick={() => setShowDialog(parseInt(schema.id))}
+                        // onClick={() => setShowDialog(parseInt(schema.id))}
+                        onClick={() => navigate(`/db/${ownerId}/${products[parseInt(schema.id)-1]}`)}
+
                       >
                         <Edit className="h-4 w-4 text-slate-600" />
                       </Button>
@@ -236,6 +249,7 @@ const SchemaDashboard = () => {
         )}
       </CardContent>
     </Card>
+    </>
   );
 };
 

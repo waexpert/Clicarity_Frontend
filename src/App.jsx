@@ -20,6 +20,7 @@ import RecordJobDashboard from "./pages/RecordJobDashboard"
 import TaskManagementTable from "./pages/TaskManagementTable";
 import Job from "./pages/Job"
 import CaptureWebhook from "./components/CaptureWebhook";
+import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
 
 function App() {
   const location = useLocation();
@@ -164,7 +165,17 @@ function App() {
           }
         />
 
-        <Route path="/testing" element={<CaptureWebhook/>} />
+        <Route path="/testing" element={
+          // <CaptureWebhook/>
+          <StructureJobStatus/>
+          } />
+
+         <Route path="/db/:id/job_status" element={
+          // <CaptureWebhook/>
+          <StructureJobStatus/>
+          } />
+
+
       </Routes>
     </>
   );

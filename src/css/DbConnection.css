@@ -1,0 +1,23 @@
+
+.db-connection-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Animation for when SchemaCreation component is shown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply the animation to the SchemaCreation component */
+.schema-creation-wrapper {
+  animation: slideDown 0.3s ease-out;
+}

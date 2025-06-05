@@ -1,0 +1,18 @@
+.user-roles-container {
+    width: 80%;
+    margin: 30px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+.checkbox{
+    width: 1rem;
+}  
+
+.mainHeader{
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}

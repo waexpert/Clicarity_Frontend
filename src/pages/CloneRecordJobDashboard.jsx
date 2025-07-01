@@ -33,11 +33,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // Lucide React icons
-import { 
-  Search, 
-  Download, 
-  FileText, 
-  Upload, 
+import {
+  Search,
+  FileText,
+  Upload,
   MoreHorizontal,
   ChevronDown,
   Eye,
@@ -51,8 +50,18 @@ import {
   Check
 } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'sonner';
 
-const RecordJobDashboard = () => {
+
+// Api Calls Route
+import { getAllData } from '../api/apiConfig';
+
+
+
+// Things which needs to pass
+// apiParams
+
+const CloneRecordJobDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]); // Store original data for filtering
   const [records, setRecords] = useState([]);
@@ -68,30 +77,36 @@ const RecordJobDashboard = () => {
   // Add filter states
   const [statusFilter, setStatusFilter] = useState([]);
   const [priorityFilter, setPriorityFilter] = useState([]);
+  // Editing Row States
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editingValues, setEditingValues] = useState({});
+  const [editEnabled, setEditEnabled] = useState(false);
+  const [currentEditingRecord, setCurrentEditingRecord] = useState({});
+
   const navigate = useNavigate();
 
   // API data parameters
   const apiParams = {
     "schemaName": "wa_expert",
-    "tableName":"jobstatus"
+    "tableName": "tasks"
   };
 
   // Fetch data from API
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`, apiParams);
       const fetchedData = response.data;
-      
+
       // Store both original and filtered data
       setOriginalRecords(fetchedData);
       setRecords(fetchedData);
-      
+
       // Calculate pagination
       setTotalRecords(fetchedData.length);
       setTotalPages(Math.ceil(fetchedData.length / pageSize));
-      
+
       // Dynamically set columns
       if (fetchedData.length > 0) {
         const firstRecord = fetchedData[0];
@@ -133,33 +148,33 @@ const RecordJobDashboard = () => {
   // Function to apply filters and search
   const applyFiltersAndSearch = () => {
     if (!originalRecords.length) return;
-    
+
     let filteredResults = [...originalRecords];
-    
+
     // Apply search filter
     if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase();
-      filteredResults = filteredResults.filter(item => 
-        Object.values(item).some(value => 
+      filteredResults = filteredResults.filter(item =>
+        Object.values(item).some(value =>
           String(value).toLowerCase().includes(term)
         )
       );
     }
-    
+
     // Apply status filter
     if (statusFilter.length > 0) {
-      filteredResults = filteredResults.filter(item => 
+      filteredResults = filteredResults.filter(item =>
         statusFilter.includes(item.status)
       );
     }
-    
+
     // Apply priority filter
     if (priorityFilter.length > 0) {
-      filteredResults = filteredResults.filter(item => 
+      filteredResults = filteredResults.filter(item =>
         priorityFilter.includes(item.priority)
       );
     }
-    
+
     // Update records and pagination
     setRecords(filteredResults);
     setTotalRecords(filteredResults.length);
@@ -218,7 +233,7 @@ const RecordJobDashboard = () => {
     if (selectedRecords.length === records.length) {
       setSelectedRecords([]);
     } else {
-      setSelectedRecords(records.map(record => record.us_id));
+      setSelectedRecords(records.map(record => record.id));
     }
   };
 
@@ -230,23 +245,23 @@ const RecordJobDashboard = () => {
       setSortColumn(column);
       setSortDirection('asc');
     }
-    
+
     // Apply sorting to records
     const sortedRecords = [...records].sort((a, b) => {
       const valueA = a[column] || '';
       const valueB = b[column] || '';
-      
+
       if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return sortDirection === 'asc' 
-          ? valueA.localeCompare(valueB) 
+        return sortDirection === 'asc'
+          ? valueA.localeCompare(valueB)
           : valueB.localeCompare(valueA);
       } else {
-        return sortDirection === 'asc' 
-          ? valueA - valueB 
+        return sortDirection === 'asc'
+          ? valueA - valueB
           : valueB - valueA;
       }
     });
-    
+
     setRecords(sortedRecords);
   };
 
@@ -256,11 +271,11 @@ const RecordJobDashboard = () => {
       alert('No records to export');
       return;
     }
-    
+
     try {
       // Determine which data to export (filtered records or all records)
       const dataToExport = records;
-      
+
       // Optional: Only include visible columns
       const exportData = dataToExport.map(record => {
         const filteredRecord = {};
@@ -269,7 +284,7 @@ const RecordJobDashboard = () => {
         });
         return filteredRecord;
       });
-      
+
       // Convert JSON to CSV
       const csv = Papa.unparse(exportData, {
         quotes: true, // Use quotes around all fields
@@ -279,33 +294,33 @@ const RecordJobDashboard = () => {
         header: true,
         newline: "\n"
       });
-      
+
       // Create a blob with the CSV data
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      
+
       // Create a URL for the blob
       const url = URL.createObjectURL(blob);
-      
+
       // Create a temporary link element to trigger the download
       const link = document.createElement('a');
-      
+
       // Generate a filename with current date
       const date = new Date().toISOString().slice(0, 10);
       const filename = `records_export_${date}.csv`;
-      
+
       // Set link attributes
       link.setAttribute('href', url);
       link.setAttribute('download', filename);
       link.style.display = 'none';
-      
+
       // Add to DOM, trigger download and clean up
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Release the blob URL
       URL.revokeObjectURL(url);
-      
+
       console.log(`Exported ${exportData.length} records to CSV`);
     } catch (error) {
       console.error('Error exporting to CSV:', error);
@@ -330,16 +345,16 @@ const RecordJobDashboard = () => {
 
   // Handle column visibility toggle
   const toggleColumnVisibility = (columnId) => {
-    setColumns(columns.map(column => 
-      column.id === columnId 
-        ? { ...column, visible: !column.visible } 
+    setColumns(columns.map(column =>
+      column.id === columnId
+        ? { ...column, visible: !column.visible }
         : column
     ));
   };
 
   // Get status badge color
   const getStatusBadgeColor = (status) => {
-    switch(status.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'in progress':
@@ -353,7 +368,7 @@ const RecordJobDashboard = () => {
 
   // Get priority badge color
   const getPriorityBadgeColor = (priority) => {
-    switch(priority.toLowerCase()) {
+    switch (priority.toLowerCase()) {
       case 'high':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'medium':
@@ -365,9 +380,48 @@ const RecordJobDashboard = () => {
     }
   };
 
+  // Editing Values Handle Save function
+  const handleSave = async (originalId) => {
+    const schemaName = 'wa_expert';
+    const tableName = 'tasks';
+
+    const params = new URLSearchParams({
+      schemaName,
+      tableName,
+      recordId: originalId,
+      ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb', // if required
+    });
+
+    let colIndex = 1;
+    Object.entries(editingValues).forEach(([key, val]) => {
+      // Don't include if undefined
+      if (val === undefined) return;
+
+      // Convert JS null or empty string to empty (let backend decide)
+      const sanitizedVal = val === null || val === 'null' ? '' : val;
+
+
+      params.append(`col${colIndex}`, key);
+      params.append(`val${colIndex}`, sanitizedVal);
+      colIndex++;
+    });
+
+    try {
+      const result = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?${params.toString()}`);
+      toast.success("Record updated");
+      console.log(result);
+      console.error(result)
+      setEditingRowId(null);
+      handleRefresh();
+    } catch (err) {
+      toast.error("Update failed");
+    }
+  };
+
+
   // Get unique statuses for filters
   const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);
-  
+
   // Get unique priorities for filters
   const uniquePriorities = Array.from(new Set(originalRecords.map(record => record.priority))).filter(Boolean);
 
@@ -403,21 +457,21 @@ const RecordJobDashboard = () => {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {/* Toolbar */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="flex items-center gap-2"
               onClick={handleRefresh}
             >
               <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -456,9 +510,9 @@ const RecordJobDashboard = () => {
                     <span>{status}</span>
                   </DropdownMenuCheckboxItem>
                 ))}
-                
+
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuLabel className="flex justify-between items-center">
                   <span>Filter by Priority</span>
                   {priorityFilter.length > 0 && (
@@ -486,7 +540,7 @@ const RecordJobDashboard = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -502,7 +556,7 @@ const RecordJobDashboard = () => {
                     toggleColumnVisibility(column.id);
                   }}>
                     <div className="flex items-center gap-2">
-                      <Checkbox 
+                      <Checkbox
                         checked={column.visible}
                         onCheckedChange={() => toggleColumnVisibility(column.id)}
                       />
@@ -513,10 +567,10 @@ const RecordJobDashboard = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               className="flex items-center gap-2"
               onClick={exportToCSV}
@@ -524,17 +578,36 @@ const RecordJobDashboard = () => {
               <FileSpreadsheet className="h-4 w-4" />
               <span className="hidden sm:inline">Export CSV</span>
             </Button>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               size="sm"
               className="flex items-center gap-2"
-              onClick={exportToPDF}
+              onClick={() => {
+                setEditEnabled(!editEnabled);
+              }}
             >
-              <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Export PDF</span>
+              <Edit className="h-4 w-4" />
+              <span className="hidden sm:inline">Edit</span>
             </Button>
-            
+
+
+            {/* <TableCell className="text-right"> */}
+            {editingRowId && currentEditingRecord && editEnabled ? (
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => handleSave(currentEditingRecord.id)}>
+                  Save
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setEditingRowId(null);
+                  setCurrentEditingRecord(null);
+                }}>
+                  Cancel
+                </Button>
+              </div>
+            ) : null}
+            {/* </TableCell> */}
+
             <div className="relative">
               {/* <input
                 type="file"
@@ -554,7 +627,7 @@ const RecordJobDashboard = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Table */}
         <div className="rounded-md border mt-4 overflow-hidden">
           <div className="overflow-x-auto">
@@ -562,13 +635,13 @@ const RecordJobDashboard = () => {
               <TableHeader>
                 <TableRow className="bg-slate-50">
                   <TableHead className="w-[40px]">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedRecords.length === records.length && records.length > 0}
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
                   {visibleColumns.map(column => (
-                    <TableHead 
+                    <TableHead
                       key={column.id}
                       className="cursor-pointer hover:bg-slate-100"
                       onClick={() => handleSort(column.id)}
@@ -576,16 +649,15 @@ const RecordJobDashboard = () => {
                       <div className="flex items-center gap-1">
                         <span>{column.name}</span>
                         {sortColumn === column.id && (
-                          <ChevronDown 
-                            className={`h-4 w-4 transition-transform ${
-                              sortDirection === 'desc' ? 'rotate-180' : ''
-                            }`} 
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''
+                              }`}
                           />
                         )}
                       </div>
                     </TableHead>
                   ))}
-                  <TableHead className="w-[80px] text-right">Actions</TableHead>
+                  {/* <TableHead className="w-[80px] text-right">Actions</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -598,23 +670,39 @@ const RecordJobDashboard = () => {
                 ) : records.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
-                      No records found. {searchTerm || statusFilter.length > 0 || priorityFilter.length > 0 ? 
+                      No records found. {searchTerm || statusFilter.length > 0 || priorityFilter.length > 0 ?
                         <Button variant="link" onClick={handleRefresh}>Clear filters?</Button> : ''}
                     </TableCell>
                   </TableRow>
                 ) : (
                   currentRecords.map((record, index) => (
-                    <TableRow key={record.us_id || index} className="hover:bg-slate-50">
+                    <TableRow key={record.id || index} className="hover:bg-slate-50"
+                      onClick={() => {
+                        setEditingRowId(record.id);
+                        if(editEnabled === false){
+                        setEditingValues(record);
+                        }
+                        setCurrentEditingRecord(record);
+                      }}>
                       <TableCell className="w-[40px]">
-                        <Checkbox 
-                          checked={selectedRecords.includes(record.us_id)}
-                          onCheckedChange={() => handleSelectRecord(record.us_id)}
+                        <Checkbox
+                          checked={selectedRecords.includes(record.id)}
+                          onCheckedChange={() => handleSelectRecord(record.id)}
                         />
                       </TableCell>
-                      
+
                       {visibleColumns.map(column => (
                         <TableCell key={column.id}>
-                          {column.id === 'status' ? (
+                          {editingRowId === record.id && column.id !== 'id' && editEnabled ? (
+                            <input
+                              type="text"
+                              value={editingValues[column.id] || ''}
+                              onChange={(e) =>
+                                setEditingValues(prev => ({ ...prev, [column.id]: e.target.value }))
+                              }
+                              className="border rounded px-2 py-1 w-full"
+                            />
+                          ) : column.id === 'status' ? (
                             <Badge className={`font-medium ${getStatusBadgeColor(record[column.id])}`}>
                               {record[column.id]}
                             </Badge>
@@ -632,31 +720,9 @@ const RecordJobDashboard = () => {
                           )}
                         </TableCell>
                       ))}
-                      
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              <span>View Details</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              <span>Edit</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              <span>Delete</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+
+
+
                     </TableRow>
                   ))
                 )}
@@ -664,18 +730,18 @@ const RecordJobDashboard = () => {
             </Table>
           </div>
         </div>
-        
+
         {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-slate-500">
             Showing <span className="font-medium">{Math.min(records.length, pageSize)}</span> of <span className="font-medium">{totalRecords}</span> records
           </div>
-          
+
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
-                  href="#" 
+                <PaginationPrevious
+                  href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -683,7 +749,7 @@ const RecordJobDashboard = () => {
                   className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
-              
+
               {[...Array(totalPages)].map((_, i) => (
                 <PaginationItem key={i}>
                   <PaginationLink
@@ -698,10 +764,10 @@ const RecordJobDashboard = () => {
                   </PaginationLink>
                 </PaginationItem>
               ))}
-              
+
               <PaginationItem>
-                <PaginationNext 
-                  href="#" 
+                <PaginationNext
+                  href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -717,4 +783,4 @@ const RecordJobDashboard = () => {
   );
 };
 
-export default RecordJobDashboard;
+export default CloneRecordJobDashboard;

@@ -21,6 +21,7 @@ import TaskManagementTable from "./pages/TaskManagementTable";
 import Job from "./pages/Job"
 import CaptureWebhook from "./components/CaptureWebhook";
 import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
+import CloneRecordJobDashboard from "./pages/CloneRecordJobDashboard";
 
 function App() {
   const location = useLocation();
@@ -151,23 +152,24 @@ function App() {
         <Route
           path="/generate-secret"
           element={
-            <PublicRoute>
+            // <PublicRoute>
               <QRSetup />
-            </PublicRoute>
+            // </PublicRoute>
           }
         />
         <Route
           path="/verify-mfa"
           element={
-            <PublicRoute>
+            // <PublicRoute>
               <VerifyMFA />
-            </PublicRoute>
+            // </PublicRoute>
           }
         />
 
         <Route path="/testing" element={
           // <CaptureWebhook/>
-          <StructureJobStatus/>
+          // <StructureJobStatus/>
+          <CloneRecordJobDashboard/>
           } />
 
          <Route path="/db/:id/job_status" element={
@@ -176,6 +178,7 @@ function App() {
           } />
 
 
+        <Route path="*" element={<Home />} />
       </Routes>
     </>
   );

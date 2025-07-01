@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 const VerifyMFA = () => {
   const [code, setCode] = useState('');
@@ -36,15 +38,16 @@ const VerifyMFA = () => {
     <div className="mfa-verify-wrapper">
       <h2>Verify MFA Code</h2>
       <form onSubmit={handleSubmit}>
-        <input
+        <Input
           type="text"
           placeholder="Enter 6-digit code"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           required
           maxLength={6}
+          style={{width:200}}
         />
-        <button type="submit">Verify</button>
+        <Button type="submit">Verify</Button>
       </form>
       {status && <p>{status}</p>}
     </div>

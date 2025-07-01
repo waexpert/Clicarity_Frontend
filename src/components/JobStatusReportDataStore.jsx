@@ -74,7 +74,7 @@ const JobStatusReportDataStore = ({ setShowDialog, columnFields }) => {
   const [showCaptureWebhook, setShowCaptureWebhook] = useState('');
 
    const dispatch = useDispatch();
-  const [title, setTitle] = useState('jobStatus');
+  const [title, setTitle] = useState('jobstatus');
   const [customFields, setCustomFields] = useState([]);
   const [showInChat, setShowInChat] = useState(false);
   const user = useSelector((state) => state.user);
@@ -114,7 +114,7 @@ const JobStatusReportDataStore = ({ setShowDialog, columnFields }) => {
     const getTableStructure = async () => {
       const { data } = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/getTableStructure`, {
         schemaName: schema_name,
-        tableName: 'jobStatus'
+        tableName: 'jobstatus'
       });
 
       setActualData(convertWithMapping(data.data));
@@ -147,7 +147,8 @@ const JobStatusReportDataStore = ({ setShowDialog, columnFields }) => {
     try {
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/createTable`, data);
       alert("Form submitted successfully!");
-      setShowDialog(0); // Close the dialog after successful submission
+      console.log(res)
+      // setShowDialog(0); // Close the dialog after successful submission
     } catch (error) {
       console.error("Creation failed:", error);
       alert("Creation failed! Please try again.");

@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+
 import { Button } from '../components/ui/button';
+
 
 
 const QRSetup = () => {
@@ -41,9 +43,11 @@ const QRSetup = () => {
         <p>Loading QR Code...</p>
       )}
 
+
       <Button onClick={() => navigate('/verify-mfa')} className="continue-btn">
         Continue
       </Button>
+
     </div>
   );
 };

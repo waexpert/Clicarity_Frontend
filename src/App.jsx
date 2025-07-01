@@ -23,6 +23,7 @@ import CaptureWebhook from "./components/CaptureWebhook";
 import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
 import CloneRecordJobDashboard from "./pages/CloneRecordJobDashboard";
 
+
 function App() {
   const location = useLocation();
   const hideHeaderPaths = ["/login", "/register"];
@@ -155,6 +156,7 @@ function App() {
             // <PublicRoute>
               <QRSetup />
             // </PublicRoute>
+
           }
         />
         <Route
@@ -163,6 +165,7 @@ function App() {
             // <PublicRoute>
               <VerifyMFA />
             // </PublicRoute>
+
           }
         />
 
@@ -170,6 +173,7 @@ function App() {
           // <CaptureWebhook/>
           // <StructureJobStatus/>
           <CloneRecordJobDashboard/>
+
           } />
 
          <Route path="/db/:id/job_status" element={
@@ -177,8 +181,8 @@ function App() {
           <StructureJobStatus/>
           } />
 
-
         <Route path="*" element={<Home />} />
+
       </Routes>
     </>
   );

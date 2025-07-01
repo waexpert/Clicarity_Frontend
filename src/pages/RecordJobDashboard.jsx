@@ -74,6 +74,7 @@ const RecordJobDashboard = () => {
   const apiParams = {
     "schemaName": "wa_expert",
     "tableName":"jobstatus"
+
   };
 
   // Fetch data from API

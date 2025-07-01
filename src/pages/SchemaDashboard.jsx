@@ -216,6 +216,7 @@ const SchemaDashboard = () => {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Browse" onClick={()=> navigate(`/jobs/record`)}>
+
                         <Eye className="h-4 w-4 text-slate-600" />
                       </Button>
                       <Button 

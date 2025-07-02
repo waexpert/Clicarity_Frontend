@@ -21,7 +21,8 @@ import TaskManagementTable from "./pages/TaskManagementTable";
 import Job from "./pages/Job"
 import CaptureWebhook from "./components/CaptureWebhook";
 import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
-import CloneRecordJobDashboard from "./pages/CloneRecordJobDashboard";
+import CustomTable from "./components/CustomTable";
+import Testing from "./pages/Testing";
 
 
 function App() {
@@ -109,7 +110,7 @@ function App() {
 
         {/* Job Status */}
         <Route
-          path="/jobs"
+          path="/jobstatus"
           element={
             <ProtectedRoute>
               <Job />
@@ -118,7 +119,7 @@ function App() {
         />
 
         <Route
-          path="/jobs/record"
+          path="/jobstatus/record"
           element={
             <ProtectedRoute>
               <RecordJobDashboard />
@@ -172,7 +173,7 @@ function App() {
         <Route path="/testing" element={
           // <CaptureWebhook/>
           // <StructureJobStatus/>
-          <CloneRecordJobDashboard/>
+          <Testing/>
 
           } />
 

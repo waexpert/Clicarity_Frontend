@@ -1,5 +1,6 @@
 // All The Api Routes
 
-export const getAllData = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`;
+export const getAllRecords = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`;
+export const updateRecord = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
 
 

@@ -54,14 +54,14 @@ import { toast } from 'sonner';
 
 
 // Api Calls Route
-import { getAllData } from '../api/apiConfig';
+import { getAllRecords,updateRecord } from '../api/apiConfig';
 
 
 
 // Things which needs to pass
 // apiParams
 
-const CloneRecordJobDashboard = () => {
+const CustomTable = ({apiParams}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]); // Store original data for filtering
   const [records, setRecords] = useState([]);
@@ -86,17 +86,18 @@ const CloneRecordJobDashboard = () => {
   const navigate = useNavigate();
 
   // API data parameters
-  const apiParams = {
-    "schemaName": "wa_expert",
-    "tableName": "tasks"
-  };
+  // const apiParams = {
+  //   "schemaName": "public",
+  //   "tableName": "users"
+  // };
 
   // Fetch data from API
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`, apiParams);
+      console.log("apiparms",apiParams)
+      const response = await axios.post(getAllRecords, apiParams);
       const fetchedData = response.data;
 
       // Store both original and filtered data
@@ -382,8 +383,8 @@ const CloneRecordJobDashboard = () => {
 
   // Editing Values Handle Save function
   const handleSave = async (originalId) => {
-    const schemaName = 'wa_expert';
-    const tableName = 'tasks';
+    const schemaName = apiParams.schemaName;
+    const tableName = apiParams.tableName;
 
     const params = new URLSearchParams({
       schemaName,
@@ -407,7 +408,7 @@ const CloneRecordJobDashboard = () => {
     });
 
     try {
-      const result = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?${params.toString()}`);
+      const result = await axios.get(`${updateRecord}${params.toString()}`);
       toast.success("Record updated");
       console.log(result);
       console.error(result)
@@ -783,4 +784,4 @@ const CloneRecordJobDashboard = () => {
   );
 };
 
-export default CloneRecordJobDashboard;
+export default CustomTable;

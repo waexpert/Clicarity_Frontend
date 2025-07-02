@@ -81,7 +81,7 @@ import {
         description: "Organize and manage all your processes efficentily.",
         icon: "network",
         iconColor: "#4285B4",
-        route: "/jobs"
+        route: "/jobstatus"
       }
   ];
   

@@ -126,31 +126,67 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
     
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, { email, password });
-      const userData = res.data.user;
+  //   try {
+  //     const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, { email, password });
+  //     const userData = res.data.user;
+  //     navigate("/verify-mfa");
+  //     dispatch(userLogin(userData));
+      
+  //     toast.success("Login Successful", {
+  //       description: "You have been signed in successfully."
+  //     });
+      
+      
+  //   } catch (error) {
+  //     console.error("Login failed:", error);
+      
+  //     toast.error("Login Failed", {
+  //       description: error.response?.data?.message || "Please check your credentials and try again."
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-      dispatch(userLogin(userData));
-      
-      toast.success("Login Successful", {
-        description: "You have been signed in successfully."
-      });
-      
-      navigate("/verify-mfa");
-    } catch (error) {
-      console.error("Login failed:", error);
-      
-      toast.error("Login Failed", {
-        description: error.response?.data?.message || "Please check your credentials and try again."
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  
+  try {
+    const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, { email, password });
+    const userData = res.data.user;
+    
+    console.log("Login successful, userData:", userData);
+    
+    // Dispatch first
+    dispatch(userLogin(userData));
+    console.log("User data dispatched to Redux");
+    
+    toast.success("Login Successful", {
+      description: "You have been signed in successfully."
+    });
+    
+    // Add a small delay to ensure Redux state is updated
+    setTimeout(() => {
+      console.log("About to navigate to /verify-mfa");
+      navigate("/verify-mfa", { replace: true });
+    }, 10);
+    
+  } catch (error) {
+    console.error("Login failed:", error);
+    
+    toast.error("Login Failed", {
+      description: error.response?.data?.message || "Please check your credentials and try again."
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">

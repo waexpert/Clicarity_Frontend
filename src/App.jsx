@@ -154,18 +154,18 @@ function App() {
         <Route
           path="/generate-secret"
           element={
-            // <PublicRoute>
+            <PublicRoute>
               <QRSetup />
-            // </PublicRoute>
+            </PublicRoute>
 
           }
         />
         <Route
           path="/verify-mfa"
           element={
-            // <PublicRoute>
+            <PublicRoute>
               <VerifyMFA />
-            // </PublicRoute>
+            </PublicRoute>
 
           }
         />

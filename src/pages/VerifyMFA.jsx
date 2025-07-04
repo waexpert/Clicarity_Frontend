@@ -23,6 +23,8 @@ const VerifyMFA = () => {
         { withCredentials: true }
       );
 
+      console.log(res);
+
       if (res.data.success) {
         setStatus('✅ MFA Verified Successfully!');
         navigate('/')

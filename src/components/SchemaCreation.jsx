@@ -9,7 +9,6 @@ const SchemaCreation = ({setAddConnection}) => {
   const [dbType, setDbType] = useState('Postgresql');
   const [paramType, setParamType] = useState('Mongo String');
   const [connString, setConnString] = useState('');
-  const baseUrl = process.env.REACT_APP_BASE_URL
 
   const user = useSelector((state) => state.user);
   const id = user.id;
@@ -18,14 +17,15 @@ const SchemaCreation = ({setAddConnection}) => {
 
   const handleSave = async() => {
     const connectionData = { schemaName, dbType, paramType,id };
-    const res =  await axios.post(`${baseUrl}/secure/createSchema`,connectionData);
-    console.log("url",process.env.BASE_URL)
+    const res =  await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/createSchema`,connectionData);
+    console.log("url",`${import.meta.env.VITE_APP_BASE_URL}`)
     console.log('Saving connection:', connectionData);
-    console.log("Res Data",res)
+    console.log("Res Data",res);
+    setAddConnection(false)
   };
 
   return (
-    <div className="wrapper">
+    <div className="wrapper z-50">
     <div className="form-container">
       <div className="form-header">
         <h2>Add Database Connection</h2>

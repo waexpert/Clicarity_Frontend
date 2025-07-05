@@ -531,6 +531,8 @@ const generateNewWebhook = async () => {
     setGenerateError('Failed to generate webhook: ' + err.message);
   }
 };
+
+
   const fetchWebhookData = async () => {
     if (!generatedWebhook?.webhookId) {
       setCaptureError('No webhook generated yet');

@@ -23,11 +23,13 @@ import CaptureWebhook from "./components/CaptureWebhook";
 import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
 import CustomTable from "./components/CustomTable";
 import Testing from "./pages/Testing";
+import SheetComment from "./pages/Comment/SheetComment";
+import PostgresComment from "./pages/Comment/PostgresComment";
 
 
 function App() {
   const location = useLocation();
-  const hideHeaderPaths = ["/login", "/register"];
+  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres"];
   const hideHeader = hideHeaderPaths.includes(location.pathname);
 
   return (
@@ -180,8 +182,9 @@ function App() {
          <Route path="/db/:id/job_status" element={
           // <CaptureWebhook/>
           <StructureJobStatus/>
-          } />
-
+          } /> 
+           <Route path="/sheet" element={<SheetComment/>} />
+            <Route path="/postgres" element={<PostgresComment />} />
         <Route path="*" element={<Home />} />
 
       </Routes>

@@ -25,11 +25,12 @@ import CustomTable from "./components/CustomTable";
 import Testing from "./pages/Testing";
 import SheetComment from "./pages/Comment/SheetComment";
 import PostgresComment from "./pages/Comment/PostgresComment";
+import UploadFile from "./pages/Comment/UploadFile";
 
 
 function App() {
   const location = useLocation();
-  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres"];
+  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres","/upload"];
   const hideHeader = hideHeaderPaths.includes(location.pathname);
 
   return (
@@ -183,8 +184,9 @@ function App() {
           // <CaptureWebhook/>
           <StructureJobStatus/>
           } /> 
-           <Route path="/sheet" element={<SheetComment/>} />
-            <Route path="/postgres" element={<PostgresComment />} />
+        <Route path="/sheet" element={<SheetComment/>} />
+        <Route path="/postgres" element={<PostgresComment />} />
+        <Route path="/upload" element={<UploadFile />} />
         <Route path="*" element={<Home />} />
 
       </Routes>

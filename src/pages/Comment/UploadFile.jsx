@@ -34,7 +34,7 @@ export default function UploadFile() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const uploadRes = await axios.post(
+        const uploadRes = await axios.get(
           `${import.meta.env.VITE_APP_BASE_URL}/service/uploadFile`,
           formData,
           {

@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import '../css/components/SchemaCreation.css';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { useDispatch } from 'react-redux';
+import { setSchemaName } from '../features/userMethod/userSlice';
 
 
 const SchemaCreation = ({setAddConnection}) => {
-  const [schemaName, setSchemaName] = useState('');
+  const [schemaNam, setSchemaNam] = useState('');
   const [dbType, setDbType] = useState('Postgresql');
   const [paramType, setParamType] = useState('Mongo String');
   const [connString, setConnString] = useState('');
@@ -16,17 +20,18 @@ const SchemaCreation = ({setAddConnection}) => {
 
 
   const handleSave = async() => {
-    const connectionData = { schemaName, dbType, paramType,id };
+    const connectionData = { schemaName:schemaNam, dbType, paramType,id };
     const res =  await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/createSchema`,connectionData);
     console.log("url",`${import.meta.env.VITE_APP_BASE_URL}`)
     console.log('Saving connection:', connectionData);
     console.log("Res Data",res);
+    dispatch(setSchemaName(schemaNam));
     setAddConnection(false)
   };
 
   return (
-    <div className="wrapper z-50">
-    <div className="form-container">
+    <div className="wrapper z-50 ">
+    <div className="form-container ">
       <div className="form-header">
         <h2>Add Database Connection</h2>
         <button className="close-btn" onClick={()=>setAddConnection(false)}>×</button>
@@ -34,11 +39,11 @@ const SchemaCreation = ({setAddConnection}) => {
 
       <div className="form-group">
         <label>Title</label>
-        <input
+        <Input
           type="text"
           placeholder="Enter Connection Title"
-          value={schemaName}
-          onChange={(e) => setSchemaName(e.target.value)}
+          value={schemaNam}
+          onChange={(e) => setSchemaNam(e.target.value)}
         />
       </div>
 
@@ -66,7 +71,7 @@ const SchemaCreation = ({setAddConnection}) => {
         />
       </div> */}
 
-      <button className="save-btn" onClick={handleSave}>Save Connection</button>
+      <Button className="mt-4" onClick={handleSave}>Save Connection</Button>
     </div>
     </div>
   );

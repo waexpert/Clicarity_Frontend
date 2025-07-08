@@ -734,7 +734,7 @@ const location = useLocation();
   console.log(userData);
   return (
 <CustomTable apiParams={{
-  "schemaName":`${userData}.schemaName`,
+  "schemaName":`${userData.schema_name}`,
   "tableName":`${firstSegment}`
 }}/>
   )

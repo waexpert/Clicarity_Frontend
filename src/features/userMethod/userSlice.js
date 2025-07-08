@@ -63,9 +63,12 @@ export const userSlice = createSlice({
             schema_name :""
         };
       },
+        setSchemaName: (state, action) => {
+    state.schema_name = action.payload;
+  }
     },
   });
   
 
-export const { userRegistration, userLogin, userLogout } = userSlice.actions;
+export const { userRegistration, userLogin, userLogout,setSchemaName } = userSlice.actions;
 export default userSlice.reducer;

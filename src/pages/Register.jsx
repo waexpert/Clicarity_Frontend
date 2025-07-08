@@ -182,13 +182,18 @@ const Register = () => {
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/register`, formData);
       const userData = res.data.user;
 
-      dispatch(userRegistration(userData));
+ 
+    setTimeout(() => {
+      console.log("About to navigate to /verify-mfa");
+      navigate("/generate-secret", { replace: true });
+    }, 10);
+
+    dispatch(userRegistration(userData));
       
       toast.success("Registration Successful", {
         description: "Your account has been created successfully."
       });
-      
-      navigate("/login");
+      // navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
       

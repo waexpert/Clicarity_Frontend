@@ -147,6 +147,7 @@ const Task = () => {
                         <Button 
                           variant="ghost" 
                           size="icon"
+                          onClick={()=> navigate(`/tasks/record/create`)}
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#4285B4] hover:bg-slate-100"
                         >
                           <Pencil className="h-4 w-4" />

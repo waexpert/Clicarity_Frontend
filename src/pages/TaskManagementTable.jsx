@@ -184,7 +184,7 @@ const TaskManagementTable = () => {
   // Add this function to fetch a pre-signed URL from your backend
   const getPresignedUrl = async () => {
     try {
-      const response = await fetch('http://localhost:8080/s3Url');
+      const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/service/uploadFile`);
       const data = await response.json();
 
       if (!data.message) {

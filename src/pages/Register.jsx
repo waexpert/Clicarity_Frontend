@@ -210,7 +210,7 @@ const Register = () => {
       <div className="w-full max-w-[400px] mx-4">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <img src='/Images/logo.png' alt="Clicarity Logo" className="h-38" />
+          <img src='https://clicarity.s3.eu-north-1.amazonaws.com/logo.png' alt="Clicarity Logo" className="h-38" />
         </div>
         
         {/* Form */}

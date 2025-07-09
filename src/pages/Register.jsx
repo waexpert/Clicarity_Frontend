@@ -17,7 +17,7 @@
 //     currency : "",
 //     is_verified : false,
 //   });
-  
+
 //   const dispatch = useDispatch();
 
 //   const handleChange = (e) => {
@@ -126,6 +126,8 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox"
+
 import {
   Select,
   SelectContent,
@@ -151,11 +153,13 @@ const Register = () => {
     country: "",
     currency: "",
     is_verified: false,
+    user_type: ""
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [checked, setChecked] = useState(false)
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -166,7 +170,7 @@ const Register = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
-  
+
   const handleSelectChange = (name, value) => {
     setFormData(prev => ({
       ...prev,
@@ -177,26 +181,26 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/register`, formData);
       const userData = res.data.user;
 
- 
-    setTimeout(() => {
-      console.log("About to navigate to /verify-mfa");
-      navigate("/generate-secret", { replace: true });
-    }, 10);
 
-    dispatch(userRegistration(userData));
-      
+      setTimeout(() => {
+        console.log("About to navigate to /verify-mfa");
+        navigate("/generate-secret", { replace: true });
+      }, 10);
+
+      dispatch(userRegistration(userData));
+
       toast.success("Registration Successful", {
         description: "Your account has been created successfully."
       });
       // navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
-      
+
       toast.error("Registration Failed", {
         description: error.response?.data?.message || "Please check your information and try again."
       });
@@ -212,7 +216,7 @@ const Register = () => {
         <div className="flex justify-center mb-8">
           <img src='https://clicarity.s3.eu-north-1.amazonaws.com/logo.png' alt="Clicarity Logo" className="h-38" />
         </div>
-        
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -230,7 +234,7 @@ const Register = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="last_name" className="text-[#333] font-normal text-base">
               Last Name <span className="text-red-500">*</span>
@@ -246,7 +250,7 @@ const Register = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="email" className="text-[#333] font-normal text-base">
               Email <span className="text-red-500">*</span>
@@ -262,7 +266,7 @@ const Register = () => {
               required
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="password" className="text-[#333] font-normal text-base">
               Password <span className="text-red-500">*</span>
@@ -291,7 +295,7 @@ const Register = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="phone_number" className="text-[#333] font-normal text-base">
               Phone Number <span className="text-red-500">*</span>
@@ -319,13 +323,13 @@ const Register = () => {
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="country" className="text-[#333] font-normal text-base">
               Country <span className="text-red-500">*</span>
             </Label>
-            <Select 
-              value={formData.country} 
+            <Select
+              value={formData.country}
               onValueChange={(value) => handleSelectChange("country", value)}
               required
             >
@@ -339,13 +343,13 @@ const Register = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="currency" className="text-[#333] font-normal text-base">
               Currency <span className="text-red-500">*</span>
             </Label>
-            <Select 
-              value={formData.currency} 
+            <Select
+              value={formData.currency}
               onValueChange={(value) => handleSelectChange("currency", value)}
               required
             >
@@ -359,25 +363,36 @@ const Register = () => {
               </SelectContent>
             </Select>
           </div>
-          
-          <Button 
-            type="submit" 
+
+          {/* <div className="align-center">
+            <Checkbox
+              id="subscribe"
+              checked={checked}
+              onCheckedChange={(val) => setChecked(!!val)}
+            />
+            <label htmlFor="subscribe" className="text-sm">
+              SignIn as Owner
+            </label>
+          </div> */}
+
+          <Button
+            type="submit"
             className="w-full h-11 bg-[#4285B4] hover:bg-[#3778b4] font-medium text-white mt-6"
             disabled={isLoading}
           >
             {isLoading ? "Creating Account..." : "Sign Up"}
           </Button>
-          
+
           <div className="text-center pt-2">
             <p className="text-[#333] text-sm">
               Already have an account? <a href="/login" className="text-[#4285B4] hover:underline font-medium">Sign In</a>
             </p>
           </div>
-          
+
           <div className="text-center text-xs text-[#666] mt-4">
-            By signing in to this app you agree to 
-            <a href="#" className="text-[#4285B4] hover:underline"> Terms of Service </a> 
-            and acknowledge the 
+            By signing in to this app you agree to
+            <a href="#" className="text-[#4285B4] hover:underline"> Terms of Service </a>
+            and acknowledge the
             <a href="#" className="text-[#4285B4] hover:underline"> Privacy Policy</a>
           </div>
         </form>

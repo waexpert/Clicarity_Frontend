@@ -947,7 +947,7 @@ const CustomTable = ({ apiParams }) => {
   // Helper function to determine column type
   const getColumnType = (value, columnName) => {
     const lowerColumnName = columnName.toLowerCase();
-    
+
     // Check for specific column patterns
     if (lowerColumnName.includes('email')) return 'email';
     if (lowerColumnName.includes('phone')) return 'tel';
@@ -956,12 +956,12 @@ const CustomTable = ({ apiParams }) => {
     if (lowerColumnName === 'status') return 'select-status';
     if (lowerColumnName === 'priority') return 'select-priority';
     if (lowerColumnName.includes('description') || lowerColumnName.includes('notes') || lowerColumnName.includes('comment')) return 'textarea';
-    
+
     // Check value type
     if (typeof value === 'number') return 'number';
     if (typeof value === 'boolean') return 'checkbox';
     if (value && value.length > 100) return 'textarea';
-    
+
     return 'text';
   };
 
@@ -1036,7 +1036,7 @@ const CustomTable = ({ apiParams }) => {
   const handleCreateRecord = async () => {
     try {
       setIsCreating(true);
-      
+
       // Prepare the data for API call
       const recordData = {
         schemaName: apiParams.schemaName,
@@ -1053,7 +1053,7 @@ const CustomTable = ({ apiParams }) => {
       setIsAddModalOpen(false);
       setNewRecordData({});
       handleRefresh(); // Refresh the data
-      
+
     } catch (error) {
       console.error("Error creating record:", error);
       toast.error("Failed to create record");
@@ -1402,7 +1402,7 @@ const CustomTable = ({ apiParams }) => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {/* Add Record Button */}
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+            {/* <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
               <DialogTrigger asChild>
                 <Button
                   className="flex items-center gap-2"
@@ -1451,6 +1451,63 @@ const CustomTable = ({ apiParams }) => {
                     onClick={handleCreateRecord}
                     disabled={isCreating}
                     className=""
+                  >
+                    {isCreating ? 'Creating...' : 'Create Record'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog> */}
+
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={handleOpenAddModal}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Record</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Record</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details to create a new record in the database.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-6 py-4">
+                  {columns
+                    .filter(column => column.id !== 'id') // Exclude ID field
+                    .map(column => (
+                      <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0">
+                          {column.name}
+                        </Label>
+                        <div className="flex-1">
+                          {renderFormInput(
+                            column,
+                            newRecordData[column.id],
+                            handleNewRecordChange
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddModalOpen(false)}
+                    disabled={isCreating}
+                    className="w-full sm:w-auto order-2 sm:order-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateRecord}
+                    disabled={isCreating}
+                    className="w-full sm:w-auto order-1 sm:order-2"
                   >
                     {isCreating ? 'Creating...' : 'Create Record'}
                   </Button>

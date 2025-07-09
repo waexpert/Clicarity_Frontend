@@ -181,7 +181,6 @@ function App() {
           } />
 
          <Route path="/db/:id/job_status" element={
-          // <CaptureWebhook/>
           <StructureJobStatus/>
           } /> 
         <Route path="/sheet" element={<SheetComment/>} />

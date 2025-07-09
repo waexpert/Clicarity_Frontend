@@ -240,7 +240,7 @@ export default function SheetComment() {
   return (
     <div style={styles.container}>
       <img 
-        src="/Images/logo.png" 
+        src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" 
         alt="logo" 
         style={styles.logo}
       />

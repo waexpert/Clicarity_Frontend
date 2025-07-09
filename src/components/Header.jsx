@@ -25,7 +25,7 @@ const Header = () => {
         <div className='headerWrapper'>
             <div className="header1">
                 <div className="logo">
-                    <img src="/Images/logo.png" alt="logo" className='logo' />
+                    <img src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" alt="logo" className='logo' />
                 </div>
                 <div className="menus">
                     <LogoutButton />

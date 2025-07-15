@@ -26,11 +26,13 @@ import Testing from "./pages/Testing";
 import SheetComment from "./pages/Comment/SheetComment";
 import PostgresComment from "./pages/Comment/PostgresComment";
 import UploadFile from "./pages/Comment/UploadFile";
+import WorkspaceSwitcher from "./pages/Comment/Reminder";
+import Reminder from "./pages/Comment/Reminder";
 
 
 function App() {
   const location = useLocation();
-  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres","/upload"];
+  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres","/upload","/reminder"];
   const hideHeader = hideHeaderPaths.includes(location.pathname);
 
   return (
@@ -181,11 +183,31 @@ function App() {
           } />
 
          <Route path="/db/:id/job_status" element={
+          <ProtectedRoute>
           <StructureJobStatus/>
+          </ProtectedRoute>
           } /> 
-        <Route path="/sheet" element={<SheetComment/>} />
-        <Route path="/postgres" element={<PostgresComment />} />
-        <Route path="/upload" element={<UploadFile />} />
+        <Route path="/sheet" element={
+          <ProtectedRoute>
+          <SheetComment/>
+          </ProtectedRoute>
+         
+          } />
+        <Route path="/postgres" element={
+          <ProtectedRoute>
+          <PostgresComment />
+          </ProtectedRoute>
+          } />
+        <Route path="/upload" element={
+          <ProtectedRoute>
+          <UploadFile />
+          </ProtectedRoute>
+          } />
+        <Route path="/reminder" element={
+          <ProtectedRoute>
+          <Reminder/>
+          </ProtectedRoute>
+          }/>
         <Route path="*" element={<Home />} />
 
       </Routes>

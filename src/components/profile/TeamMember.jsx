@@ -85,12 +85,8 @@ export default function TeamMember() {
       setTeamMembers(data);
       setFilteredMembers(data);
     } catch (err) {
-      console.error('Error fetching team members:', err);
-      
-      // Better error message based on error type
       let errorMessage = 'Failed to load team members. ';
       if (err.response) {
-        // Server responded with error status
         errorMessage += `Server error (${err.response.status}): ${err.response.data?.error || err.response.statusText}`;
       } else if (err.request) {
         // Request was made but no response received

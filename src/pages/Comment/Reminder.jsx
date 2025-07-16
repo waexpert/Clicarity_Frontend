@@ -378,7 +378,7 @@ export default function Reminder() {
                     reminder_date: selectedDate,
                     recipient_name: selectedMember.name,
                     recipient_phone: selectedMember.phone || selectedMember.number || selectedMember.phone_number || selectedMember.mobile || "",
-                    sender_name: queryData.sender_name || selectedMember.name,
+                    sender_name: queryData.sender_name || selectedMember.name || "WaExpert",
                     reminder_type: queryData.reminder_type || "Task Message",
                     schemaName: queryData.schemaName || userData?.schema_name || "",
                     // Include any additional query parameters

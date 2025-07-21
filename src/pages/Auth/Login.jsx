@@ -100,7 +100,7 @@
 
 
 import React, { useState } from 'react';
-import { userLogin } from '../features/userMethod/userSlice';
+import { userLogin } from '../../features/userMethod/userSlice';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';

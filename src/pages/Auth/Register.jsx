@@ -118,7 +118,7 @@
 
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { userRegistration } from '../features/userMethod/userSlice';
+import { userRegistration } from '../../features/userMethod/userSlice';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 

@@ -33,14 +33,14 @@ import {
   Search
 } from 'lucide-react';
 
-const Job = () => {
+const Lead = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   const schemas = [
     {
       "id": "9",
-      "title": "Job Status",
+      "title": "Lead Status",
       "fieldsCount": 8,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -60,7 +60,7 @@ const Job = () => {
       <CardContent className="p-6">
         {/* Header with title and search/button */}
         <div className="space-y-1 mb-6">
-          <h1 className="text-2xl font-medium text-slate-800">Job Status</h1>
+          <h1 className="text-2xl font-medium text-slate-800">Lead Status</h1>
           <p className="text-sm text-slate-500">Manage your data stores and schemas</p>
         </div>
 
@@ -140,7 +140,7 @@ const Job = () => {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#4285B4] hover:bg-slate-100"
-                          onClick={() => navigate(`/jobstatus/record`)}
+                          onClick={() => navigate(`/leadstatus/record`)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -148,6 +148,7 @@ const Job = () => {
                           variant="ghost" 
                           size="icon"
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#4285B4] hover:bg-slate-100"
+                            onClick={() => navigate(`/db/:id/lead_status`)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -171,4 +172,4 @@ const Job = () => {
   );
 };
 
-export default Job;
+export default Lead;

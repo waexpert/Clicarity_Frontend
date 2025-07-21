@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-import { Button } from '../components/ui/button';
+import { Button } from '../../components/ui/button';
 
 
 

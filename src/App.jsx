@@ -1,11 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
+import Register from "./pages/Auth/Register";
+import Login from "./pages/Auth/Login";
 import Home from "./pages/Home";
-import QRSetup from "./pages/QrCode";
-import VerifyMFA from "./pages/VerifyMFA";
+import QRSetup from "./pages/Auth/QrCode";
+import VerifyMFA from "./pages/Auth/VerifyMFA";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import DbConnection from "./pages/DbConnection";
@@ -16,11 +16,11 @@ import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
 import Task from "./pages/Task";
 import RecordTaskDashboard from "./pages/RecordTaskDashboard";
-import RecordJobDashboard from "./pages/RecordJobDashboard"
+import RecordJobDashboard from "./pages/JobStatus/RecordJobDashboard"
 import TaskManagementTable from "./pages/TaskManagementTable";
-import Job from "./pages/Job"
-import CaptureWebhook from "./components/CaptureWebhook";
-import StructureJobStatus from "./pages/TablePreview/StructureJobStatus";
+import Job from "./pages/JobStatus/Job"
+import CaptureWebhook from "./pages/JobStatus/CaptureWebhook";
+import StructureJobStatus from "./pages/JobStatus/StructureJobStatus";
 import CustomTable from "./components/CustomTable";
 import Testing from "./pages/Testing";
 import SheetComment from "./pages/Comment/SheetComment";
@@ -28,6 +28,12 @@ import PostgresComment from "./pages/Comment/PostgresComment";
 import UploadFile from "./pages/Comment/UploadFile";
 import WorkspaceSwitcher from "./pages/Comment/Reminder";
 import Reminder from "./pages/Comment/Reminder";
+import RecordLeadDashboard from "./pages/LeadStatus/RecordLeadDashboard";
+import StructureLeadStatus from "./pages/LeadStatus/StructureLeadStatus";
+import Lead from "./pages/LeadStatus/Lead";
+import Payment from "./pages/PaymentStatus/Payment";
+import RecordPaymentDashboard from "./pages/PaymentStatus/RecordPaymentDashboard";
+import StructurePaymentStatus from "./pages/PaymentStatus/StructurePaymentStatus";
 
 
 function App() {
@@ -131,6 +137,69 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        
+        <Route path="/db/:id/job_status" element={
+          <ProtectedRoute>
+          <StructureJobStatus/>
+          </ProtectedRoute>
+        } /> 
+
+         {/* Lead Status */}
+        <Route
+          path="/leadstatus"
+          element={
+            <ProtectedRoute>
+              <Lead />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/leadstatus/record"
+          element={
+            <ProtectedRoute>
+              <RecordLeadDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        
+        <Route path="/db/:id/lead_status" element={
+          <ProtectedRoute>
+          <StructureLeadStatus/>
+          </ProtectedRoute>
+        } /> 
+{/* ///////////////////////////////////////////////////////////////         */}
+
+
+        {/* Payment Status */}
+        <Route
+          path="/paymentstatus"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/paymentstatus/record"
+          element={
+            <ProtectedRoute>
+              <RecordPaymentDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        
+        <Route path="/db/:id/payment_status" element={
+          <ProtectedRoute>
+          <StructurePaymentStatus/>
+          </ProtectedRoute>
+        } /> 
+
+{/* ////////////////////////////////////////////////////////          */}
         <Route
           path="/database"
           element={
@@ -182,11 +251,6 @@ function App() {
 
           } />
 
-         <Route path="/db/:id/job_status" element={
-          <ProtectedRoute>
-          <StructureJobStatus/>
-          </ProtectedRoute>
-          } /> 
         <Route path="/sheet" element={
           <ProtectedRoute>
           <SheetComment/>

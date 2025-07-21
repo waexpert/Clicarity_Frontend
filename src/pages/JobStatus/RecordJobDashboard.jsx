@@ -722,7 +722,7 @@
 
 
 import React from 'react'
-import CustomTable from '../components/CustomTable'
+import CustomTable from '../../components/CustomTable'
 import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 const RecordJobDashboard = () => {

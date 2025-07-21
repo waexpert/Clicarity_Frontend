@@ -4,7 +4,7 @@ import '../css/SchemaDashboard.css';
 import { useNavigate } from 'react-router-dom';
 import NewDataStore from '../components/NewDataStore';
 import TaskDataStore from '../components/TaskDataStore';
-import JobStatusReportDataStore from '../components/JobStatusReportDataStore';
+import JobStatusReportDataStore from './JobStatus/JobStatusReportDataStore';
 import { useSelector } from "react-redux";
 
 // Import Shadcn UI components
@@ -43,7 +43,7 @@ import {
   Clock,
   Database
 } from 'lucide-react';
-import CaptureWebhook from '../components/CaptureWebhook';
+import CaptureWebhook from './JobStatus/CaptureWebhook';
 
 const SchemaDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,7 +61,7 @@ const SchemaDashboard = () => {
    const user = useSelector((state) => state.user);
   const ownerId = user.id;
 
-  const products = ['task_management','expense_tracker','lead_management','project_management','support_ticket','birthday_reminder','job_status']
+  const products = ['task_management','expense_status','lead_status','project_status','support_status','birthday_status','job_status']
 
   const schemas = [
     {

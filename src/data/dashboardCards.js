@@ -25,7 +25,7 @@ import {
       description: "Track and manage potential clients through your sales pipeline.",
       icon: "leads",
       iconColor: "#4285B4",
-      route: "/leads"
+      route: "/leadstatus"
     },
     {
       id: 3,
@@ -33,7 +33,7 @@ import {
       description: "Stay on top of your finances with timely payment notifications.",
       icon: "payments",
       iconColor: "#4285B4",
-      route: "/payments"
+      route: "/paymentstatus"
     },
     {
       id: 4,
@@ -41,7 +41,7 @@ import {
       description: "Monitor and categorize business expenses to optimize spending.",
       icon: "expenses",
       iconColor: "#4285B4",
-      route: "/expenses"
+      route: "/expensestatus"
     },
     {
       id: 5,
@@ -49,7 +49,7 @@ import {
       description: "Never miss important dates for clients and team members.",
       icon: "birthdays",
       iconColor: "#4285B4",
-      route: "/birthdays"
+      route: "/birthdaystatus"
     },
     {
       id: 6,
@@ -57,7 +57,7 @@ import {
       description: "Search and find matches across your database with advanced filters.",
       icon: "lookup",
       iconColor: "#4285B4",
-      route: "/lookup"
+      route: "/lookupstatus"
     },
     {
       id: 7,
@@ -65,7 +65,7 @@ import {
       description: "Request and approve time off while maintaining team productivity.",
       icon: "leaves",
       iconColor: "#4285B4",
-      route: "/leaves"
+      route: "/leavestatus"
     },
     {
         id: 8,

@@ -286,11 +286,11 @@
 
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Button } from './ui/button';
+import { Button } from '../../components/ui/button';
 import { toast } from "sonner"
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDynamicData, addDynamicField, setLoading, setError,clearDynamicData } from '../features/productMethod/jobStatusSlice';
+import { setDynamicData, addDynamicField, setLoading, setError,clearDynamicData } from '../../features/productMethod/jobStatusSlice';
 
 const CaptureWebhook = ({setColumnFields,columnName}) => {
   // State for webhook generation

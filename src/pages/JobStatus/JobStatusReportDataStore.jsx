@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import '../css/components/NewDataStore.css';
+// import '../css/components/NewDataStore.css';
 import axios from "axios";
 import { useSelector, useDispatch } from 'react-redux';
-import { setDynamicData, addDynamicField, setLoading, setError } from '../features/productMethod/jobStatusSlice';
+import { setDynamicData, addDynamicField, setLoading, setError } from '../../features/productMethod/jobStatusSlice';
 
 // Lucide React icons
 import {

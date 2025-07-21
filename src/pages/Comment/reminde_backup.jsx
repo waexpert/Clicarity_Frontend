@@ -1,9 +1,6 @@
 // To Use
 // http://localhost:5173/reminder?sender_name=WaExpert&schemaName=lakshy_76190723&weid=12345
 
-// To Use
-// http://localhost:5173/reminder?sender_name=WaExpert&schemaName=lakshy_76190723&weid=12345
-
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import { Input } from '../../components/ui/input';
@@ -27,6 +24,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from 'react-redux';
 import { messages, categories } from "./data.js"
 import { TimePicker } from './Component/TimePicker.jsx';
+import "./css/reminder.css"
 
 
 

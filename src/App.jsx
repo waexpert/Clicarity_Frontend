@@ -34,6 +34,7 @@ import Lead from "./pages/LeadStatus/Lead";
 import Payment from "./pages/PaymentStatus/Payment";
 import RecordPaymentDashboard from "./pages/PaymentStatus/RecordPaymentDashboard";
 import StructurePaymentStatus from "./pages/PaymentStatus/StructurePaymentStatus";
+import { Helmet } from "react-helmet";
 
 
 function App() {
@@ -43,6 +44,10 @@ function App() {
 
   return (
     <>
+    <Helmet>
+        <title>Clicarity - Professional Workflow Solutions</title>
+        <meta name="description" content="Your description here" />
+      </Helmet>
       {!hideHeader && <Header />}
       <Routes>
         <Route

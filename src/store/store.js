@@ -15,6 +15,7 @@ import userReducer from "../features/userMethod/userSlice";
 import jobStatusReducer from "../features/productMethod/jobStatusSlice"
 import leadStatusReducer from "../features/productMethod/leadStatusSlice"
 import { combineReducers } from 'redux';
+import paymentStatusReducer from "../features/productMethod/paymentStatusSlice";
 
 // Persist configuration
 const persistConfig = {
@@ -25,7 +26,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
   user: userReducer,
   jobstatus : jobStatusReducer,
-  leadstatus : leadStatusReducer
+  leadstatus : leadStatusReducer,
+  paymentstatus : paymentStatusReducer
 });
 
 // Create persisted reducer

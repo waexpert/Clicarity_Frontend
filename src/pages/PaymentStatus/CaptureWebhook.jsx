@@ -290,7 +290,7 @@ import { Button } from '../../components/ui/button';
 import { toast } from "sonner"
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDynamicData, addDynamicField, setLoading, setError,clearDynamicData } from '../../features/productMethod/leadStatusSlice';
+import { setDynamicData, addDynamicField, setLoading, setError,clearDynamicData } from '../../features/productMethod/paymentStatusSlice';
 
 const CaptureWebhook = ({setColumnFields,columnName}) => {
   // State for webhook generation
@@ -310,7 +310,7 @@ const CaptureWebhook = ({setColumnFields,columnName}) => {
   const ownerId = user.id;
   const schema_name = user.schema_name;
   const dispatch = useDispatch();
-  const jsrWebhook = useSelector(state => state.leadstatus.data.in_webhookUrl);
+  const jsrWebhook = useSelector(state => state.paymentstatus.data.in_webhookUrl);
   console.log("Webhook from state:", jsrWebhook);
 
   // Initialize webhook from state if it exists

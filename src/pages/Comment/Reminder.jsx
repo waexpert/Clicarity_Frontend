@@ -219,91 +219,351 @@ export default function Reminder() {
         }
     };
 
+    const injectResponsiveCSS = () => {
+    // Check if styles already injected to avoid duplicates
+    if (document.getElementById('reminder-responsive-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'reminder-responsive-styles';
+    style.textContent = `
+        /* Tablet Responsive Styles */
+        @media (max-width: 768px) {
+            .reminder-container {
+                margin: 20px auto !important;
+                padding: 24px !important;
+                border-radius: 12px !important;
+                max-width: 350px !important;
+            }
+            
+            .reminder-main-content {
+                padding: 24px !important;
+                border-radius: 12px !important;
+                max-width: 95vw !important;
+            }
+            
+            .reminder-logo {
+                width: 16rem !important;
+                margin-bottom: 1.25rem !important;
+            }
+            
+            .reminder-form {
+                gap: 20px !important;
+            }
+            
+            .reminder-input-group {
+                gap: 6px !important;
+            }
+            
+            .reminder-input-label {
+                font-size: 13px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .reminder-textarea {
+                padding: 10px !important;
+                font-size: 16px !important;
+                min-height: 90px !important;
+            }
+            
+            .reminder-character-count {
+                right: 10px !important;
+                bottom: 6px !important;
+                font-size: 11px !important;
+            }
+            
+            .reminder-error-message {
+                font-size: 13px !important;
+                padding: 6px 10px !important;
+            }
+            
+            .reminder-button {
+                padding: 14px 20px !important;
+                font-size: 15px !important;
+                min-height: 50px !important;
+                border-radius: 10px !important;
+            }
+            
+            .reminder-button-content {
+                gap: 6px !important;
+            }
+            
+            .reminder-spinner {
+                width: 14px !important;
+                height: 14px !important;
+            }
+            
+            .reminder-success-container {
+                padding: 32px 16px !important;
+            }
+            
+            .reminder-success-icon {
+                width: 56px !important;
+                height: 56px !important;
+                font-size: 28px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .reminder-success-heading {
+                font-size: 22px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .reminder-success-message {
+                font-size: 15px !important;
+                margin-bottom: 24px !important;
+            }
+            
+            .reminder-new-comment-button {
+                padding: 10px 20px !important;
+                font-size: 13px !important;
+            }
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 480px) {
+           .reminder-container {
+                width: 99vw !important;
+                max-width: 99vw !important;
+                min-width: 300px !important;
+                display:flex;
+                justify-content:center;
+                margin: 15vh auto !important;
+                padding:10px 0px !important;
+                position:absolute; !important;
+                left:0px; !important;
+                right:0px; !important;
+         
+            }
+            
+             .reminder-main-content {
+                padding: 16px !important;
+                border-radius: 8px !important;
+                width:95vw;
+                max-width: 98vw !important;
+                min-width: 90vw !important;
+
+            }
+            
+            .reminder-logo {
+                width: 12rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .reminder-header-section {
+                margin-bottom: 20px !important;
+            }
+            
+            .reminder-heading {
+                font-size: 20px !important;
+                line-height: 1.2 !important;
+            }
+            
+            .reminder-subheading {
+                font-size: 14px !important;
+            }
+            
+            .reminder-form {
+                gap: 16px !important;
+            }
+            
+            .reminder-input-group {
+                gap: 6px !important;
+            }
+            
+            .reminder-input-label {
+                font-size: 13px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .reminder-textarea {
+                padding: 8px !important;
+                font-size: 16px !important;
+                min-height: 80px !important;
+                border-radius: 6px !important;
+            }
+            
+            .reminder-character-count {
+                right: 8px !important;
+                bottom: 4px !important;
+                font-size: 10px !important;
+            }
+            
+            .reminder-error-message {
+                font-size: 12px !important;
+                padding: 6px 8px !important;
+                border-radius: 4px !important;
+            }
+            
+            .reminder-button {
+                padding: 12px 16px !important;
+                font-size: 14px !important;
+                min-height: 44px !important;
+                border-radius: 8px !important;
+            }
+            
+            .reminder-button-content {
+                gap: 6px !important;
+            }
+            
+            .reminder-spinner {
+                width: 14px !important;
+                height: 14px !important;
+            }
+            
+            .reminder-success-container {
+                padding: 24px 12px !important;
+            }
+            
+            .reminder-success-icon {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 24px !important;
+                margin-bottom: 16px !important;
+            }
+            
+            .reminder-success-heading {
+                font-size: 20px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .reminder-success-message {
+                font-size: 14px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .reminder-new-comment-button {
+                padding: 8px 16px !important;
+                font-size: 12px !important;
+                border-radius: 6px !important;
+            }
+        }
+
+        /* Very small screens - prevent horizontal scrolling */
+        @media (max-width: 420px) {
+            .reminder-container {
+                width: 99vw !important;
+                max-width: 99vw !important;
+                min-width: 300px !important;
+                display:flex;
+                justify-content:center;
+                margin: 10vh auto !important;
+                padding:10px 0px !important;
+                position:absolute; !important;
+                left:0px; !important;
+                right:0px; !important;
+         
+            }
+            
+             .reminder-main-content {
+                padding: 16px !important;
+                border-radius: 8px !important;
+                width:95vw;
+                max-width: 98vw !important;
+                min-width: 90vw !important;
+
+            }
+            
+            .reminder-logo {
+                width: 12rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .reminder-header-section {
+                margin-bottom: 20px !important;
+            }
+            
+            .reminder-heading {
+                font-size: 20px !important;
+                line-height: 1.2 !important;
+            }
+            
+            .reminder-subheading {
+                font-size: 14px !important;
+            }
+            
+            .reminder-form {
+                gap: 16px !important;
+            }
+            
+            .reminder-input-group {
+                gap: 6px !important;
+            }
+            
+            .reminder-input-label {
+                font-size: 13px !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .reminder-textarea {
+                padding: 8px !important;
+                font-size: 16px !important;
+                min-height: 80px !important;
+                border-radius: 6px !important;
+            }
+            
+            .reminder-character-count {
+                right: 8px !important;
+                bottom: 4px !important;
+                font-size: 10px !important;
+            }
+            
+            .reminder-error-message {
+                font-size: 12px !important;
+                padding: 6px 8px !important;
+                border-radius: 4px !important;
+            }
+            
+            .reminder-button {
+                padding: 12px 16px !important;
+                font-size: 14px !important;
+                min-height: 44px !important;
+                border-radius: 8px !important;
+            }
+            
+            .reminder-button-content {
+                gap: 6px !important;
+            }
+            
+            .reminder-spinner {
+                width: 14px !important;
+                height: 14px !important;
+            }
+            
+            .reminder-success-container {
+                padding: 24px 12px !important;
+            }
+            
+            .reminder-success-icon {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 24px !important;
+                margin-bottom: 16px !important;
+            }
+            
+            .reminder-success-heading {
+                font-size: 20px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .reminder-success-message {
+                font-size: 14px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .reminder-new-comment-button {
+                padding: 8px 16px !important;
+                font-size: 12px !important;
+                border-radius: 6px !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+};
+
     useEffect(() => {
         fetchTeamMembers();
+        injectResponsiveCSS();
     }, [userData]);
-
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-
-    //     // Both options require team member selection
-    //     if (!selectedMember) {
-    //         setError("Please select a team member.");
-    //         return;
-    //     }
-
-    //     // Different validation for custom vs template
-    //     if (option === "custom") {
-    //         if (!comment.trim()) {
-    //             setError("Please enter a comment before submitting.");
-    //             return;
-    //         }
-    //     } else {
-    //         if (!selectedCategory || !selectedMessage) {
-    //             setError("Please select category and message before submitting.");
-    //             return;
-    //         }
-    //     }
-
-    //     try {
-    //         setIsSubmitting(true);
-    //         setError("");
-
-    //         let payload;
-
-    //         if (option === "custom") {
-    //             payload = {
-    //                 ...queryData,
-    //                 teamMember: {
-    //                     id: selectedMember.id,
-    //                     name: selectedMember.name,
-    //                     email: selectedMember.email,
-    //                     phone: selectedMember.number || selectedMember.phone_number || selectedMember.mobile || ""
-    //                 },
-    //                 comment: comment.trim(),
-    //                 type: "custom"
-    //             };
-    //         } else {
-    //             payload = {
-    //                 ...queryData,
-    //                 teamMember: {
-    //                     id: selectedMember.id,
-    //                     name: selectedMember.name,
-    //                     email: selectedMember.email,
-    //                     phone: selectedMember.number || selectedMember.phone_number || selectedMember.mobile || ""
-    //                 },
-    //                 category: {
-    //                     id: selectedCategory.id,
-    //                     name: selectedCategory.name
-    //                 },
-    //                 message: {
-    //                     id: selectedMessage.id,
-    //                     text: selectedMessage.text
-    //                 },
-    //                 type: "template"
-    //             };
-    //         }
-
-    //         await axios.post(
-    //             `https://webhooks.wa.expert/webhook/${queryData.weid}`,
-    //             payload
-    //         );
-
-    //         setSubmitted(true);
-    //         // Reset all form data after successful submission
-    //         setSelectedMember(null);
-    //         setSelectedCategory(null);
-    //         setSelectedMessage(null);
-    //         setDate(undefined);
-    //         setTime("10:30:00");
-    //         setComment("");
-    //     } catch (err) {
-    //         console.error(err);
-    //         setError("Failed to submit. Please try again.");
-    //     } finally {
-    //         setIsSubmitting(false);
-    //     }
-    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -437,17 +697,18 @@ export default function Reminder() {
 
     if (submitted) {
         return (
-            <div style={styles.container}>
+            <div style={styles.container} className="reminder-container">
                 <img
                     src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
                     alt="logo"
                     style={styles.logo}
+                    className="reminder-logo"
                 />
 
-                <div style={styles.successContainer}>
-                    <div style={styles.successIcon}>✓</div>
-                    <h2 style={styles.successHeading}>Thank You!</h2>
-                    <p style={styles.successMessage}>
+                <div style={styles.successContainer} className="reminder-success-container">
+                    <div style={styles.successIcon} className="reminder-success-icon">✓</div>
+                    <h2 style={styles.successHeading} className="reminder-success-heading">Thank You!</h2>
+                    <p style={styles.successMessage} className="reminder-success-message">
                         Your {option === "custom" ? "comment" : "reminder"} has been sent successfully.
                     </p>
                     <button
@@ -462,7 +723,7 @@ export default function Reminder() {
                             setTime("10:30:00");
                         }}
                         style={{ ...styles.newCommentButton, ...styles.newCommentButtonHover }}
-                        className="new-comment-button"
+                        className="reminder-new-comment-button"
                     >
                         Send Another {option === "custom" ? "Comment" : "Reminder"}
                     </button>
@@ -472,26 +733,29 @@ export default function Reminder() {
     }
 
     return (
-        <div style={styles.container}>
+        <div style={styles.container} className="reminder-container">
             <img
                 src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
                 alt="logo"
                 style={styles.logo}
+                className="reminder-logo"
             />
 
-            <div style={styles.headerSection}>
-                <p style={styles.subheading}>
+            <div style={styles.headerSection} className="reminder-header-section">
+                <p style={styles.subheading} className="reminder-subheading">
                     Select your preferred option and fill the details
                 </p>
             </div>
 
+            <div style={styles.mainContent} className="reminder-main-content">
             <RadioGroup
                 defaultValue="custom"
                 onValueChange={(value) => {
                     setOption(value);
                     setError(""); // Clear error when switching options
                 }}
-                className="flex items-center space-x-6 mb-6"
+                className="flex flex-col space-x-6 mb-6"
+                style={styles.reminderTypeWrapper}
             >
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="custom" id="custom" />
@@ -509,7 +773,7 @@ export default function Reminder() {
 
             {option === "custom" ? (
                 // Custom Form
-                <form onSubmit={handleSubmit} style={styles.form}>
+                <form onSubmit={handleSubmit} style={styles.form} className="reminder-form">
 
                     <div className="flex justify-between">
                         <input type="date"
@@ -523,8 +787,8 @@ export default function Reminder() {
 
 
                     {/* {console.log("Selected time:", selectedTime)} */}
-                    <div style={styles.inputGroup}>
-                        <Label style={styles.inputLabel}>Team Member</Label>
+                    <div style={styles.inputGroup} className="reminder-input-group">
+                        <Label style={styles.inputLabel} className="reminder-input-label">Team Member</Label>
                         <TeamMemberDropdown
                             selectedMember={selectedMember}
                             setSelectedMember={setSelectedMember}
@@ -532,8 +796,8 @@ export default function Reminder() {
                         />
                     </div>
 
-                    <div style={styles.inputGroup}>
-                        <Label htmlFor="comment" style={styles.inputLabel}>
+                    <div style={styles.inputGroup} className="reminder-input-group">
+                        <Label htmlFor="comment" style={styles.inputLabel} className="reminder-input-label">
                             Your Comment
                         </Label>
                         <div style={styles.textareaContainer}>
@@ -542,6 +806,7 @@ export default function Reminder() {
                                 value={comment}
                                 onChange={handleInputChange}
                                 placeholder="Type your comment or notes here..."
+                                className="reminder-textarea"
                                 style={{
                                     ...styles.textarea,
                                     ...(error ? styles.textareaError : {}),
@@ -549,10 +814,10 @@ export default function Reminder() {
                                 rows={4}
                                 disabled={isSubmitting}
                             />
-                            <div style={styles.characterCount}>{comment.length} characters</div>
+                            <div style={styles.characterCount} className="reminder-character-count">{comment.length} characters</div>
                         </div>
 
-                        {error && <div style={styles.errorMessage}>{error}</div>}
+                        {error && <div style={styles.errorMessage} className="reminder-error-message">{error}</div>}
                     </div>
 
                     <button
@@ -562,12 +827,13 @@ export default function Reminder() {
                             ...(isSubmitting ? styles.buttonDisabled : {}),
                             ...(selectedMember && comment.trim() ? styles.buttonActive : {}),
                         }}
+                        className="reminder-button"
                         disabled={isSubmitting || !selectedMember || !comment.trim()}
                     >
-                        <div style={styles.buttonContent}>
+                        <div style={styles.buttonContent} className="reminder-button-content">
                             {isSubmitting ? (
                                 <>
-                                    <div style={styles.spinner}></div>
+                                    <div style={styles.spinner} className="reminder-spinner"></div>
                                     Submitting...
                                 </>
                             ) : (
@@ -652,7 +918,7 @@ export default function Reminder() {
                 </form>
             ) : (
                 // Default fallback
-                <form onSubmit={handleSubmit} style={styles.form}>
+                <form onSubmit={handleSubmit} style={styles.form} >
 
                     <div className="flex justify-between">
                         <input type="date"
@@ -722,6 +988,9 @@ export default function Reminder() {
                 </form>
             )}
 
+            </div>
+
+
         </div>
     );
 }
@@ -741,43 +1010,37 @@ const styles = {
         backgroundColor: '#ffffff',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         minHeight: '400px',
-        '@media (max-width: 768px)': {
-            margin: '20px auto',
-            padding: '24px',
-            borderRadius: '12px',
-            maxWidth: '95vw',
-        },
-        '@media (max-width: 480px)': {
-            margin: '10px auto',
-            padding: '16px',
-            borderRadius: '8px',
-            maxWidth: '98vw',
-            minHeight: '350px',
-        },
     },
+    // mainContent:{
+    //     '@media (max-width: 768px)': {
+    //         // margin: '20px auto',
+    //         padding: '24px',
+    //         borderRadius: '12px',
+    //         maxWidth: '95vw',
+    //     },
+    //     '@media (max-width: 480px)': {
+    //         // margin: '10px auto',
+    //         padding: '16px',
+    //         borderRadius: '8px',
+    //         maxWidth: '200px',
+    //         minWidth:'200px',
+    //         // minHeight: '350px',
+    //     },
+    // },
+    reminderTypeWrapper:{
+       display:'flex',
+       flexDirection: 'columns'
+    },
+
     logo: {
         width: '20rem',
         height: 'auto',
         marginBottom: '1.5rem',
-        '@media (max-width: 768px)': {
-            width: '16rem',
-            marginBottom: '1.25rem',
-        },
-        '@media (max-width: 480px)': {
-            width: '12rem',
-            marginBottom: '1rem',
-        },
     },
     headerSection: {
         textAlign: 'center',
         marginBottom: '32px',
         width: '100%',
-        '@media (max-width: 768px)': {
-            marginBottom: '24px',
-        },
-        '@media (max-width: 480px)': {
-            marginBottom: '20px',
-        },
     },
     heading: {
         fontSize: '24px',
@@ -785,56 +1048,31 @@ const styles = {
         color: '#2d3748',
         margin: '0 0 8px 0',
         lineHeight: '1.3',
-        '@media (max-width: 768px)': {
-            fontSize: '22px',
-        },
-        '@media (max-width: 480px)': {
-            fontSize: '20px',
-            lineHeight: '1.2',
-        },
     },
     subheading: {
         fontSize: '16px',
         color: '#718096',
         margin: 0,
         lineHeight: '1.5',
-        '@media (max-width: 768px)': {
-            fontSize: '15px',
-        },
-        '@media (max-width: 480px)': {
-            fontSize: '14px',
-        },
     },
     form: {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
         gap: '24px',
-        '@media (max-width: 768px)': {
-            gap: '20px',
-        },
-        '@media (max-width: 480px)': {
-            gap: '16px',
-        },
     },
     inputGroup: {
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
         width: '100%',
-        '@media (max-width: 480px)': {
-            gap: '6px',
-        },
+ 
     },
     inputLabel: {
         fontSize: '14px',
         fontWeight: '600',
         color: '#2d3748',
-        marginBottom: '4px',
-        '@media (max-width: 480px)': {
-            fontSize: '13px',
-            marginBottom: '2px',
-        },
+
     },
     textareaContainer: {
         position: 'relative',
@@ -852,17 +1090,7 @@ const styles = {
         fontFamily: 'inherit',
         resize: 'vertical',
         minHeight: '100px',
-        '@media (max-width: 768px)': {
-            padding: '10px',
-            fontSize: '16px', // Keep 16px to prevent zoom on iOS
-            minHeight: '90px',
-        },
-        '@media (max-width: 480px)': {
-            padding: '8px',
-            fontSize: '16px', // Keep 16px to prevent zoom on iOS
-            minHeight: '80px',
-            borderRadius: '6px',
-        },
+
     },
     textareaError: {
         borderColor: '#e53e3e',
@@ -875,16 +1103,7 @@ const styles = {
         color: '#a0aec0',
         backgroundColor: '#ffffff',
         padding: '2px 4px',
-        '@media (max-width: 768px)': {
-            right: '10px',
-            bottom: '6px',
-            fontSize: '11px',
-        },
-        '@media (max-width: 480px)': {
-            right: '8px',
-            bottom: '4px',
-            fontSize: '10px',
-        },
+
     },
     errorMessage: {
         fontSize: '14px',
@@ -893,15 +1112,7 @@ const styles = {
         padding: '8px 12px',
         borderRadius: '6px',
         border: '1px solid #feb2b2',
-        '@media (max-width: 768px)': {
-            fontSize: '13px',
-            padding: '6px 10px',
-        },
-        '@media (max-width: 480px)': {
-            fontSize: '12px',
-            padding: '6px 8px',
-            borderRadius: '4px',
-        },
+
     },
     button: {
         padding: '16px 24px',
@@ -919,26 +1130,13 @@ const styles = {
         justifyContent: 'center',
         minHeight: '56px',
         transform: 'translateY(0)',
-        '@media (max-width: 768px)': {
-            padding: '14px 20px',
-            fontSize: '15px',
-            minHeight: '50px',
-            borderRadius: '10px',
-        },
-        '@media (max-width: 480px)': {
-            padding: '12px 16px',
-            fontSize: '14px',
-            minHeight: '44px',
-            borderRadius: '8px',
-        },
+
     },
     buttonActive: {
         backgroundColor: '#4388c1',
         cursor: 'pointer',
         boxShadow: '0 4px 12px rgba(67, 136, 193, 0.3)',
-        '@media (max-width: 480px)': {
-            boxShadow: '0 2px 8px rgba(67, 136, 193, 0.3)',
-        },
+
     },
     buttonDisabled: {
         backgroundColor: '#a0aec0',
@@ -950,9 +1148,6 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        '@media (max-width: 480px)': {
-            gap: '6px',
-        },
     },
     spinner: {
         width: '16px',
@@ -961,21 +1156,11 @@ const styles = {
         borderTop: '2px solid #ffffff',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite',
-        '@media (max-width: 480px)': {
-            width: '14px',
-            height: '14px',
-        },
     },
     successContainer: {
         textAlign: 'center',
         padding: '40px 20px',
         width: '100%',
-        '@media (max-width: 768px)': {
-            padding: '32px 16px',
-        },
-        '@media (max-width: 480px)': {
-            padding: '24px 12px',
-        },
     },
     successIcon: {
         width: '64px',
@@ -990,46 +1175,19 @@ const styles = {
         fontWeight: 'bold',
         margin: '0 auto 24px',
         animation: 'bounceIn 0.6s ease-out',
-        '@media (max-width: 768px)': {
-            width: '56px',
-            height: '56px',
-            fontSize: '28px',
-            marginBottom: '20px',
-        },
-        '@media (max-width: 480px)': {
-            width: '48px',
-            height: '48px',
-            fontSize: '24px',
-            marginBottom: '16px',
-        },
+
     },
     successHeading: {
         fontSize: '24px',
         fontWeight: '700',
         color: '#2d3748',
         margin: '0 0 12px 0',
-        '@media (max-width: 768px)': {
-            fontSize: '22px',
-            marginBottom: '10px',
-        },
-        '@media (max-width: 480px)': {
-            fontSize: '20px',
-            marginBottom: '8px',
-        },
     },
     successMessage: {
         fontSize: '16px',
         color: '#718096',
         margin: '0 0 32px 0',
         lineHeight: '1.5',
-        '@media (max-width: 768px)': {
-            fontSize: '15px',
-            marginBottom: '24px',
-        },
-        '@media (max-width: 480px)': {
-            fontSize: '14px',
-            marginBottom: '20px',
-        },
     },
     newCommentButton: {
         padding: '12px 24px',
@@ -1041,15 +1199,6 @@ const styles = {
         color: '#4388c1',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
-        '@media (max-width: 768px)': {
-            padding: '10px 20px',
-            fontSize: '13px',
-        },
-        '@media (max-width: 480px)': {
-            padding: '8px 16px',
-            fontSize: '12px',
-            borderRadius: '6px',
-        },
     },
     newCommentButtonHover: {
         ':hover': {

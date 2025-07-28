@@ -953,7 +953,7 @@ const CustomTable = ({ apiParams }) => {
     if (lowerColumnName.includes('phone')) return 'tel';
     if (lowerColumnName.includes('date') || lowerColumnName.includes('created') || lowerColumnName.includes('updated')) return 'date';
     if (lowerColumnName.includes('url') || lowerColumnName.includes('link')) return 'url';
-    if (lowerColumnName === 'status') return 'select-status';
+    if (lowerColumnName === 'status') return 'textarea';
     if (lowerColumnName === 'priority') return 'select-priority';
     if (lowerColumnName.includes('description') || lowerColumnName.includes('notes') || lowerColumnName.includes('comment')) return 'textarea';
 
@@ -1478,7 +1478,12 @@ const CustomTable = ({ apiParams }) => {
 
                 <div className="space-y-6 py-4">
                   {columns
-                    .filter(column => column.id !== 'id') // Exclude ID field
+                    // .filter(column => column.id !== 'id') // Exclude ID field
+                    .filter(column =>
+                      column.id !== 'id' &&
+                      !column.id.includes('_comment') &&
+                      !column.id.includes('_date')
+                    )
                     .map(column => (
                       <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                         <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0">

@@ -39,7 +39,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 
-const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
+const PaymentStatusReportDataStore = ({ setShowDialog, columnFields }) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState('payment_reminders');
   const [showInChat, setShowInChat] = useState(false);
@@ -333,7 +333,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
                           
                           <td className="p-3">
                             <Select
-                              value={mapping.webhookField || undefined} // Use undefined instead of empty string
+                              value={mapping.webhookField || undefined} 
                               onValueChange={(value) => handleMappingChange(index, 'webhookField', value)}
                               disabled={mapping.databaseField === 'id'}
                             >
@@ -453,4 +453,4 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
   );
 };
 
-export default LeadStatusReportDataStore;
+export default PaymentStatusReportDataStore;

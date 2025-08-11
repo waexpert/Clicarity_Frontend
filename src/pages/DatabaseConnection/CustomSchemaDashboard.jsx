@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../css/SchemaDashboard.css';
+// import '../css/SchemaDashboard.css';
 import { useNavigate } from 'react-router-dom';
-import NewDataStore from '../components/NewDataStore';
-import TaskDataStore from '../components/TaskDataStore';
-import JobStatusReportDataStore from './JobStatus/JobStatusReportDataStore';
-import { useSelector } from "react-redux";
+import NewDataStore from '../../components/NewDataStore';
+import TaskDataStore from '../../components/TaskDataStore';
+// import JobStatusReportDataStore from './JobStatus/JobStatusReportDataStore';
+import { useSelector,useDispatch } from "react-redux";
 
 // Import Shadcn UI components
 import {
@@ -41,78 +41,84 @@ import {
   Table as TableIcon,
   Calendar,
   Clock,
-  Database
+  Database,
+  Settings
 } from 'lucide-react';
-import CaptureWebhook from './JobStatus/CaptureWebhook';
+import { setDynamicData } from '../../features/dataMethod/tableSlice';
+// import CaptureWebhook from './JobStatus/CaptureWebhook';
 
-const SchemaDashboard = () => {
+const CustomSchemaDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const [showDialog, setShowDialog] = useState(0);
   const [showCapture,setCapture] = useState(true);
   const [dropDown,setDropDown] = useState([]); 
+  const [schemas,setSchemas] = useState([]);
 
   const componentMap = {
-    1: <NewDataStore setShowDialog={setShowDialog} />,
-    2: <TaskDataStore setShowDialog={setShowDialog} />,
-    8: <JobStatusReportDataStore setShowDialog={setShowDialog} />
+    // 1: <NewDataStore setShowDialog={setShowDialog} />,
+    // 2: <TaskDataStore setShowDialog={setShowDialog} />,
+    // 8: <JobStatusReportDataStore setShowDialog={setShowDialog} />
   };
 
-   const user = useSelector((state) => state.user);
+  // State Mangement
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
   const ownerId = user.id;
+  const schemaName = user.schema_name;
+  
+  useEffect(()=>{
+  getAllTables();
+  },[]);
+
+  const getAllTables = async()=>{
+  const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`
+  const {data} = await axios.get(route);
+  setSchemas(data.data);
+  dispatch(setDynamicData({
+    tables: data.data 
+  }));
+  console.log(data.data);
+  }
 
   const products = ['task_management','expense_status','lead_status','project_status','support_status','birthday_status','job_status']
 
-  const schemas = [
+  const oldSchemas = [
     {
       "id": "1",
-      "title": "Task Management",
+      "title": "Table1",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
       "id": "2",
-      "title": "Expense Tracker",
+      "title": "Table2",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
       "id": "3",
-      "title": "Lead Management",
+      "title": "Table3",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
       "id": "4",
-      "title": "Project Management",
+      "title": "Table4",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
     {
       "id": "5",
-      "title": "Support Ticket",
+      "title": "Table5",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
     },
-    {
-      "id": "6",
-      "title": "Birthday Reminder",
-      "fieldsCount": 4,
-      "createdAt": "2024-10-18T15:35:00Z",
-      "updatedAt": "2024-10-18T15:35:00Z"
-    },
-        {
-      "id": "7",
-      "title": "Job Status Report",
-      "fieldsCount": 8,
-      "createdAt": "2024-10-18T15:35:00Z",
-      "updatedAt": "2024-10-18T15:35:00Z"
-    }
   ];
 
   const filteredSchemas = schemas.filter(schema =>
@@ -134,7 +140,7 @@ const SchemaDashboard = () => {
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle className="text-2xl font-semibold text-slate-800">All Products</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-slate-800">All Custom Tables</CardTitle>
             <CardDescription className="mt-1">
               Manage your data stores and schemas
             </CardDescription>
@@ -152,9 +158,9 @@ const SchemaDashboard = () => {
             </div>
             <Button 
               className="gap-2 bg-[#4285B4] hover:bg-[#3778b4]"
-              onClick={() => navigate("/db/custom")}
+              onClick={() => navigate("/db/custom/capture")}
             >
-              <TableIcon className="h-4 w-4" /> Custom Table
+              <TableIcon className="h-4 w-4" /> Create Table
             </Button>
           </div>
         </div>
@@ -225,13 +231,17 @@ const SchemaDashboard = () => {
                         className="h-8 w-8 p-0" 
                         title="Edit"
                         // onClick={() => setShowDialog(parseInt(schema.id))}
-                        onClick={() => navigate(`/db/${ownerId}/${products[parseInt(schema.id)-1]}`)}
+                        onClick={() => navigate(`/db/custom/capture/${schema.title}`)}
 
                       >
                         <Edit className="h-4 w-4 text-slate-600" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Delete">
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Setup" 
+                      onClick={
+                        ()=> navigate(`/db/setup/${schema.title}`)
+                      }
+                      >
+                        <Settings className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </TableCell>
@@ -254,4 +264,4 @@ const SchemaDashboard = () => {
   );
 };
 
-export default SchemaDashboard;
+export default CustomSchemaDashboard;

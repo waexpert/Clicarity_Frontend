@@ -11,9 +11,9 @@ const location = useLocation();
   console.log(userData);
   return (
 <CustomTable apiParams={{
-  "schemaName":`${userData.schema_name}`,
-  "tableName":`${firstSegment}`
-}}/>
+  "schemaName":`public`,
+  "tableName":`payment_reminders`
+}} type='payment'/>
   )
 }
 

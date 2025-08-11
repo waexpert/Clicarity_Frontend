@@ -10,7 +10,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import DbConnection from "./pages/DbConnection";
 import SchemaDashboard from "./pages/SchemaDashboard"
-import Browse from "./pages/Browse";
 import Profile from "./pages/Profile";
 import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
@@ -35,16 +34,20 @@ import Payment from "./pages/PaymentStatus/Payment";
 import RecordPaymentDashboard from "./pages/PaymentStatus/RecordPaymentDashboard";
 import StructurePaymentStatus from "./pages/PaymentStatus/StructurePaymentStatus";
 import { Helmet } from "react-helmet";
+import CustomSchemaDashboard from "./pages/DatabaseConnection/CustomSchemaDashboard";
+import CustomCaptureWebhook from "./pages/DatabaseConnection/CustomCaptureWebhook";
+import CustomStructure from "./pages/DatabaseConnection/CustomStructure";
+import DropDownSetup from "./pages/Setup/DropDownSetup";
 
 
 function App() {
   const location = useLocation();
-  const hideHeaderPaths = ["/login", "/register","/sheet","/postgres","/upload","/reminder"];
+  const hideHeaderPaths = ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder"];
   const hideHeader = hideHeaderPaths.includes(location.pathname);
 
   return (
     <>
-    <Helmet>
+      <Helmet>
         <title>Clicarity - Professional Workflow Solutions</title>
         <meta name="description" content="Your description here" />
       </Helmet>
@@ -83,14 +86,6 @@ function App() {
           }
         />
         <Route
-          path="/browse"
-          element={
-            <ProtectedRoute>
-              <Browse />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/db/:id"
           element={
             <ProtectedRoute>
@@ -98,6 +93,34 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/db/custom"
+          element={
+            <ProtectedRoute>
+              <CustomSchemaDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/db/custom/capture"
+          element={
+            <ProtectedRoute>
+              <CustomStructure />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/db/custom/capture/:tableName"
+          element={
+            <ProtectedRoute>
+              <CustomStructure />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Task Management */}
         <Route
           path="/tasks"
@@ -143,14 +166,22 @@ function App() {
           }
         />
 
-        
+                <Route
+          path="/:tableName1/record"
+          element={
+            <ProtectedRoute>
+              <CustomTable />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/db/:id/job_status" element={
           <ProtectedRoute>
-          <StructureJobStatus/>
+            <StructureJobStatus />
           </ProtectedRoute>
-        } /> 
+        } />
 
-         {/* Lead Status */}
+        {/* Lead Status */}
         <Route
           path="/leadstatus"
           element={
@@ -169,13 +200,13 @@ function App() {
           }
         />
 
-        
+
         <Route path="/db/:id/lead_status" element={
           <ProtectedRoute>
-          <StructureLeadStatus/>
+            <StructureLeadStatus />
           </ProtectedRoute>
-        } /> 
-{/* ///////////////////////////////////////////////////////////////         */}
+        } />
+        {/* ///////////////////////////////////////////////////////////////         */}
 
 
         {/* Payment Status */}
@@ -197,14 +228,14 @@ function App() {
           }
         />
 
-        
+
         <Route path="/db/:id/payment_status" element={
           <ProtectedRoute>
-          <StructurePaymentStatus/>
+            <StructurePaymentStatus />
           </ProtectedRoute>
-        } /> 
+        } />
 
-{/* ////////////////////////////////////////////////////////          */}
+        {/* ////////////////////////////////////////////////////////          */}
         <Route
           path="/database"
           element={
@@ -252,31 +283,38 @@ function App() {
         <Route path="/testing" element={
           // <CaptureWebhook/>
           // <StructureJobStatus/>
-          <Testing/>
+          <Testing />
 
-          } />
+        } />
 
         <Route path="/sheet" element={
           <ProtectedRoute>
-          <SheetComment/>
+            <SheetComment />
           </ProtectedRoute>
-         
-          } />
+
+        } />
         <Route path="/postgres" element={
           <ProtectedRoute>
-          <PostgresComment />
+            <PostgresComment />
           </ProtectedRoute>
-          } />
+        } />
         <Route path="/upload" element={
           <ProtectedRoute>
-          <UploadFile />
+            <UploadFile />
           </ProtectedRoute>
-          } />
+        } />
         <Route path="/reminder" element={
           <ProtectedRoute>
-          <Reminder/>
+            <Reminder />
           </ProtectedRoute>
-          }/>
+        } />
+
+        {/* Setup Routes */}
+        <Route path="/db/setup/:tableName" element={
+          <ProtectedRoute>
+            <DropDownSetup />
+          </ProtectedRoute>
+        } />
         <Route path="*" element={<Home />} />
 
       </Routes>

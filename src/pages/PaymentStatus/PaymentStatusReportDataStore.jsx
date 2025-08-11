@@ -147,7 +147,7 @@ const PaymentStatusReportDataStore = ({ setShowDialog, columnFields }) => {
         }));
         
         setFieldMappings(initialMappings);
-        dispatch(setDynamicData({ jobStatusStructure: convertedData }));
+        dispatch(setDynamicData({ paymentStatusStructure: convertedData }));
         console.log(data.data);
       } catch (error) {
         console.error('Error fetching table structure:', error);

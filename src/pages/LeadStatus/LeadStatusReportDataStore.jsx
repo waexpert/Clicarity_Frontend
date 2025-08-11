@@ -118,7 +118,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
       });
 
       setActualData(convertWithMapping(data.data));
-      dispatch(setDynamicData({jobStatusStructure: convertWithMapping(data.data)}))
+      dispatch(setDynamicData({leadStatusStructure: convertWithMapping(data.data)}))
       console.log(data.data);
     }
     getTableStructure();

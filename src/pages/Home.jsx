@@ -32,7 +32,7 @@ const Home = () => {
   return (
     <>
       {/* <ProfileHeader /> */}
-      <div className='homeWrapper'>
+      <div className='homeWrapper w-full px-6 py-6'>
         {/* Map over the dashboardCards array to render multiple cards */}
         {dashboardCards.map((card) => {
           // Get the proper icon component based on the icon name in the card data

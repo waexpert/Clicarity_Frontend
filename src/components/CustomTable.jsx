@@ -1,5 +1,3 @@
-// // Updated RecordsDashboard component with working refresh, search, and filter functionality
-
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import Papa from 'papaparse';
@@ -21,6 +19,25 @@
 // import { Checkbox } from "@/components/ui/checkbox";
 // import { Badge } from "@/components/ui/badge";
 // import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+// import { Label } from "@/components/ui/label";
+// import { Textarea } from "@/components/ui/textarea";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
 
 // import {
 //   DropdownMenu,
@@ -47,23 +64,20 @@
 //   FileDown,
 //   RefreshCw,
 //   SlidersHorizontal,
-//   Check
+//   Check,
+//   Plus,
+//   X
 // } from 'lucide-react';
 // import axios from 'axios';
 // import { toast } from 'sonner';
 
-
 // // Api Calls Route
-// import { getAllRecords,updateRecord } from '../api/apiConfig';
+// import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../api/apiConfig';
+// import { useSelector } from 'react-redux';
 
-
-
-// // Things which needs to pass
-// // apiParams
-
-// const CustomTable = ({apiParams}) => {
+// const CustomTable = ({ apiParams, type = "normal" }) => {
 //   const [searchTerm, setSearchTerm] = useState('');
-//   const [originalRecords, setOriginalRecords] = useState([]); // Store original data for filtering
+//   const [originalRecords, setOriginalRecords] = useState([]);
 //   const [records, setRecords] = useState([]);
 //   const [loading, setLoading] = useState(true);
 //   const [selectedRecords, setSelectedRecords] = useState([]);
@@ -74,59 +88,119 @@
 //   const [columns, setColumns] = useState([]);
 //   const [sortColumn, setSortColumn] = useState(null);
 //   const [sortDirection, setSortDirection] = useState('asc');
-//   // Add filter states
 //   const [statusFilter, setStatusFilter] = useState([]);
 //   const [priorityFilter, setPriorityFilter] = useState([]);
-//   // Editing Row States
 //   const [editingRowId, setEditingRowId] = useState(null);
 //   const [editingValues, setEditingValues] = useState({});
 //   const [editEnabled, setEditEnabled] = useState(false);
 //   const [currentEditingRecord, setCurrentEditingRecord] = useState({});
 
+//   // Add Record Modal States
+//   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+//   const [newRecordData, setNewRecordData] = useState({});
+//   const [isCreating, setIsCreating] = useState(false);
+
 //   const navigate = useNavigate();
-
-//   // API data parameters
-//   // const apiParams = {
-//   //   "schemaName": "public",
-//   //   "tableName": "users"
-//   // };
-
+//   const userData = useSelector((state) => state.user);
+//   const owner_id = userData.id;
 //   // Fetch data from API
 //   const fetchData = async () => {
 //     try {
 //       setLoading(true);
+//       console.log("apiParams", apiParams);
+//       console.log("type", type);
 
-//       console.log("apiparms",apiParams)
-//       const response = await axios.post(getAllRecords, apiParams);
-//       const fetchedData = response.data;
+//       let fetchedData;
 
-//       // Store both original and filtered data
-//       setOriginalRecords(fetchedData);
-//       setRecords(fetchedData);
+//       if (type === "normal") {
+//         const response = await axios.post(getAllRecords, apiParams);
+//         fetchedData = response.data;
+//       } else if (type === "payment") {
+//         // Use the correct payment endpoint
+//         const response = await axios.get(
+//           `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
+//         );
+//         fetchedData = response.data.data || response.data;
+//       } else {
+//         // Fallback for other types
+//         const response = await axios.get(
+//           `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
+//         );
+//         fetchedData = response.data.data;
+//       }
 
-//       // Calculate pagination
-//       setTotalRecords(fetchedData.length);
-//       setTotalPages(Math.ceil(fetchedData.length / pageSize));
+//       console.log("Raw fetched data:", fetchedData);
 
-//       // Dynamically set columns
-//       if (fetchedData.length > 0) {
-//         const firstRecord = fetchedData[0];
-//         const dynamicColumns = Object.keys(firstRecord).map(key => ({
+//       // Filter data based on type
+//       let filteredData = fetchedData;
+
+//       if (type === "payment") {
+//         // Only show records with type = 'original' for payment reminders
+//         filteredData = fetchedData.filter(item =>
+//           item.type === 'original' || item.type === 'Original'
+//         );
+//         console.log("Filtered payment data (original only):", filteredData);
+//       }
+
+//       // Set the filtered data
+//       setOriginalRecords(filteredData);
+//       setRecords(filteredData);
+//       setTotalRecords(filteredData.length);
+//       setTotalPages(Math.ceil(filteredData.length / pageSize));
+
+//       // Generate columns from the first available record
+//       let recordForColumns = null;
+
+//       if (filteredData.length > 0) {
+//         if (type === "payment") {
+//           // For payment type, find the first 'original' record for column structure
+//           recordForColumns = filteredData.find(item =>
+//             item.type === 'original' || item.type === 'Original'
+//           ) || filteredData[0]; // Fallback to first record if no 'original' found
+//         } else {
+//           // For normal type, use first record directly
+//           recordForColumns = filteredData[0];
+//         }
+//       }
+
+//       if (recordForColumns) {
+//         const dynamicColumns = Object.keys(recordForColumns).map(key => ({
 //           id: key,
 //           name: formatColumnName(key),
 //           accessor: key,
 //           sortable: true,
-//           visible: true
+//           visible: true,
+//           type: getColumnType(recordForColumns[key], key)
 //         }));
 //         setColumns(dynamicColumns);
+//         console.log("Generated columns:", dynamicColumns);
+//       } else {
+//         console.warn("No records found to generate columns from");
+//         setColumns([]);
 //       }
+
 //     } catch (error) {
 //       console.error("Error fetching data:", error);
-//       // Optionally show an error notification
+
+//       // More detailed error logging
+//       if (error.response) {
+//         console.error("Response status:", error.response.status);
+//         console.error("Response data:", error.response.data);
+//       }
+
+//       toast.error("Failed to fetch records");
+
+//       // Set empty state on error
+//       setOriginalRecords([]);
+//       setRecords([]);
+//       setTotalRecords(0);
+//       setTotalPages(1);
+//       setColumns([]);
 //     } finally {
 //       setLoading(false);
 //     }
 //   };
+
 
 //   // Initialize data and columns on component mount
 //   useEffect(() => {
@@ -146,13 +220,34 @@
 //       .join(' ');
 //   };
 
+//   // Helper function to determine column type
+//   const getColumnType = (value, columnName) => {
+//     const lowerColumnName = columnName.toLowerCase();
+
+//     // Specific checks first
+//     if (lowerColumnName.includes('email')) return 'email';
+//     if (lowerColumnName.includes('phone')) return 'tel';
+//     if (lowerColumnName.includes('url') || lowerColumnName.includes('link') || lowerColumnName.includes('invoice_url')) return 'url';
+//     if (lowerColumnName === 'status') return 'textarea';
+//     if (lowerColumnName === 'priority') return 'select-priority';
+//     if (lowerColumnName.includes('description') || lowerColumnName.includes('notes') || lowerColumnName.includes('comment')) return 'textarea';
+//     if (lowerColumnName.includes('date') || lowerColumnName.includes('created') || lowerColumnName.includes('updated') || lowerColumnName === 'invoice') return 'date';
+
+//     // Fallback based on value type
+//     if (typeof value === 'number') return 'number';
+//     if (typeof value === 'boolean') return 'checkbox';
+//     if (value && value.length > 100) return 'textarea';
+
+//     return 'text';
+//   };
+
+
 //   // Function to apply filters and search
 //   const applyFiltersAndSearch = () => {
 //     if (!originalRecords.length) return;
 
 //     let filteredResults = [...originalRecords];
 
-//     // Apply search filter
 //     if (searchTerm.trim() !== '') {
 //       const term = searchTerm.toLowerCase();
 //       filteredResults = filteredResults.filter(item =>
@@ -162,25 +257,21 @@
 //       );
 //     }
 
-//     // Apply status filter
 //     if (statusFilter.length > 0) {
 //       filteredResults = filteredResults.filter(item =>
 //         statusFilter.includes(item.status)
 //       );
 //     }
 
-//     // Apply priority filter
 //     if (priorityFilter.length > 0) {
 //       filteredResults = filteredResults.filter(item =>
 //         priorityFilter.includes(item.priority)
 //       );
 //     }
 
-//     // Update records and pagination
 //     setRecords(filteredResults);
 //     setTotalRecords(filteredResults.length);
 //     setTotalPages(Math.ceil(filteredResults.length / pageSize));
-//     // Reset to first page when filters change
 //     setCurrentPage(1);
 //   };
 
@@ -192,10 +283,298 @@
 //   // Handle refresh button
 //   const handleRefresh = () => {
 //     fetchData();
-//     // Clear filters and search
 //     setSearchTerm('');
 //     setStatusFilter([]);
 //     setPriorityFilter([]);
+//   };
+
+//   // Handle Add Record Modal
+//   const handleOpenAddModal = () => {
+//     // Initialize new record data with empty values
+//     const initialData = {};
+//     columns.forEach(column => {
+//       if (column.id !== 'id') { // Don't include ID as it's usually auto-generated
+//         initialData[column.id] = '';
+//       }
+//     });
+//     setNewRecordData(initialData);
+//     setIsAddModalOpen(true);
+//   };
+
+//   // Handle input change in add modal
+//   const handleNewRecordChange = (columnId, value) => {
+//     setNewRecordData(prev => ({
+//       ...prev,
+//       [columnId]: value
+//     }));
+//   };
+
+//   // Handle create new record
+//   // const handleCreateRecord = async () => {
+//   //   try {
+//   //     setIsCreating(true);
+
+//   //     // Prepare the data for API call
+//   //     const recordData = {
+//   //       schemaName: apiParams.schemaName,
+//   //       tableName: apiParams.tableName,
+//   //       record: newRecordData
+//   //     };
+
+//   //     console.log(recordData);
+//   //     const response = await axios.post(createRecord, recordData);
+//   //     console.log(response);
+//   //     toast.success("Record created successfully!");
+//   //     setIsAddModalOpen(false);
+//   //     setNewRecordData({});
+//   //     handleRefresh(); // Refresh the data
+
+//   //   } catch (error) {
+//   //     console.error("Error creating record:", error);
+//   //     toast.error("Failed to create record");
+//   //   } finally {
+//   //     setIsCreating(false);
+//   //   }
+//   // };
+
+//   const handleCreateRecord = async () => {
+//     try {
+//       setIsCreating(true);
+
+//       // Add owner_id to the record data
+//       const recordWithOwnerId = {
+//         ...newRecordData,
+//         owner_id: owner_id // Make sure owner_id is included
+//       };
+
+//       const dateFields = [
+//         'invoice',
+//         'date',
+//         'due_date',
+//         'final_due_date',
+//         'last_overdue_reminder_date',
+//         'sent_at',
+//         'created_at',
+//         'updated_at'
+//       ];
+
+//       const arrayFields = ['out_webhooks', 'emails'];
+
+//       const sanitizedRecord = Object.fromEntries(
+//         Object.entries(recordWithOwnerId).map(([key, value]) => {
+//           // Handle date fields
+//           if (dateFields.includes(key)) {
+//             return [key, value === '' ? null : value];
+//           }
+
+//           // Handle array fields
+//           if (arrayFields.includes(key)) {
+//             if (value === '') return [key, null];
+//             return [key, value];
+//           }
+
+//           // Default case - ensure empty strings are handled properly
+//           return [key, value === '' ? null : value];
+//         })
+//       );
+
+//       // Remove null/undefined values and unnecessary fields for payment endpoint
+//       const cleanedRecord = Object.fromEntries(
+//         Object.entries(sanitizedRecord).filter(([key, value]) => {
+//           if (type === "payment") {
+//             const excludeFields = [
+//               'id', 'created_at', 'updated_at', 'sent_at',
+//               'due_date', 'final_due_date', 'last_overdue_reminder_date'
+//             ];
+//             if (excludeFields.includes(key)) {
+//               return false;
+//             }
+//           }
+
+//           // Keep all non-null values
+//           if (value !== null && value !== undefined && value !== '') {
+//             return true;
+//           }
+
+//           // Keep specific fields even if empty (backend will handle defaults)
+//           const allowEmpty = ['status', 'type'];
+//           return allowEmpty.includes(key);
+//         })
+//       );
+
+//       console.log("Cleaned record data:", cleanedRecord);
+
+//       if (type === "payment") {
+//         console.log("Sending to payment endpoint:", cleanedRecord);
+
+//         const response = await axios.post(
+//           `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/add`,
+//           cleanedRecord,
+//           {
+//             headers: {
+//               'Content-Type': 'application/json'
+//             }
+//           }
+//         );
+//         console.log("Payment reminder response:", response.data);
+//       } else {
+//         // For regular records, use the wrapper format
+//         const recordData = {
+//           schemaName: apiParams.schemaName,
+//           tableName: apiParams.tableName,
+//           record: cleanedRecord
+//         };
+
+//         console.log("Sending to regular endpoint:", recordData);
+
+//         const response = await axios.post(createRecord, recordData);
+//         console.log("Regular record response:", response.data);
+//       }
+
+//       toast.success("Record created successfully!");
+//       setIsAddModalOpen(false);
+//       setNewRecordData({});
+//       handleRefresh();
+
+//     } catch (error) {
+//       console.error("Error creating record:", error);
+
+//       // More detailed error logging
+//       if (error.response) {
+//         console.error("Response data:", error.response.data);
+//         console.error("Response status:", error.response.status);
+//         toast.error(`Failed to create record: ${error.response.data.error || error.response.data.message || 'Unknown error'}`);
+//       } else if (error.request) {
+//         console.error("No response received:", error.request);
+//         toast.error("No response from server. Please check your connection.");
+//       } else {
+//         console.error("Error:", error.message);
+//         toast.error(`Failed to create record: ${error.message}`);
+//       }
+//     } finally {
+//       setIsCreating(false);
+//     }
+//   };
+
+
+//   // Render form input based on column type
+//   const renderFormInput = (column, value, onChange) => {
+//     const { id, type, name } = column;
+
+//     switch (type) {
+//       case 'textarea':
+//         return (
+//           <Textarea
+//             id={id}
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//             rows={3}
+//           />
+//         );
+
+//       case 'select-status':
+//         return (
+//           <Select value={value || ''} onValueChange={(val) => onChange(id, val)}>
+//             <SelectTrigger>
+//               <SelectValue placeholder="Select status" />
+//             </SelectTrigger>
+//             <SelectContent>
+//               <SelectItem value="pending">Pending</SelectItem>
+//               <SelectItem value="in progress">In Progress</SelectItem>
+//               <SelectItem value="completed">Completed</SelectItem>
+//             </SelectContent>
+//           </Select>
+//         );
+
+//       case 'select-priority':
+//         return (
+//           <Select value={value || ''} onValueChange={(val) => onChange(id, val)}>
+//             <SelectTrigger>
+//               <SelectValue placeholder="Select priority" />
+//             </SelectTrigger>
+//             <SelectContent>
+//               <SelectItem value="low">Low</SelectItem>
+//               <SelectItem value="medium">Medium</SelectItem>
+//               <SelectItem value="high">High</SelectItem>
+//             </SelectContent>
+//           </Select>
+//         );
+
+//       case 'number':
+//         return (
+//           <Input
+//             id={id}
+//             type="number"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//           />
+//         );
+
+//       case 'email':
+//         return (
+//           <Input
+//             id={id}
+//             type="email"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//           />
+//         );
+
+//       case 'tel':
+//         return (
+//           <Input
+//             id={id}
+//             type="tel"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//           />
+//         );
+
+//       case 'date':
+//         return (
+//           <Input
+//             id={id}
+//             type="date"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//           />
+//         );
+
+//       case 'url':
+//         return (
+//           <Input
+//             id={id}
+//             type="url"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//           />
+//         );
+
+//       case 'checkbox':
+//         return (
+//           <Checkbox
+//             id={id}
+//             checked={value || false}
+//             onCheckedChange={(checked) => onChange(id, checked)}
+//           />
+//         );
+
+//       default:
+//         return (
+//           <Input
+//             id={id}
+//             type="text"
+//             value={value || ''}
+//             onChange={(e) => onChange(id, e.target.value)}
+//             placeholder={`Enter ${name.toLowerCase()}`}
+//           />
+//         );
+//     }
 //   };
 
 //   // Toggle status filter
@@ -247,7 +626,6 @@
 //       setSortDirection('asc');
 //     }
 
-//     // Apply sorting to records
 //     const sortedRecords = [...records].sort((a, b) => {
 //       const valueA = a[column] || '';
 //       const valueB = b[column] || '';
@@ -269,15 +647,12 @@
 //   // Export to CSV function
 //   const exportToCSV = () => {
 //     if (!records.length) {
-//       alert('No records to export');
+//       toast.error('No records to export');
 //       return;
 //     }
 
 //     try {
-//       // Determine which data to export (filtered records or all records)
 //       const dataToExport = records;
-
-//       // Optional: Only include visible columns
 //       const exportData = dataToExport.map(record => {
 //         const filteredRecord = {};
 //         visibleColumns.forEach(column => {
@@ -286,9 +661,8 @@
 //         return filteredRecord;
 //       });
 
-//       // Convert JSON to CSV
 //       const csv = Papa.unparse(exportData, {
-//         quotes: true, // Use quotes around all fields
+//         quotes: true,
 //         quoteChar: '"',
 //         escapeChar: '"',
 //         delimiter: ",",
@@ -296,51 +670,24 @@
 //         newline: "\n"
 //       });
 
-//       // Create a blob with the CSV data
 //       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-
-//       // Create a URL for the blob
 //       const url = URL.createObjectURL(blob);
-
-//       // Create a temporary link element to trigger the download
 //       const link = document.createElement('a');
-
-//       // Generate a filename with current date
 //       const date = new Date().toISOString().slice(0, 10);
 //       const filename = `records_export_${date}.csv`;
 
-//       // Set link attributes
 //       link.setAttribute('href', url);
 //       link.setAttribute('download', filename);
 //       link.style.display = 'none';
-
-//       // Add to DOM, trigger download and clean up
 //       document.body.appendChild(link);
 //       link.click();
 //       document.body.removeChild(link);
-
-//       // Release the blob URL
 //       URL.revokeObjectURL(url);
 
-//       console.log(`Exported ${exportData.length} records to CSV`);
+//       toast.success(`Exported ${exportData.length} records to CSV`);
 //     } catch (error) {
 //       console.error('Error exporting to CSV:', error);
-//       alert('Failed to export CSV. Please try again.');
-//     }
-//   };
-
-//   // Export to PDF function
-//   const exportToPDF = () => {
-//     // In a real app, this would generate and download a PDF file
-//     alert('Exporting to PDF...');
-//   };
-
-//   // Upload CSV function
-//   const handleFileUpload = (event) => {
-//     const file = event.target.files[0];
-//     if (file) {
-//       // In a real app, this would upload the CSV file to the server
-//       alert(`Uploading file: ${file.name}`);
+//       toast.error('Failed to export CSV. Please try again.');
 //     }
 //   };
 
@@ -355,7 +702,7 @@
 
 //   // Get status badge color
 //   const getStatusBadgeColor = (status) => {
-//     switch (status.toLowerCase()) {
+//     switch (status?.toLowerCase()) {
 //       case 'pending':
 //         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
 //       case 'in progress':
@@ -369,7 +716,7 @@
 
 //   // Get priority badge color
 //   const getPriorityBadgeColor = (priority) => {
-//     switch (priority.toLowerCase()) {
+//     switch (priority?.toLowerCase()) {
 //       case 'high':
 //         return 'bg-red-100 text-red-800 border-red-200';
 //       case 'medium':
@@ -390,28 +737,21 @@
 //       schemaName,
 //       tableName,
 //       recordId: originalId,
-//       ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb', // if required
+//       ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
 //     });
 
 //     let colIndex = 1;
 //     Object.entries(editingValues).forEach(([key, val]) => {
-//       // Don't include if undefined
 //       if (val === undefined) return;
-
-//       // Convert JS null or empty string to empty (let backend decide)
 //       const sanitizedVal = val === null || val === 'null' ? '' : val;
-
-
 //       params.append(`col${colIndex}`, key);
 //       params.append(`val${colIndex}`, sanitizedVal);
 //       colIndex++;
 //     });
 
 //     try {
-//       const result = await axios.get(`${updateRecord}${params.toString()}`);
+//       const result = await axios.get(`${updateRecord}?${params.toString()}`);
 //       toast.success("Record updated");
-//       console.log(result);
-//       console.error(result)
 //       setEditingRowId(null);
 //       handleRefresh();
 //     } catch (err) {
@@ -419,17 +759,10 @@
 //     }
 //   };
 
-
 //   // Get unique statuses for filters
 //   const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);
-
-//   // Get unique priorities for filters
 //   const uniquePriorities = Array.from(new Set(originalRecords.map(record => record.priority))).filter(Boolean);
-
-//   // Filter visible columns
 //   const visibleColumns = columns.filter(column => column.visible);
-
-//   // Get current page data
 //   const indexOfLastRecord = currentPage * pageSize;
 //   const indexOfFirstRecord = indexOfLastRecord - pageSize;
 //   const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
@@ -463,6 +796,127 @@
 //         {/* Toolbar */}
 //         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 //           <div className="flex flex-wrap items-center gap-2">
+//             {/* Add Record Button */}
+//             {/* <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+//               <DialogTrigger asChild>
+//                 <Button
+//                   className="flex items-center gap-2"
+//                   onClick={handleOpenAddModal}
+//                 >
+//                   <Plus className="h-4 w-4" />
+//                   <span className="hidden sm:inline">Add Record</span>
+//                 </Button>
+//               </DialogTrigger>
+//               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+//                 <DialogHeader>
+//                   <DialogTitle>Add New Record</DialogTitle>
+//                   <DialogDescription>
+//                     Fill in the details to create a new record in the database.
+//                   </DialogDescription>
+//                 </DialogHeader>
+                
+//                 <div className="grid gap-4 py-4">
+//                   {columns
+//                     .filter(column => column.id !== 'id') // Exclude ID field
+//                     .map(column => (
+//                       <div key={column.id} className="grid grid-cols-4 items-center gap-4">
+//                         <Label htmlFor={column.id} className="text-right font-medium">
+//                           {column.name}
+//                         </Label>
+//                         <div className="col-span-3">
+//                           {renderFormInput(
+//                             column,
+//                             newRecordData[column.id],
+//                             handleNewRecordChange
+//                           )}
+//                         </div>
+//                       </div>
+//                     ))}
+//                 </div>
+                
+//                 <DialogFooter>
+//                   <Button
+//                     variant="outline"
+//                     onClick={() => setIsAddModalOpen(false)}
+//                     disabled={isCreating}
+//                   >
+//                     Cancel
+//                   </Button>
+//                   <Button
+//                     onClick={handleCreateRecord}
+//                     disabled={isCreating}
+//                     className=""
+//                   >
+//                     {isCreating ? 'Creating...' : 'Create Record'}
+//                   </Button>
+//                 </DialogFooter>
+//               </DialogContent>
+//             </Dialog> */}
+
+//             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+//               <DialogTrigger asChild>
+//                 <Button
+//                   className="flex items-center gap-2"
+//                   onClick={handleOpenAddModal}
+//                 >
+//                   <Plus className="h-4 w-4" />
+//                   <span className="hidden sm:inline">Add Record</span>
+//                 </Button>
+//               </DialogTrigger>
+//               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+//                 <DialogHeader>
+//                   <DialogTitle>Add New Record</DialogTitle>
+//                   <DialogDescription>
+//                     Fill in the details to create a new record in the database.
+//                   </DialogDescription>
+//                 </DialogHeader>
+
+//                 <div className="space-y-6 py-4">
+//                   {columns
+//                     // .filter(column => column.id !== 'id') // Exclude ID field
+//                     .filter(column =>
+//                       column.id !== 'id' &&
+//                       !column.id.includes('_comment') &&
+//                       !column.id.includes('created_at') &&
+//                       !column.id.includes('updated_at') &&
+//                       !column.id.includes('_date')
+//                     )
+//                     .map(column => (
+//                       <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+//                         <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0">
+//                           {column.name}
+//                         </Label>
+//                         <div className="flex-1">
+//                           {renderFormInput(
+//                             column,
+//                             newRecordData[column.id],
+//                             handleNewRecordChange
+//                           )}
+//                         </div>
+//                       </div>
+//                     ))}
+//                 </div>
+
+//                 <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+//                   <Button
+//                     variant="outline"
+//                     onClick={() => setIsAddModalOpen(false)}
+//                     disabled={isCreating}
+//                     className="w-full sm:w-auto order-2 sm:order-1"
+//                   >
+//                     Cancel
+//                   </Button>
+//                   <Button
+//                     onClick={handleCreateRecord}
+//                     disabled={isCreating}
+//                     className="w-full sm:w-auto order-1 sm:order-2"
+//                   >
+//                     {isCreating ? 'Creating...' : 'Create Record'}
+//                   </Button>
+//                 </DialogFooter>
+//               </DialogContent>
+//             </Dialog>
+
 //             <Button
 //               variant="outline"
 //               size="sm"
@@ -584,16 +1038,12 @@
 //               variant="outline"
 //               size="sm"
 //               className="flex items-center gap-2"
-//               onClick={() => {
-//                 setEditEnabled(!editEnabled);
-//               }}
+//               onClick={() => setEditEnabled(!editEnabled)}
 //             >
 //               <Edit className="h-4 w-4" />
 //               <span className="hidden sm:inline">Edit</span>
 //             </Button>
 
-
-//             {/* <TableCell className="text-right"> */}
 //             {editingRowId && currentEditingRecord && editEnabled ? (
 //               <div className="flex gap-2">
 //                 <Button size="sm" onClick={() => handleSave(currentEditingRecord.id)}>
@@ -607,25 +1057,6 @@
 //                 </Button>
 //               </div>
 //             ) : null}
-//             {/* </TableCell> */}
-
-//             <div className="relative">
-//               {/* <input
-//                 type="file"
-//                 id="csvUpload"
-//                 accept=".csv"
-//                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-//                 onChange={handleFileUpload}
-//               />
-//               <Button 
-//                 variant="outline" 
-//                 size="sm"
-//                 className="flex items-center gap-2"
-//               >
-//                 <Upload className="h-4 w-4" />
-//                 <span className="hidden sm:inline">Upload CSV</span>
-//               </Button> */}
-//             </div>
 //           </div>
 //         </div>
 
@@ -651,26 +1082,24 @@
 //                         <span>{column.name}</span>
 //                         {sortColumn === column.id && (
 //                           <ChevronDown
-//                             className={`h-4 w-4 transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''
-//                               }`}
+//                             className={`h-4 w-4 transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''}`}
 //                           />
 //                         )}
 //                       </div>
 //                     </TableHead>
 //                   ))}
-//                   {/* <TableHead className="w-[80px] text-right">Actions</TableHead> */}
 //                 </TableRow>
 //               </TableHeader>
 //               <TableBody>
 //                 {loading ? (
 //                   <TableRow>
-//                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+//                     <TableCell colSpan={visibleColumns.length + 1} className="h-24 text-center">
 //                       Loading records...
 //                     </TableCell>
 //                   </TableRow>
 //                 ) : records.length === 0 ? (
 //                   <TableRow>
-//                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+//                     <TableCell colSpan={visibleColumns.length + 1} className="h-24 text-center">
 //                       No records found. {searchTerm || statusFilter.length > 0 || priorityFilter.length > 0 ?
 //                         <Button variant="link" onClick={handleRefresh}>Clear filters?</Button> : ''}
 //                     </TableCell>
@@ -680,8 +1109,8 @@
 //                     <TableRow key={record.id || index} className="hover:bg-slate-50"
 //                       onClick={() => {
 //                         setEditingRowId(record.id);
-//                         if(editEnabled === false){
-//                         setEditingValues(record);
+//                         if (editEnabled === false) {
+//                           setEditingValues(record);
 //                         }
 //                         setCurrentEditingRecord(record);
 //                       }}>
@@ -721,9 +1150,6 @@
 //                           )}
 //                         </TableCell>
 //                       ))}
-
-
-
 //                     </TableRow>
 //                   ))
 //                 )}
@@ -787,11 +1213,8 @@
 // export default CustomTable;
 
 
-
-// Enhanced CustomTable component with Add Record functionality
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Papa from 'papaparse';
 
 // Shadcn UI components
@@ -864,9 +1287,11 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 // Api Calls Route
-import { getAllRecords, updateRecord, createRecord } from '../api/apiConfig';
+import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../api/apiConfig';
+import { useSelector } from 'react-redux';
 
-const CustomTable = ({ apiParams }) => {
+
+const CustomTable = ({ apiParams, type = "normal" }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]);
   const [records, setRecords] = useState([]);
@@ -891,36 +1316,132 @@ const CustomTable = ({ apiParams }) => {
   const [newRecordData, setNewRecordData] = useState({});
   const [isCreating, setIsCreating] = useState(false);
 
+  // NEW: Dropdown setup state
+  const [dropdownSetup, setDropdownSetup] = useState({});
+  const [dropdownSetupExists, setDropdownSetupExists] = useState(false);
+
   const navigate = useNavigate();
+  const userData = useSelector((state) => state.user);
+  const owner_id = userData.id;
+
+
+  // NEW: Function to fetch dropdown setup
+  const fetchDropdownSetup = async () => {
+    try {
+        // const { tableName1 } = useParams();
+      const tableName = apiParams.tableName;
+      const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
+      const { data } = await axios.get(route);
+      
+      if (data.exists && data.setup && data.setup.mapping) {
+        setDropdownSetup(data.setup.mapping);
+        setDropdownSetupExists(true);
+        console.log('Dropdown setup loaded:', data.setup.mapping);
+      } else {
+        setDropdownSetup({});
+        setDropdownSetupExists(false);
+        console.log('No dropdown setup found');
+      }
+    } catch (error) {
+      console.error('Error fetching dropdown setup:', error);
+      setDropdownSetup({});
+      setDropdownSetupExists(false);
+    }
+  };
 
   // Fetch data from API
   const fetchData = async () => {
     try {
       setLoading(true);
       console.log("apiParams", apiParams);
-      const response = await axios.post(getAllRecords, apiParams);
-      const fetchedData = response.data;
+      console.log("type", type);
 
-      setOriginalRecords(fetchedData);
-      setRecords(fetchedData);
-      setTotalRecords(fetchedData.length);
-      setTotalPages(Math.ceil(fetchedData.length / pageSize));
+      let fetchedData;
 
-      if (fetchedData.length > 0) {
-        const firstRecord = fetchedData[0];
-        const dynamicColumns = Object.keys(firstRecord).map(key => ({
+      if (type === "normal") {
+        const response = await axios.post(getAllRecords, apiParams);
+        fetchedData = response.data;
+      } else if (type === "payment") {
+        // Use the correct payment endpoint
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
+        );
+        fetchedData = response.data.data || response.data;
+      } else {
+        // Fallback for other types
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
+        );
+        fetchedData = response.data.data;
+      }
+
+      console.log("Raw fetched data:", fetchedData);
+
+      // Filter data based on type
+      let filteredData = fetchedData;
+
+      if (type === "payment") {
+        // Only show records with type = 'original' for payment reminders
+        filteredData = fetchedData.filter(item =>
+          item.type === 'original' || item.type === 'Original'
+        );
+        console.log("Filtered payment data (original only):", filteredData);
+      }
+
+      // Set the filtered data
+      setOriginalRecords(filteredData);
+      setRecords(filteredData);
+      setTotalRecords(filteredData.length);
+      setTotalPages(Math.ceil(filteredData.length / pageSize));
+
+      // Generate columns from the first available record
+      let recordForColumns = null;
+
+      if (filteredData.length > 0) {
+        if (type === "payment") {
+          // For payment type, find the first 'original' record for column structure
+          recordForColumns = filteredData.find(item =>
+            item.type === 'original' || item.type === 'Original'
+          ) || filteredData[0]; // Fallback to first record if no 'original' found
+        } else {
+          // For normal type, use first record directly
+          recordForColumns = filteredData[0];
+        }
+      }
+
+      if (recordForColumns) {
+        const dynamicColumns = Object.keys(recordForColumns).map(key => ({
           id: key,
           name: formatColumnName(key),
           accessor: key,
           sortable: true,
           visible: true,
-          type: getColumnType(firstRecord[key], key)
+          type: getColumnType(recordForColumns[key], key)
         }));
         setColumns(dynamicColumns);
+        console.log("Generated columns:", dynamicColumns);
+      } else {
+        console.warn("No records found to generate columns from");
+        setColumns([]);
       }
+
     } catch (error) {
       console.error("Error fetching data:", error);
+
+      // More detailed error logging
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", error.response.data);
+      }
+
       toast.error("Failed to fetch records");
+
+      // Set empty state on error
+      setOriginalRecords([]);
+      setRecords([]);
+      setTotalRecords(0);
+      setTotalPages(1);
+      setColumns([]);
     } finally {
       setLoading(false);
     }
@@ -929,6 +1450,7 @@ const CustomTable = ({ apiParams }) => {
   // Initialize data and columns on component mount
   useEffect(() => {
     fetchData();
+    fetchDropdownSetup(); // NEW: Fetch dropdown setup
   }, []);
 
   // Apply filters and search when they change
@@ -948,16 +1470,16 @@ const CustomTable = ({ apiParams }) => {
   const getColumnType = (value, columnName) => {
     const lowerColumnName = columnName.toLowerCase();
 
-    // Check for specific column patterns
+    // Specific checks first
     if (lowerColumnName.includes('email')) return 'email';
     if (lowerColumnName.includes('phone')) return 'tel';
-    if (lowerColumnName.includes('date') || lowerColumnName.includes('created') || lowerColumnName.includes('updated')) return 'date';
-    if (lowerColumnName.includes('url') || lowerColumnName.includes('link')) return 'url';
+    if (lowerColumnName.includes('url') || lowerColumnName.includes('link') || lowerColumnName.includes('invoice_url')) return 'url';
     if (lowerColumnName === 'status') return 'textarea';
     if (lowerColumnName === 'priority') return 'select-priority';
     if (lowerColumnName.includes('description') || lowerColumnName.includes('notes') || lowerColumnName.includes('comment')) return 'textarea';
+    if (lowerColumnName.includes('date') || lowerColumnName.includes('created') || lowerColumnName.includes('updated') || lowerColumnName === 'invoice') return 'date';
 
-    // Check value type
+    // Fallback based on value type
     if (typeof value === 'number') return 'number';
     if (typeof value === 'boolean') return 'checkbox';
     if (value && value.length > 100) return 'textarea';
@@ -1006,6 +1528,7 @@ const CustomTable = ({ apiParams }) => {
   // Handle refresh button
   const handleRefresh = () => {
     fetchData();
+    fetchDropdownSetup(); // NEW: Also refresh dropdown setup
     setSearchTerm('');
     setStatusFilter([]);
     setPriorityFilter([]);
@@ -1037,35 +1560,147 @@ const CustomTable = ({ apiParams }) => {
     try {
       setIsCreating(true);
 
-      // Prepare the data for API call
-      const recordData = {
-        schemaName: apiParams.schemaName,
-        tableName: apiParams.tableName,
-        record: newRecordData
+      // Add owner_id to the record data
+      const recordWithOwnerId = {
+        ...newRecordData,
+        owner_id: owner_id // Make sure owner_id is included
       };
 
-      console.log(recordData);
+      const dateFields = [
+        'invoice',
+        'date',
+        'due_date',
+        'final_due_date',
+        'last_overdue_reminder_date',
+        'sent_at',
+        'created_at',
+        'updated_at'
+      ];
 
-      // You might need to adjust this based on your API structure
-      const response = await axios.post(createRecord, recordData);
-      console.log(response);
+      const arrayFields = ['out_webhooks', 'emails'];
+
+      const sanitizedRecord = Object.fromEntries(
+        Object.entries(recordWithOwnerId).map(([key, value]) => {
+          // Handle date fields
+          if (dateFields.includes(key)) {
+            return [key, value === '' ? null : value];
+          }
+
+          // Handle array fields
+          if (arrayFields.includes(key)) {
+            if (value === '') return [key, null];
+            return [key, value];
+          }
+
+          // Default case - ensure empty strings are handled properly
+          return [key, value === '' ? null : value];
+        })
+      );
+
+      // Remove null/undefined values and unnecessary fields for payment endpoint
+      const cleanedRecord = Object.fromEntries(
+        Object.entries(sanitizedRecord).filter(([key, value]) => {
+          if (type === "payment") {
+            const excludeFields = [
+              'id', 'created_at', 'updated_at', 'sent_at',
+              'due_date', 'final_due_date', 'last_overdue_reminder_date'
+            ];
+            if (excludeFields.includes(key)) {
+              return false;
+            }
+          }
+
+          // Keep all non-null values
+          if (value !== null && value !== undefined && value !== '') {
+            return true;
+          }
+
+          // Keep specific fields even if empty (backend will handle defaults)
+          const allowEmpty = ['status', 'type'];
+          return allowEmpty.includes(key);
+        })
+      );
+
+      console.log("Cleaned record data:", cleanedRecord);
+
+      if (type === "payment") {
+        console.log("Sending to payment endpoint:", cleanedRecord);
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/add`,
+          cleanedRecord,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        console.log("Payment reminder response:", response.data);
+      } else {
+        // For regular records, use the wrapper format
+        const recordData = {
+          schemaName: apiParams.schemaName,
+          tableName: apiParams.tableName,
+          record: cleanedRecord
+        };
+
+        console.log("Sending to regular endpoint:", recordData);
+
+        const response = await axios.post(createRecord, recordData);
+        console.log("Regular record response:", response.data);
+      }
+
       toast.success("Record created successfully!");
       setIsAddModalOpen(false);
       setNewRecordData({});
-      handleRefresh(); // Refresh the data
+      handleRefresh();
 
     } catch (error) {
       console.error("Error creating record:", error);
-      toast.error("Failed to create record");
+
+      // More detailed error logging
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        toast.error(`Failed to create record: ${error.response.data.error || error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        toast.error("No response from server. Please check your connection.");
+      } else {
+        console.error("Error:", error.message);
+        toast.error(`Failed to create record: ${error.message}`);
+      }
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Render form input based on column type
+  // NEW: Enhanced render form input function with dropdown support
   const renderFormInput = (column, value, onChange) => {
     const { id, type, name } = column;
 
+    // NEW: Check if this column has dropdown configuration
+    const hasDropdownConfig = dropdownSetup[id] && Array.isArray(dropdownSetup[id]) && dropdownSetup[id].length > 0;
+    
+    if (hasDropdownConfig) {
+      // Render dropdown for configured columns
+      return (
+        <Select value={value || ''} onValueChange={(val) => onChange(id, val)}>
+          <SelectTrigger>
+            <SelectValue placeholder={`Select ${name.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {dropdownSetup[id].map((option, index) => (
+              <SelectItem key={index} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+
+    // Original input rendering logic for non-dropdown fields
     switch (type) {
       case 'textarea':
         return (
@@ -1380,6 +2015,12 @@ const CustomTable = ({ apiParams }) => {
             <CardTitle className="text-2xl font-semibold text-slate-800">All Records</CardTitle>
             <CardDescription className="mt-1">
               View and manage all database records
+              {/* NEW: Show dropdown setup status */}
+              {dropdownSetupExists && (
+                <Badge variant="outline" className="ml-2 text-xs">
+                  Dropdown Configured
+                </Badge>
+              )}
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -1401,63 +2042,7 @@ const CustomTable = ({ apiParams }) => {
         {/* Toolbar */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {/* Add Record Button */}
-            {/* <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={handleOpenAddModal}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Record</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Record</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details to create a new record in the database.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid gap-4 py-4">
-                  {columns
-                    .filter(column => column.id !== 'id') // Exclude ID field
-                    .map(column => (
-                      <div key={column.id} className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor={column.id} className="text-right font-medium">
-                          {column.name}
-                        </Label>
-                        <div className="col-span-3">
-                          {renderFormInput(
-                            column,
-                            newRecordData[column.id],
-                            handleNewRecordChange
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-                
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsAddModalOpen(false)}
-                    disabled={isCreating}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateRecord}
-                    disabled={isCreating}
-                    className=""
-                  >
-                    {isCreating ? 'Creating...' : 'Create Record'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog> */}
-
+            {/* Add Record Button with Enhanced Modal */}
             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -1473,31 +2058,49 @@ const CustomTable = ({ apiParams }) => {
                   <DialogTitle>Add New Record</DialogTitle>
                   <DialogDescription>
                     Fill in the details to create a new record in the database.
+                    {/* NEW: Show info about dropdowns */}
+                    {dropdownSetupExists && (
+                      <span className="block mt-1 text-blue-600">
+                        ✓ Dropdown values are configured for some fields
+                      </span>
+                    )}
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
                   {columns
-                    // .filter(column => column.id !== 'id') // Exclude ID field
                     .filter(column =>
                       column.id !== 'id' &&
                       !column.id.includes('_comment') &&
+                      !column.id.includes('created_at') &&
+                      !column.id.includes('updated_at') &&
                       !column.id.includes('_date')
                     )
-                    .map(column => (
-                      <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0">
-                          {column.name}
-                        </Label>
-                        <div className="flex-1">
-                          {renderFormInput(
-                            column,
-                            newRecordData[column.id],
-                            handleNewRecordChange
-                          )}
+                    .map(column => {
+                      // NEW: Show indicator for dropdown fields
+                      const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
+                      
+                      return (
+                        <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                          <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0 flex items-center gap-1">
+                            {column.name}
+                            {/* NEW: Show dropdown indicator */}
+                            {hasDropdown && (
+                              <Badge variant="outline" className="text-xs h-4 px-1">
+                                dropdown
+                              </Badge>
+                            )}
+                          </Label>
+                          <div className="flex-1">
+                            {renderFormInput(
+                              column,
+                              newRecordData[column.id],
+                              handleNewRecordChange
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
 
                 <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">

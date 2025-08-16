@@ -56,7 +56,7 @@ const Task = () => {
   };
 
   return (
-    <Card className="border border-slate-200 rounded-lg shadow-sm">
+    <Card className="border border-slate-200 rounded-lg shadow-sm mx-[6rem]">
       <CardContent className="p-6">
         {/* Header with title and search/button */}
         <div className="space-y-1 mb-6">

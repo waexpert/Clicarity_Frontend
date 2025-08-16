@@ -435,7 +435,7 @@ const TaskManagementTable = () => {
 
   return (
     <div className="w-full space-y-6">
-      <Card>
+      <Card className="mx-[6rem]">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Task Management System</CardTitle>
         </CardHeader>

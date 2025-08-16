@@ -631,7 +631,7 @@ const PaymentSetup = ({
             </p>
           </div>
 
-          <Card className="border border-border">
+          <Card className="border border-border mx-[6rem] ">
             <CardContent className="p-4">
               <Table>
                 <TableHeader>
@@ -815,7 +815,7 @@ const Payment = () => {
 
   return (
     <div className="w-full px-6 py-6">
-      <Card className="border border-border shadow-sm">
+      <Card className="border border-border shadow-sm mx-[6rem]">
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

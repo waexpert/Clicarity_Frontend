@@ -13,13 +13,14 @@ const QRSetup = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const user_id = user.id;
+  const user_email = user.email;
 
   useEffect(() => {
     const fetchQRCode = async () => {
         try {
           const res = await axios.post(
             `${import.meta.env.VITE_APP_BASE_URL}/mfa/setup`,
-            { user_id },
+            { user_id ,user_email},
             { withCredentials: true }
           );
           setQrCodeBase64(res.data.qr); // 🔥 fixed line

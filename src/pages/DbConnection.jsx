@@ -55,7 +55,7 @@ const DbConnection = () => {
   ];
 
   return (
-    <Card className="shadow-sm border-slate-200">
+    <Card className="shadow-sm border-slate-200 mx-[6rem]">
       <CardHeader className="pb-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-2xl font-semibold text-slate-800">DB Connections</CardTitle>

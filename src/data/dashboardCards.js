@@ -85,7 +85,7 @@ const dashboardCards = [
   },
   {
     id: 10,
-    title: "FlowUp Reminders",
+    title: "Follow Up Reminders",
     description: "Smart reminders to keep your processes flowing smoothly.",
     icon: "bell-ring",
     iconColor: "#4285B4",

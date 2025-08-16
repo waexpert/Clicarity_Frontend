@@ -98,7 +98,8 @@ code {
     monospace;
 }
 
-body {
-  padding-left: 10rem;
-  padding-right: 10rem;
+html body {
+  padding-left: 10rem !important;
+  padding-right: 10rem !important;
+  box-sizing: border-box !important;
 }

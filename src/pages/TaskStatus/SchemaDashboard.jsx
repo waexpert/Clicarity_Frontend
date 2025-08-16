@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../css/SchemaDashboard.css';
+import '../../css/SchemaDashboard.css';
 import { useNavigate } from 'react-router-dom';
-import NewDataStore from '../components/NewDataStore';
-import TaskDataStore from '../components/TaskDataStore';
-import JobStatusReportDataStore from './JobStatus/JobStatusReportDataStore';
+import NewDataStore from '../../components/NewDataStore';
+import TaskDataStore from '../../components/TaskDataStore';
+import JobStatusReportDataStore from '../JobStatus/JobStatusReportDataStore';
 import { useSelector } from "react-redux";
 
 // Import Shadcn UI components
@@ -41,9 +41,10 @@ import {
   Table as TableIcon,
   Calendar,
   Clock,
-  Database
+  Database,
+  Settings
 } from 'lucide-react';
-import CaptureWebhook from './JobStatus/CaptureWebhook';
+// import CaptureWebhook from './JobStatus/CaptureWebhook';
 
 const SchemaDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,6 +68,7 @@ const SchemaDashboard = () => {
     {
       "id": "1",
       "title": "Task Management",
+      "tableName":"taskstatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -74,6 +76,7 @@ const SchemaDashboard = () => {
     {
       "id": "2",
       "title": "Expense Tracker",
+      "tableName":"expensestatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -81,6 +84,7 @@ const SchemaDashboard = () => {
     {
       "id": "3",
       "title": "Lead Management",
+      "tableName":"leadstatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -88,6 +92,7 @@ const SchemaDashboard = () => {
     {
       "id": "4",
       "title": "Project Management",
+      "tableName":"projectstatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -95,6 +100,7 @@ const SchemaDashboard = () => {
     {
       "id": "5",
       "title": "Support Ticket",
+      "tableName":"supportstatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -102,6 +108,7 @@ const SchemaDashboard = () => {
     {
       "id": "6",
       "title": "Birthday Reminder",
+      "tableName":"birthdaystatus",
       "fieldsCount": 4,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -109,6 +116,7 @@ const SchemaDashboard = () => {
         {
       "id": "7",
       "title": "Job Status Report",
+      "tableName":"jobstatus",
       "fieldsCount": 8,
       "createdAt": "2024-10-18T15:35:00Z",
       "updatedAt": "2024-10-18T15:35:00Z"
@@ -129,7 +137,7 @@ const SchemaDashboard = () => {
 
   return (<>
   {/* {showCapture? <CaptureWebhook/> :""} */}
-    <Card className="shadow-sm border-slate-200">
+    <Card className="shadow-sm border-slate-200 mx-[6rem]">
       
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -215,7 +223,7 @@ const SchemaDashboard = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Browse" onClick={()=> navigate(`/jobstatus/record`)}>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Browse" onClick={()=> navigate(`/${schema.tableName}/record`)}>
 
                         <Eye className="h-4 w-4 text-slate-600" />
                       </Button>
@@ -230,8 +238,11 @@ const SchemaDashboard = () => {
                       >
                         <Edit className="h-4 w-4 text-slate-600" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Delete">
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Setup"
+                         onClick={
+                        ()=> navigate(`/db/setup/${schema.tableName}`)
+                      }>
+                       <Settings className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </TableCell>

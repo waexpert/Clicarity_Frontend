@@ -9,14 +9,14 @@ import VerifyMFA from "./pages/Auth/VerifyMFA";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import DbConnection from "./pages/DbConnection";
-import SchemaDashboard from "./pages/SchemaDashboard"
-import Profile from "./pages/Profile";
+import SchemaDashboard from "./pages/TaskStatus/SchemaDashboard"
+import Profile from "./pages/Team/Profile";
 import TeamMember from "./components/profile/TeamMember";
 import RolesPermissions from "./components/profile/RolesPermissions";
-import Task from "./pages/Task";
-import RecordTaskDashboard from "./pages/RecordTaskDashboard";
+import Task from "./pages/TaskStatus/Task";
+import RecordTaskDashboard from "./pages/TaskStatus/RecordTaskDashboard";
 import RecordJobDashboard from "./pages/JobStatus/RecordJobDashboard"
-import TaskManagementTable from "./pages/TaskManagementTable";
+import TaskManagementTable from "./pages/TaskStatus/TaskManagementTable";
 import Job from "./pages/JobStatus/Job"
 import CaptureWebhook from "./pages/JobStatus/CaptureWebhook";
 import StructureJobStatus from "./pages/JobStatus/StructureJobStatus";
@@ -38,6 +38,7 @@ import CustomSchemaDashboard from "./pages/DatabaseConnection/CustomSchemaDashbo
 import CustomCaptureWebhook from "./pages/DatabaseConnection/CustomCaptureWebhook";
 import CustomStructure from "./pages/DatabaseConnection/CustomStructure";
 import DropDownSetup from "./pages/Setup/DropDownSetup";
+import SheetTransfer from "./pages/JSR_Services/SheetTransfer";
 
 
 function App() {
@@ -308,6 +309,13 @@ function App() {
             <Reminder />
           </ProtectedRoute>
         } />
+
+        <Route path="/sheetTransfer/:us_id" element={
+          <ProtectedRoute>
+            <SheetTransfer/>
+          </ProtectedRoute>
+        } />
+
 
         {/* Setup Routes */}
         <Route path="/db/setup/:tableName" element={

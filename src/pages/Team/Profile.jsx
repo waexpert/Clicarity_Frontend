@@ -2,10 +2,10 @@ import React from 'react'
 import { AiFillProduct } from "react-icons/ai";
 import { IoIosContact } from "react-icons/io";
 import { BsMicrosoftTeams } from "react-icons/bs";
-import "../css/Profile.css"
-import TeamMember from '../components/profile/TeamMember';
-import RolesPermissions from '../components/profile/RolesPermissions';
-import AddNewRoles from '../components/profile/AddNewRoles';
+import "../../css/Profile.css"
+import TeamMember from '../../components/profile/TeamMember';
+import RolesPermissions from '../../components/profile/RolesPermissions';
+import AddNewRoles from '../../components/profile/AddNewRoles';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {

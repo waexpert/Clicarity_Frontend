@@ -1,28 +1,33 @@
-/* Add these CSS rules to your Header.css file */
+/* Add these rules to your existing header.css file */
 
 .headerWrapper {
   position: relative;
-  width: 100%;
+  width: 100vw; /* Changed back to 100% */
   max-width: 100vw;
   overflow-x: hidden;
-    margin-bottom: 20px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+   /* background-color: aqua; */
+
 }
 
 .header1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 100vw;
+  width:calc(100% - 12rem);
+  max-width: calc(100% - 12rem);
   box-sizing: border-box;
-  padding: 0 1rem;
+  padding: 0.5rem; 
   overflow: hidden;
-
+  position: relative;
+  /* background: #000; */
+   margin: 0 auto;
 }
 
 .logo {
   flex-shrink: 0;
-  height:7rem;
+  height: 7rem;
   display: flex;
   align-items: center;
 }
@@ -33,21 +38,28 @@
   gap: 1rem;
   flex-shrink: 0;
   position: relative;
+
 }
 
-/* Ensure the dropdown doesn't affect layout */
+/* Enhanced dropdown positioning */
 [data-radix-popper-content-wrapper] {
   position: fixed !important;
   z-index: 9999 !important;
+  pointer-events: none;
+}
+
+[data-radix-popper-content-wrapper] > * {
+  pointer-events: auto;
 }
 
 /* Prevent any overflow issues */
 .breadcrumb-container {
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
   overflow-x: auto;
-  padding: 0 1rem;
+  padding: 0; /* No additional padding since wrapper handles it */
   box-sizing: border-box;
+  padding: 0 6rem;
 }
 
 /* Additional safety measures */
@@ -55,7 +67,20 @@
   box-sizing: border-box;
 }
 
-/* Ensure dropdown doesn't cause horizontal scroll */
+/* Enhanced body overflow control */
 body {
   overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent dropdown-specific layout shifts */
+[data-radix-select-trigger] {
+  width: 100%;
+}
+
+[data-radix-select-content] {
+  min-width: var(--radix-select-trigger-width);
+  max-height: 300px;
+  overflow-y: auto;
 }

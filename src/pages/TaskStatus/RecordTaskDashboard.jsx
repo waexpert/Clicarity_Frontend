@@ -380,7 +380,7 @@ const RecordTaskDashboard = () => {
   const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
 
   return (
-    <Card className="shadow-sm border-slate-200">
+    <Card className="shadow-sm border-slate-200 mx-[6rem]">
       <CardHeader className="pb-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

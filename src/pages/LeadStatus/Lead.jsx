@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 // Import Shadcn UI components
 import {
   Table,
@@ -30,8 +31,10 @@ import {
   Pencil,
   Trash2,
   Table as TableIcon,
-  Search
+  Search,
+  Settings
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const Lead = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,8 +58,11 @@ const Lead = () => {
     };
   };
 
+  const user = useSelector((state) => state.user);
+  const id = user.id;
+
   return (
-    <Card className="border border-slate-200 rounded-lg shadow-sm">
+    <Card className="border border-slate-200 rounded-lg shadow-sm mx-[6rem]">
       <CardContent className="p-6">
         {/* Header with title and search/button */}
         <div className="space-y-1 mb-6">
@@ -148,17 +154,17 @@ const Lead = () => {
                           variant="ghost" 
                           size="icon"
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#4285B4] hover:bg-slate-100"
-                            onClick={() => navigate(`/db/:id/lead_status`)}
+                            onClick={() => navigate(`/db/${id}/lead_status`)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                         {/* <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Setup"
+                         onClick={
+                        ()=> navigate(`/db/setup/${schema.title}`)
+                      }>
+                       <Settings
+                        className="h-4 w-4 text-red-500" />
+                      </Button> */}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -173,3 +179,5 @@ const Lead = () => {
 };
 
 export default Lead;
+
+

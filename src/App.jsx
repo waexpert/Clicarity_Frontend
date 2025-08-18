@@ -42,9 +42,12 @@ import SheetTransfer from "./pages/JSR_Services/SheetTransfer";
 
 
 function App() {
-  const location = useLocation();
-  const hideHeaderPaths = ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder"];
-  const hideHeader = hideHeaderPaths.includes(location.pathname);
+const location = useLocation();
+
+const hideHeader =
+  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder"].includes(location.pathname) ||
+  (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
+
 
   return (
     <>
@@ -175,6 +178,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* <Route
+          path="/:tableName1/record1"
+          element={
+            <ProtectedRoute>
+              <CustomTable />
+            </ProtectedRoute>
+          }
+        /> */}
 
         <Route path="/db/:id/job_status" element={
           <ProtectedRoute>

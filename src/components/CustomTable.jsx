@@ -2555,6 +2555,7 @@ import { toast } from 'sonner';
 // Api Calls Route
 import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../api/apiConfig';
 import { useSelector } from 'react-redux';
+import { showText } from 'pdf-lib';
 
 
 const CustomTable = ({apiParams, type = "normal" }) => {
@@ -3382,9 +3383,10 @@ const CustomTable = ({apiParams, type = "normal" }) => {
 
   // ENHANCED: Get ordered columns for form display
   const orderedFormColumns = getOrderedFormColumns();
+  
 
-  return (
-    <Card className="shadow-sm border-slate-200 mx-[6rem]">
+  return show ? "":(
+ <Card className={pa_id ? "shadow-sm border-slate-200 mx-[6rem] hidden" : "shadow-sm border-slate-200 mx-[6rem]" }>
       <CardHeader className="pb-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -3415,6 +3417,8 @@ const CustomTable = ({apiParams, type = "normal" }) => {
               )}
             </CardDescription>
           </div>
+
+          
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />

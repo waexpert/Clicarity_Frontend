@@ -2596,6 +2596,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
 
   // Get URL parameters
   const pa_id = searchParams.get('pa_id');
+  const us_id = searchParams.get('us_id')
   const show = searchParams.get('show');
   const status = searchParams.get('status');
 
@@ -2645,8 +2646,8 @@ const CustomTable = ({apiParams, type = "normal" }) => {
       column.id !== 'id' &&
       !column.id.includes('_comment') &&
       !column.id.includes('created_at') &&
-      !column.id.includes('updated_at') &&
-      !column.id.includes('_date')
+      !column.id.includes('updated_at') 
+      // && !column.id.includes('_date')
     );
 
     // Sort columns by order number, then alphabetically for columns without order
@@ -2800,7 +2801,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
     if (lowerColumnName.includes('email')) return 'email';
     if (lowerColumnName.includes('phone')) return 'tel';
     if (lowerColumnName.includes('url') || lowerColumnName.includes('link') || lowerColumnName.includes('invoice_url')) return 'url';
-    if (lowerColumnName === 'status') return 'textarea';
+    if (lowerColumnName === 'status') return 'url';
     if (lowerColumnName === 'priority') return 'select-priority';
     if (lowerColumnName.includes('description') || lowerColumnName.includes('notes') || lowerColumnName.includes('comment')) return 'textarea';
     if (lowerColumnName.includes('date') || lowerColumnName.includes('created') || lowerColumnName.includes('updated') || lowerColumnName === 'invoice') return 'date';
@@ -2878,7 +2879,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
         initialData[column.id] = pa_id || '';
       } else if (column.id === 'us_id') {
         // Auto-generate us_id with Unix timestamp
-        initialData[column.id] = generateUsId();
+        initialData[column.id] = us_id;
       } else if(column.id === 'status'){
         initialData[column.id] = status;
       } else {
@@ -3439,109 +3440,108 @@ const CustomTable = ({apiParams, type = "normal" }) => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {/* ENHANCED: Add Record Button with Ordered Modal */}
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={handleOpenAddModal}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Record</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Record</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details to create a new record in the database.
-                    {/* Show info about auto-filled fields */}
-                    {/* {(pa_id || orderedFormColumns.some(col => col.id === 'us_id')) && (
-                      <div className="space-y-1 mt-2">
-                        {pa_id && (
-                          <span className="block text-green-600">
-                            ✓ PA ID is auto-filled from URL
-                          </span>
-                        )}
-                        {orderedFormColumns.some(col => col.id === 'us_id') && (
-                          <span className="block text-blue-600">
-                            ✓ US ID is auto-generated
-                          </span>
-                        )}
-                      </div>
-                    )} */}
-                  </DialogDescription>
-                </DialogHeader>
+          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+  <DialogTrigger asChild>
+    <Button
+      className="flex items-center gap-2"
+      onClick={handleOpenAddModal}
+    >
+      <Plus className="h-4 w-4" />
+      <span className="hidden sm:inline">Add Record</span>
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Add New Record</DialogTitle>
+      <DialogDescription>
+        Fill in the details to create a new record in the database.
+        {/* Show info about auto-filled fields */}
+        {/* {(pa_id || orderedFormColumns.some(col => col.id === 'us_id')) && (
+          <div className="space-y-1 mt-2">
+            {pa_id && (
+              <span className="block text-green-600">
+                ✓ PA ID is auto-filled from URL
+              </span>
+            )}
+            {orderedFormColumns.some(col => col.id === 'us_id') && (
+              <span className="block text-blue-600">
+                ✓ US ID is auto-generated
+              </span>
+            )}
+          </div>
+        )} */}
+      </DialogDescription>
+    </DialogHeader>
 
-                <div className="space-y-6 py-4">
-                  {/* ENHANCED: Use ordered columns for form display with auto-fill indicators */}
-                  {orderedFormColumns.map((column, index) => {
-                    // Show indicator for dropdown fields, order, and auto-fill
-                    const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
-                    const orderNumber = columnOrder[column.id];
-                    const isAutoFilled = column.id === 'pa_id' || column.id === 'us_id';
-                    
-                    return (
-                      <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0 flex items-center gap-1">
-                          {/* Show order number if available */}
-                          {orderNumber && (
-                            <Badge variant="secondary" className="text-xs h-4 px-1 mr-1">
-                              {orderNumber}
-                            </Badge>
-                          )}
-                          {column.name}
-                          {/* Show indicators */}
-                          {hasDropdown && !isAutoFilled && (
-                            <Badge variant="outline" className="text-xs h-4 px-1">
-                              dropdown
-                            </Badge>
-                          )}
-                          {isAutoFilled && (
-                            <Badge variant="default" className="text-xs h-4 px-1 bg-green-500">
-                              auto
-                            </Badge>
-                          )}
-                        </Label>
-                        <div className="flex-1">
-                          {renderFormInput(
-                            column,
-                            newRecordData[column.id],
-                            handleNewRecordChange
-                          )}
-                          {/* Show helper text for auto-filled fields */}
-                          {isAutoFilled && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {column.id === 'pa_id' 
-                                ? 'Automatically filled from URL parameter' 
-                                : 'Automatically generated unique identifier'}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+    <div className="space-y-6 py-4">
+      {/* ENHANCED: Use ordered columns for form display with auto-fill indicators */}
+      {orderedFormColumns.map((column, index) => {
+        // Show indicator for dropdown fields, order, and auto-fill
+        const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
+        const orderNumber = columnOrder[column.id];
+        const isAutoFilled = column.id === 'pa_id' || column.id === 'us_id';
+        
+        return (
+          <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <Label htmlFor={column.id} className="font-medium text-sm sm:w-48 sm:text-right sm:flex-shrink-0 flex items-center gap-1 justify-start sm:justify-end">
+              {/* Show order number if available */}
+              {orderNumber && (
+                <Badge variant="secondary" className="text-xs h-4 px-1 mr-1">
+                  {orderNumber}
+                </Badge>
+              )}
+              <span className="flex-1 sm:flex-initial">{column.name}</span>
+              {/* Show indicators */}
+              {hasDropdown && !isAutoFilled && (
+                <Badge variant="outline" className="text-xs h-4 px-1 ml-1">
+                  dropdown
+                </Badge>
+              )}
+              {isAutoFilled && (
+                <Badge variant="default" className="text-xs h-4 px-1 bg-green-500 ml-1">
+                  auto
+                </Badge>
+              )}
+            </Label>
+            <div className="flex-1 min-w-0">
+              {renderFormInput(
+                column,
+                newRecordData[column.id],
+                handleNewRecordChange
+              )}
+              {/* Show helper text for auto-filled fields */}
+              {isAutoFilled && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {column.id === 'pa_id' 
+                    ? 'Automatically filled from URL parameter' 
+                    : 'Automatically generated unique identifier'}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
 
-                <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsAddModalOpen(false)}
-                    disabled={isCreating}
-                    className="w-full sm:w-auto order-2 sm:order-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateRecord}
-                    disabled={isCreating}
-                    className="w-full sm:w-auto order-1 sm:order-2"
-                  >
-                    {isCreating ? 'Creating...' : 'Create Record'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
+    <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+      <Button
+        variant="outline"
+        onClick={() => setIsAddModalOpen(false)}
+        disabled={isCreating}
+        className="w-full sm:w-auto order-2 sm:order-1"
+      >
+        Cancel
+      </Button>
+      <Button
+        onClick={handleCreateRecord}
+        disabled={isCreating}
+        className="w-full sm:w-auto order-1 sm:order-2"
+      >
+        {isCreating ? 'Creating...' : 'Create Record'}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
             <Button
               variant="outline"
               size="sm"

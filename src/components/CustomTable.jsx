@@ -3032,7 +3032,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
     const { id, type, name } = column;
 
     // Check if this is an auto-filled field (pa_id or us_id)
-    const isAutoFilled = id === 'pa_id' || id === 'us_id';
+    const isAutoFilled = id === 'pa_id' ;
 
     // Check if this column has dropdown configuration
     const hasDropdownConfig = dropdownSetup[id] && Array.isArray(dropdownSetup[id]) && dropdownSetup[id].length > 0;
@@ -3479,7 +3479,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
         // Show indicator for dropdown fields, order, and auto-fill
         const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
         const orderNumber = columnOrder[column.id];
-        const isAutoFilled = column.id === 'pa_id' || column.id === 'us_id';
+        const isAutoFilled = column.id === 'pa_id';
         
         return (
           <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -3491,12 +3491,12 @@ const CustomTable = ({apiParams, type = "normal" }) => {
                 </Badge>
               )}
               <span className="flex-1 sm:flex-initial">{column.name}</span>
-              {/* Show indicators */}
+              {/* Show indicators
               {hasDropdown && !isAutoFilled && (
                 <Badge variant="outline" className="text-xs h-4 px-1 ml-1">
                   dropdown
                 </Badge>
-              )}
+              )} */}
               {isAutoFilled && (
                 <Badge variant="default" className="text-xs h-4 px-1 bg-green-500 ml-1">
                   auto

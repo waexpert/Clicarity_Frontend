@@ -117,7 +117,7 @@
 //       const tableName = apiParams.tableName;
 //       const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
 //       const { data } = await axios.get(route);
-      
+
 //       if (data.exists && data.setup && data.setup.mapping) {
 //         setDropdownSetup(data.setup.mapping);
 //         setDropdownSetupExists(true);
@@ -466,7 +466,7 @@
 
 //     // NEW: Check if this column has dropdown configuration
 //     const hasDropdownConfig = dropdownSetup[id] && Array.isArray(dropdownSetup[id]) && dropdownSetup[id].length > 0;
-    
+
 //     if (hasDropdownConfig) {
 //       // Render dropdown for configured columns
 //       return (
@@ -864,7 +864,7 @@
 //                     .map(column => {
 //                       // NEW: Show indicator for dropdown fields
 //                       const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
-                      
+
 //                       return (
 //                         <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 //                           <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0 flex items-center gap-1">
@@ -1332,19 +1332,19 @@
 //       const tableName = apiParams.tableName;
 //       const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
 //       const { data } = await axios.get(route);
-      
+
 //       if (data.exists && data.setup) {
 //         // Set dropdown values
 //         if (data.setup.mapping) {
 //           setDropdownSetup(data.setup.mapping);
 //         }
-        
+
 //         // ENHANCED: Set column order
 //         if (data.setup.columnOrder) {
 //           setColumnOrder(data.setup.columnOrder);
 //           console.log('Column order loaded:', data.setup.columnOrder);
 //         }
-        
+
 //         setDropdownSetupExists(true);
 //         console.log('Dropdown setup loaded:', data.setup.mapping);
 //       } else {
@@ -1375,11 +1375,11 @@
 //     return filteredColumns.sort((a, b) => {
 //       const orderA = columnOrder[a.id] || 999;
 //       const orderB = columnOrder[b.id] || 999;
-      
+
 //       if (orderA !== orderB) {
 //         return orderA - orderB;
 //       }
-      
+
 //       // If orders are the same, sort alphabetically
 //       return a.name.localeCompare(b.name);
 //     });
@@ -1575,11 +1575,11 @@
 //     // ENHANCED: Initialize new record data with ordered columns
 //     const initialData = {};
 //     const orderedColumns = getOrderedFormColumns();
-    
+
 //     orderedColumns.forEach(column => {
 //       initialData[column.id] = '';
 //     });
-    
+
 //     setNewRecordData(initialData);
 //     setIsAddModalOpen(true);
 //   };
@@ -1718,7 +1718,7 @@
 
 //     // Check if this column has dropdown configuration
 //     const hasDropdownConfig = dropdownSetup[id] && Array.isArray(dropdownSetup[id]) && dropdownSetup[id].length > 0;
-    
+
 //     if (hasDropdownConfig) {
 //       // Render dropdown for configured columns
 //       return (
@@ -2130,7 +2130,7 @@
 //                     // Show indicator for dropdown fields and order
 //                     const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
 //                     const orderNumber = columnOrder[column.id];
-                    
+
 //                     return (
 //                       <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 //                         <Label htmlFor={column.id} className="font-medium text-sm sm:w-32 sm:text-right sm:flex-shrink-0 flex items-center gap-1">
@@ -2558,7 +2558,7 @@ import { useSelector } from 'react-redux';
 import { showText } from 'pdf-lib';
 
 
-const CustomTable = ({apiParams, type = "normal" }) => {
+const CustomTable = ({ apiParams, type = "normal" }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]);
   const [records, setRecords] = useState([]);
@@ -2577,6 +2577,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
   const [editingValues, setEditingValues] = useState({});
   const [editEnabled, setEditEnabled] = useState(false);
   const [currentEditingRecord, setCurrentEditingRecord] = useState({});
+  const [metaData, setMetaData] = useState({});
 
   // Add Record Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -2611,19 +2612,19 @@ const CustomTable = ({apiParams, type = "normal" }) => {
       const tableName = apiParams.tableName;
       const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
       const { data } = await axios.get(route);
-      
+
       if (data.exists && data.setup) {
         // Set dropdown values
         if (data.setup.mapping) {
           setDropdownSetup(data.setup.mapping);
         }
-        
+
         // ENHANCED: Set column order
         if (data.setup.columnOrder) {
           setColumnOrder(data.setup.columnOrder);
           console.log('Column order loaded:', data.setup.columnOrder);
         }
-        
+
         setDropdownSetupExists(true);
         console.log('Dropdown setup loaded:', data.setup.mapping);
       } else {
@@ -2646,26 +2647,26 @@ const CustomTable = ({apiParams, type = "normal" }) => {
       column.id !== 'id' &&
       !column.id.includes('_comment') &&
       !column.id.includes('created_at') &&
-      !column.id.includes('updated_at') 
+      !column.id.includes('updated_at')
       // && !column.id.includes('_date')
     );
 
     // Sort columns by order number, then alphabetically for columns without order
     return filteredColumns
-    .filter(column => {
+      .filter(column => {
         const order = columnOrder[column.id];
         return order !== 0; // Skip fields with order = 0
       }).sort((a, b) => {
-      const orderA = columnOrder[a.id] || 999;
-      const orderB = columnOrder[b.id] || 999;
-      
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-      
-      // If orders are the same, sort alphabetically
-      return a.name.localeCompare(b.name);
-    });
+        const orderA = columnOrder[a.id] || 999;
+        const orderB = columnOrder[b.id] || 999;
+
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+
+        // If orders are the same, sort alphabetically
+        return a.name.localeCompare(b.name);
+      });
   };
 
   // Fetch data from API
@@ -2679,7 +2680,10 @@ const CustomTable = ({apiParams, type = "normal" }) => {
 
       if (type === "normal") {
         const response = await axios.post(getAllRecords, apiParams);
-        fetchedData = response.data;
+        fetchedData = response.data.data;
+        console.log(response.data.columns)
+
+        setMetaData(response.data.columns)
       } else if (type === "payment") {
         // Use the correct payment endpoint
         const response = await axios.get(
@@ -2872,7 +2876,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
     // ENHANCED: Initialize new record data with ordered columns and auto-fill
     const initialData = {};
     const orderedColumns = getOrderedFormColumns();
-    
+
     orderedColumns.forEach(column => {
       if (column.id === 'pa_id') {
         // Auto-fill pa_id from URL params
@@ -2880,13 +2884,13 @@ const CustomTable = ({apiParams, type = "normal" }) => {
       } else if (column.id === 'us_id') {
         // Auto-generate us_id with Unix timestamp
         initialData[column.id] = us_id;
-      } else if(column.id === 'status'){
+      } else if (column.id === 'status') {
         initialData[column.id] = status;
       } else {
         initialData[column.id] = '';
       }
     });
-    
+
     console.log('Initialized form data with auto-fill:', initialData);
     setNewRecordData(initialData);
     setIsAddModalOpen(true);
@@ -3032,11 +3036,11 @@ const CustomTable = ({apiParams, type = "normal" }) => {
     const { id, type, name } = column;
 
     // Check if this is an auto-filled field (pa_id or us_id)
-    const isAutoFilled = id === 'pa_id' ;
+    const isAutoFilled = id === 'pa_id';
 
     // Check if this column has dropdown configuration
     const hasDropdownConfig = dropdownSetup[id] && Array.isArray(dropdownSetup[id]) && dropdownSetup[id].length > 0;
-    
+
     if (hasDropdownConfig && !isAutoFilled) {
       // Render dropdown for configured columns (except auto-filled ones)
       return (
@@ -3065,10 +3069,10 @@ const CustomTable = ({apiParams, type = "normal" }) => {
           disabled={true}
           className="bg-gray-50 cursor-not-allowed text-gray-600"
           placeholder={
-            id === 'pa_id' 
-              ? 'Auto-filled from URL' 
-              : id === 'us_id' 
-                ? 'Auto-generated ID' 
+            id === 'pa_id'
+              ? 'Auto-filled from URL'
+              : id === 'us_id'
+                ? 'Auto-generated ID'
                 : `Auto-filled ${name.toLowerCase()}`
           }
         />
@@ -3384,10 +3388,10 @@ const CustomTable = ({apiParams, type = "normal" }) => {
 
   // ENHANCED: Get ordered columns for form display
   const orderedFormColumns = getOrderedFormColumns();
-  
 
-  return show ? "":(
- <Card className={pa_id ? "shadow-sm border-slate-200 mx-[6rem] hidden" : "shadow-sm border-slate-200 mx-[6rem]" }>
+
+  return show ? "" : (
+    <Card className={pa_id ? "shadow-sm border-slate-200 mx-[6rem] hidden" : "shadow-sm border-slate-200 mx-[6rem]"}>
       <CardHeader className="pb-3">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -3419,7 +3423,7 @@ const CustomTable = ({apiParams, type = "normal" }) => {
             </CardDescription>
           </div>
 
-          
+
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -3440,108 +3444,97 @@ const CustomTable = ({apiParams, type = "normal" }) => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {/* ENHANCED: Add Record Button with Ordered Modal */}
-          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-  <DialogTrigger asChild>
-    <Button
-      className="flex items-center gap-2"
-      onClick={handleOpenAddModal}
-    >
-      <Plus className="h-4 w-4" />
-      <span className="hidden sm:inline">Add Record</span>
-    </Button>
-  </DialogTrigger>
-  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>Add New Record</DialogTitle>
-      <DialogDescription>
-        Fill in the details to create a new record in the database.
-        {/* Show info about auto-filled fields */}
-        {/* {(pa_id || orderedFormColumns.some(col => col.id === 'us_id')) && (
-          <div className="space-y-1 mt-2">
-            {pa_id && (
-              <span className="block text-green-600">
-                ✓ PA ID is auto-filled from URL
-              </span>
-            )}
-            {orderedFormColumns.some(col => col.id === 'us_id') && (
-              <span className="block text-blue-600">
-                ✓ US ID is auto-generated
-              </span>
-            )}
-          </div>
-        )} */}
-      </DialogDescription>
-    </DialogHeader>
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={handleOpenAddModal}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Record</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Record</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details to create a new record in the database.
+                  </DialogDescription>
+                </DialogHeader>
 
-    <div className="space-y-6 py-4">
-      {/* ENHANCED: Use ordered columns for form display with auto-fill indicators */}
-      {orderedFormColumns.map((column, index) => {
-        // Show indicator for dropdown fields, order, and auto-fill
-        const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
-        const orderNumber = columnOrder[column.id];
-        const isAutoFilled = column.id === 'pa_id';
-        
-        return (
-          <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <Label htmlFor={column.id} className="font-medium text-sm sm:w-48 sm:text-right sm:flex-shrink-0 flex items-center gap-1 justify-start sm:justify-end">
-              {/* Show order number if available */}
-              {orderNumber && (
-                <Badge variant="secondary" className="text-xs h-4 px-1 mr-1">
-                  {orderNumber}
-                </Badge>
-              )}
-              <span className="flex-1 sm:flex-initial">{column.name}</span>
-              {/* Show indicators
-              {hasDropdown && !isAutoFilled && (
-                <Badge variant="outline" className="text-xs h-4 px-1 ml-1">
-                  dropdown
-                </Badge>
-              )} */}
-              {isAutoFilled && (
-                <Badge variant="default" className="text-xs h-4 px-1 bg-green-500 ml-1">
-                  auto
-                </Badge>
-              )}
-            </Label>
-            <div className="flex-1 min-w-0">
-              {renderFormInput(
-                column,
-                newRecordData[column.id],
-                handleNewRecordChange
-              )}
-              {/* Show helper text for auto-filled fields */}
-              {isAutoFilled && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {column.id === 'pa_id' 
-                    ? 'Automatically filled from URL parameter' 
-                    : 'Automatically generated unique identifier'}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+                <div className="space-y-6 py-4">
+                  {/* ENHANCED: Use ordered columns for form display with auto-fill indicators */}
+                  {orderedFormColumns.map((column, index) => {
+                    // Show indicator for dropdown fields, order, and auto-fill
+                    const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
+                    const orderNumber = columnOrder[column.id];
+                    const isAutoFilled = column.id === 'pa_id';
 
-    <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
-      <Button
-        variant="outline"
-        onClick={() => setIsAddModalOpen(false)}
-        disabled={isCreating}
-        className="w-full sm:w-auto order-2 sm:order-1"
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={handleCreateRecord}
-        disabled={isCreating}
-        className="w-full sm:w-auto order-1 sm:order-2"
-      >
-        {isCreating ? 'Creating...' : 'Create Record'}
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+                    return (
+                      <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <Label htmlFor={column.id} className="font-medium text-sm sm:w-48 sm:text-right sm:flex-shrink-0 flex items-center gap-1 justify-start sm:justify-end">
+                          {/* Show order number if available */}
+                          {orderNumber && (
+                            <Badge variant="secondary" className="text-xs h-4 px-1 mr-1">
+                              {orderNumber}
+                            </Badge>
+                          )}
+                          <span className="flex-1 sm:flex-initial">{column.name}</span>
+
+                          {(() => {
+                            const columnMetadata = metaData.find(col => col.column_name === column.id);
+                            console.log("column Meta Data:", columnMetadata);
+                            return columnMetadata?.is_nullable === "NO" && (
+                              <Badge variant="default" className="text-xs h-4 px-1 text-red-100">
+                                *
+                              </Badge>
+                            );
+                          })()}
+                          {isAutoFilled && (
+                            <Badge variant="default" className="text-xs h-4 px-1 bg-green-500 ml-1">
+                              auto
+                            </Badge>
+                          )}
+                        </Label>
+                        <div className="flex-1 min-w-0">
+                          {renderFormInput(
+                            column,
+                            newRecordData[column.id],
+                            handleNewRecordChange
+                          )}
+                          {/* Show helper text for auto-filled fields */}
+                          {isAutoFilled && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {column.id === 'pa_id'
+                                ? 'Automatically filled from URL parameter'
+                                : 'Automatically generated unique identifier'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <DialogFooter className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAddModalOpen(false)}
+                    disabled={isCreating}
+                    className="w-full sm:w-auto order-2 sm:order-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateRecord}
+                    disabled={isCreating}
+                    className="w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    {isCreating ? 'Creating...' : 'Create Record'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             <Button
               variant="outline"
               size="sm"

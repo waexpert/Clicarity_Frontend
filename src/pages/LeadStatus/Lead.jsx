@@ -154,7 +154,7 @@ const Lead = () => {
                           variant="ghost" 
                           size="icon"
                           className="h-8 w-8 p-0 text-slate-500 hover:text-[#4285B4] hover:bg-slate-100"
-                            onClick={() => navigate(`/db/${id}/lead_status`)}
+                            onClick={() => navigate(`/db/custom/capture/leadstatus`)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>

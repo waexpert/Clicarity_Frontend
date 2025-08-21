@@ -54,7 +54,7 @@ const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 const predefinedFields = [
   { name: 'id', type: 'Text', defaultValue: 'Auto', locked: true },
   { name: 'us_id', type: 'Text', locked: true },
-  // { name: 'assigned_to', type: 'Text', defaultValue: '-', locked: true },
+  { name: 'assigned_to', type: 'Text', defaultValue: '-', locked: true },
   // { name: 'notes', type: 'Text', label: 'Notes', defaultValue: '-', locked: true },
   // { name: 'assigned_to', type: 'Text', label: 'Assigned To', defaultValue: '-', locked: true },
   // { name: 'assigned_by', type: 'Text', label: 'Assigned By', defaultValue: '-', locked: true },
@@ -73,7 +73,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
 
   const [showCaptureWebhook, setShowCaptureWebhook] = useState('');
 
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const [title, setTitle] = useState('leadstatus');
   const [customFields, setCustomFields] = useState([]);
   const [showInChat, setShowInChat] = useState(false);
@@ -118,8 +118,9 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
       });
 
       setActualData(convertWithMapping(data.data));
-      dispatch(setDynamicData({leadStatusStructure: convertWithMapping(data.data)}))
+      dispatch(setDynamicData({ leadStatusStructure: convertWithMapping(data.data) }))
       console.log(data.data);
+      console.log(customFields)
     }
     getTableStructure();
   }, []);
@@ -132,7 +133,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
   };
 
   const addField = () => {
-    setCustomFields([...customFields, { name: '', type: 'Text', label: '', defaultValue: '' }]);
+    setCustomFields([...customFields, { name: '', type: 'Text', label: '', defaultValue: '', required: '' }]);
   };
 
   const removeField = (index) => {
@@ -146,6 +147,21 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
     console.log('Creating Data Store:', data);
     try {
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/createTable`, data);
+      alert("Form submitted successfully!");
+      console.log(res)
+      // setShowDialog(0); // Close the dialog after successful submission
+    } catch (error) {
+      console.error("Creation failed:", error);
+      alert("Creation failed! Please try again.");
+    }
+  };
+
+    const handleAlterSubmit = async () => {
+    const allFields = [...customFields];
+    const data = { table_name: title, fields: allFields, schema_name, id };
+    console.log('Creating Data Store:', data);
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/alterTable`, data);
       alert("Form submitted successfully!");
       console.log(res)
       // setShowDialog(0); // Close the dialog after successful submission
@@ -184,7 +200,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
           </div>
 
           {/* Optional Show in Chat checkbox */}
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <Checkbox
               id="showInChat"
               checked={showInChat}
@@ -196,7 +212,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
             >
               Show in Chat Interface
             </Label>
-          </div>
+          </div> */}
 
           <Separator />
 
@@ -230,7 +246,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
                         {field.type}
                       </TableCell>
                       <TableCell className="text-slate-500">
-                        {field.label}
+                        {field.required}
                       </TableCell>
                       <TableCell className="text-slate-500">
                         {field.defaultValue || '-'}
@@ -260,6 +276,7 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
                       <TableHead>Type</TableHead>
                       {/* <TableHead>Label</TableHead> */}
                       <TableHead>Default Value</TableHead>
+                      <TableHead>Required</TableHead>
                       <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -317,6 +334,16 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
                           />
                         </TableCell>
                         <TableCell>
+                          <Checkbox
+                            id="showInChat"
+                            checked={field.required}
+                            onCheckedChange={(checked) =>
+                              handleCustomFieldChange(index, 'required', checked)
+                            }
+                          />
+
+                        </TableCell>
+                        <TableCell>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -356,13 +383,23 @@ const LeadStatusReportDataStore = ({ setShowDialog, columnFields }) => {
         >
           Cancel
         </Button>
+
+        { actualData.length == 0 ? 
         <Button
           onClick={handleSubmit}
           className="gap-2 bg-[#4285B4] hover:bg-[#3778b4]"
           disabled={!title}
         >
           <Save className="h-4 w-4" /> Create Data Store
+        </Button> :
+        <Button
+          onClick={handleAlterSubmit}
+          className="gap-2 bg-[#4285B4] hover:bg-[#3778b4]"
+          disabled={!title}
+        >
+          <Save className="h-4 w-4" /> Add Column
         </Button>
+}
       </CardFooter>
     </Card>
   );

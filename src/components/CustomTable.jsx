@@ -2558,7 +2558,8 @@ import { useSelector } from 'react-redux';
 import { showText } from 'pdf-lib';
 
 
-const CustomTable = ({ apiParams, type = "normal" }) => {
+
+const CustomTable = ({type = "normal" }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]);
   const [records, setRecords] = useState([]);
@@ -2605,6 +2606,12 @@ const CustomTable = ({ apiParams, type = "normal" }) => {
   const generateUsId = () => {
     return Date.now().toString();
   };
+
+  const { tableName1 } = useParams();
+  const apiParams = {
+    schemaName: userData.schema_name,
+    tableName : tableName1
+  }
 
   // ENHANCED: Function to fetch dropdown setup with column ordering
   const fetchDropdownSetup = async () => {

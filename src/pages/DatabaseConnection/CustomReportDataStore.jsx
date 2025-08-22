@@ -593,6 +593,7 @@ const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 const defaultPredefinedFields = [
   { name: 'id', type: 'Text', defaultValue: 'Auto', locked: true, systemField: true },
   { name: 'us_id', type: 'Text', locked: true, systemField: true },
+   { name: 'pa_id', type: 'Text', locked: true, systemField: true },
 ];
 
 // Product-specific predefined fields

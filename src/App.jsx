@@ -134,14 +134,15 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/tasks/record"
           element={
             <ProtectedRoute>
               <RecordTaskDashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
+
         <Route
           path="/tasks/record/create"
           element={
@@ -161,14 +162,14 @@ const hideHeader =
           }
         />
 
-        <Route
+        {/* <Route
           path="/jobstatus/record"
           element={
             <ProtectedRoute>
               <RecordJobDashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
                 <Route
           path="/:tableName1/record"
@@ -204,14 +205,14 @@ const hideHeader =
           }
         />
 
-        <Route
+        {/* <Route
           path="/leadstatus/record"
           element={
             <ProtectedRoute>
               <RecordLeadDashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
 
         <Route path="/db/:id/lead_status" element={
@@ -232,14 +233,14 @@ const hideHeader =
           }
         />
 
-        <Route
+        {/* <Route
           path="/paymentstatus/record"
           element={
             <ProtectedRoute>
               <RecordPaymentDashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
 
         <Route path="/db/:id/payment_status" element={

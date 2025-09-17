@@ -39,13 +39,15 @@ import CustomCaptureWebhook from "./pages/DatabaseConnection/CustomCaptureWebhoo
 import CustomStructure from "./pages/DatabaseConnection/CustomStructure";
 import DropDownSetup from "./pages/Setup/DropDownSetup";
 import SheetTransfer from "./pages/JSR_Services/SheetTransfer";
+import AdminHome from "./pages/Admin/AdminHome";
+import SpreadsheetDemo from "./pages/Profile/SpreadSheet";
 
 
 function App() {
 const location = useLocation();
 
 const hideHeader =
-  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder"].includes(location.pathname) ||
+  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder","/admin"].includes(location.pathname) ||
   (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
 
@@ -220,7 +222,7 @@ const hideHeader =
             <StructureLeadStatus />
           </ProtectedRoute>
         } />
-        {/* ///////////////////////////////////////////////////////////////         */}
+        {/* /////////////////////////////////////////////////////////////// */}
 
 
         {/* Payment Status */}
@@ -242,14 +244,13 @@ const hideHeader =
           }
         /> */}
 
-
         <Route path="/db/:id/payment_status" element={
           <ProtectedRoute>
             <StructurePaymentStatus />
           </ProtectedRoute>
         } />
-
-        {/* ////////////////////////////////////////////////////////          */}
+         
+        {/* /////////////////////////////////////////////////////////////// */}
         <Route
           path="/database"
           element={
@@ -337,7 +338,12 @@ const hideHeader =
           </ProtectedRoute>
         } />
         <Route path="*" element={<Home />} />
+        <Route path="/spread" element={<SpreadsheetDemo />} />
 
+
+
+{/* Admin Routes */}
+<Route path="/admin" element={<AdminHome/>} />
       </Routes>
     </>
   );

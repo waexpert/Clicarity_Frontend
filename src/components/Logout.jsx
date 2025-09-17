@@ -2,7 +2,7 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { userLogout } from '../features/userMethod/userSlice'; // assuming you're using Redux slice
+import { userLogout } from '../features/userMethod/userSlice'; 
 import { Button } from './ui/button';
 
 const LogoutButton = () => {

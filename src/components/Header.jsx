@@ -2,7 +2,7 @@ import React from 'react'
 import { GoHome } from "react-icons/go";
 import "../css/Header.css"
 import LogoutButton from './Logout';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate,useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // shadcn part
@@ -41,6 +41,13 @@ const Header = () => {
         return "U";
     };
 
+      const location = useLocation();
+  const path = location.pathname; // '/verify-mfa'
+
+  // Extract the last part after '/'
+  const page = path.split('/').filter(Boolean).pop();
+
+
     return (
         <div className='headerWrapper'>
             <div className="header1">
@@ -76,7 +83,8 @@ const Header = () => {
                     </DropdownMenu>
                 </div>
             </div>
-
+            
+            { page == "verify-mfa" || page == "generate-secret" ? "":(
             <div className="breadcrumb-container">
                 <Breadcrumb>
                     <BreadcrumbList>
@@ -94,6 +102,7 @@ const Header = () => {
                     </BreadcrumbList>
                 </Breadcrumb>
             </div>
+)}
         </div>
     )
 }

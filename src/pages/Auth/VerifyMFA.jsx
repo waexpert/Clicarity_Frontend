@@ -38,7 +38,7 @@ const VerifyMFA = () => {
   };
 
   return (
-    <div className="mfa-verify-wrapper">
+    <div className="mfa-verify-wrapper mx-[6rem]">
       <h2>Verify MFA Code</h2>
       <form onSubmit={handleSubmit}>
 
@@ -51,7 +51,7 @@ const VerifyMFA = () => {
           required
           maxLength={6}
 
-          style={{width:200}}
+          style={{width:200,marginBottom:10}}
         />
         <Button type="submit">Verify</Button>
 

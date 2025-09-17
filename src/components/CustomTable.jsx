@@ -2559,7 +2559,7 @@ import { showText } from 'pdf-lib';
 
 
 
-const CustomTable = ({type = "normal" }) => {
+const CustomTable = ({ type = "normal" }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [originalRecords, setOriginalRecords] = useState([]);
   const [records, setRecords] = useState([]);
@@ -2590,6 +2590,12 @@ const CustomTable = ({type = "normal" }) => {
   const [columnOrder, setColumnOrder] = useState({});
   const [dropdownSetupExists, setDropdownSetupExists] = useState(false);
 
+  // Delete Record States
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
+  const [deleteUsIdInput, setDeleteUsIdInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -2610,8 +2616,63 @@ const CustomTable = ({type = "normal" }) => {
   const { tableName1 } = useParams();
   const apiParams = {
     schemaName: userData.schema_name,
-    tableName : tableName1
+    tableName: tableName1
   }
+
+  // Add Delete Function
+  const handleDeleteClick = (record) => {
+    setRecordToDelete(record);
+    setDeleteUsIdInput('');
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!recordToDelete || !deleteUsIdInput.trim()) {
+      toast.error("Please enter the us_id to confirm deletion");
+      return;
+    }
+
+    if (deleteUsIdInput.trim() !== recordToDelete.us_id) {
+      toast.error("Entered us_id does not match. Deletion cancelled.");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      const params = new URLSearchParams({
+        id: recordToDelete.id,
+        schemaName: apiParams.schemaName,
+        tableName: apiParams.tableName
+      });
+
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/data/deleteRecord?${params.toString()}`);
+
+      toast.success("Record deleted successfully");
+      setDeleteConfirmOpen(false);
+      setRecordToDelete(null);
+      setDeleteUsIdInput('');
+      handleRefresh();
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      if (error.response) {
+        toast.error(`Failed to delete record: ${error.response.data.error || error.response.data.message || 'Unknown error'}`);
+      } else {
+        toast.error("Failed to delete record. Please try again.");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setRecordToDelete(null);
+    setDeleteUsIdInput('');
+  };
+
+
 
   // ENHANCED: Function to fetch dropdown setup with column ordering
   const fetchDropdownSetup = async () => {
@@ -3354,7 +3415,6 @@ const CustomTable = ({type = "normal" }) => {
     }
   };
 
-  // Editing Values Handle Save function
   const handleSave = async (originalId) => {
     const schemaName = apiParams.schemaName;
     const tableName = apiParams.tableName;
@@ -3369,10 +3429,32 @@ const CustomTable = ({type = "normal" }) => {
     let colIndex = 1;
     Object.entries(editingValues).forEach(([key, val]) => {
       if (val === undefined) return;
-      const sanitizedVal = val === null || val === 'null' ? '' : val;
-      params.append(`col${colIndex}`, key);
-      params.append(`val${colIndex}`, sanitizedVal);
-      colIndex++;
+
+      // Handle date fields specifically
+      if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+        // Skip empty/null date fields entirely to avoid database errors
+        if (val === null || val === 'null' || val === '' || val === undefined) {
+          return; // Don't add this field to the update
+        }
+
+        // Validate date format if value exists
+        const dateValue = new Date(val);
+        if (isNaN(dateValue.getTime())) {
+          console.warn(`Invalid date format for ${key}:`, val);
+          return; // Skip invalid dates
+        }
+
+        // Use ISO format for dates
+        params.append(`col${colIndex}`, key);
+        params.append(`val${colIndex}`, dateValue.toISOString().split('T')[0]); // YYYY-MM-DD format
+        colIndex++;
+      } else {
+        // Handle non-date fields
+        const sanitizedVal = val === null || val === 'null' ? '' : val;
+        params.append(`col${colIndex}`, key);
+        params.append(`val${colIndex}`, sanitizedVal);
+        colIndex++;
+      }
     });
 
     try {
@@ -3381,6 +3463,7 @@ const CustomTable = ({type = "normal" }) => {
       setEditingRowId(null);
       handleRefresh();
     } catch (err) {
+      console.error('Update error:', err);
       toast.error("Update failed");
     }
   };
@@ -3691,12 +3774,7 @@ const CustomTable = ({type = "normal" }) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead className="w-[40px]">
-                    <Checkbox
-                      checked={selectedRecords.length === records.length && records.length > 0}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </TableHead>
+                  <TableHead className="w-[60px] text-center">Delete</TableHead>
                   {visibleColumns.map(column => (
                     <TableHead
                       key={column.id}
@@ -3739,11 +3817,18 @@ const CustomTable = ({type = "normal" }) => {
                         }
                         setCurrentEditingRecord(record);
                       }}>
-                      <TableCell className="w-[40px]">
-                        <Checkbox
-                          checked={selectedRecords.includes(record.id)}
-                          onCheckedChange={() => handleSelectRecord(record.id)}
-                        />
+                      <TableCell className="w-[60px] text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(record);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
 
                       {visibleColumns.map(column => (
@@ -3830,6 +3915,64 @@ const CustomTable = ({type = "normal" }) => {
             </PaginationContent>
           </Pagination>
         </div>
+
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle className=" flex items-center gap-2">
+        <Trash2 className="h-5 w-5" />
+        Confirm Deletion
+      </DialogTitle>
+      <DialogDescription>
+        This action cannot be undone. Please type the <strong>us_id</strong> to confirm deletion.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="space-y-4 py-4">
+      {recordToDelete && (
+        <div className="bg-gray-50 p-3 rounded border">
+          <p className="text-sm font-medium">Record to delete:</p>
+          <p className="text-sm text-gray-600">ID: {recordToDelete.id}</p>
+          <p className="text-sm text-gray-600">US_ID: <span className="font-mono bg-yellow-100 px-1 rounded">{recordToDelete.us_id}</span></p>
+        </div>
+      )}
+
+      <div>
+        <Label htmlFor="confirm-us-id" className="text-sm font-medium">
+          Enter us_id to confirm:
+        </Label>
+        <Input
+          id="confirm-us-id"
+          type="text"
+          placeholder="Type us_id here"
+          value={deleteUsIdInput}
+          onChange={(e) => setDeleteUsIdInput(e.target.value)}
+          className="mt-1"
+          autoFocus
+        />
+      </div>
+    </div>
+
+    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+      <Button
+        variant="outline"
+        onClick={handleDeleteCancel}
+        disabled={isDeleting}
+        className="w-full sm:w-auto"
+      >
+        Cancel
+      </Button>
+      <Button
+        variant="destructive"
+        onClick={handleDeleteConfirm}
+        disabled={isDeleting || !deleteUsIdInput.trim()}
+        className="w-full sm:w-auto"
+      >
+        {isDeleting ? 'Deleting...' : 'Delete Record'}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
       </CardContent>
     </Card>
   );

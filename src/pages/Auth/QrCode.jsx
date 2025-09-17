@@ -34,7 +34,7 @@ const QRSetup = () => {
   }, []);
 
   return (
-    <div className="qr-setup-wrapper">
+    <div className="qr-setup-wrapper mx-[6rem]">
       <h2>Multi-Factor Authentication Setup</h2>
       <p>Scan this QR code with Google Authenticator or any MFA app:</p>
 

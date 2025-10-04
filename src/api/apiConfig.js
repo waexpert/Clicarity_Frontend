@@ -4,5 +4,6 @@ export const getAllRecords = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllDa
 export const updateRecord = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple`;
 export const createRecord = `${import.meta.env.VITE_APP_BASE_URL}/data/createRecord`;
 export const getAllPayments = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments`;
+export const getRecordById = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordById`
 
 

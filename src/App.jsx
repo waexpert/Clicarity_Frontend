@@ -41,13 +41,14 @@ import DropDownSetup from "./pages/Setup/DropDownSetup";
 import SheetTransfer from "./pages/JSR_Services/SheetTransfer";
 import AdminHome from "./pages/Admin/AdminHome";
 import SpreadsheetDemo from "./pages/Profile/SpreadSheet";
+import WastageInput from "./components/WastageInput";
 
 
 function App() {
 const location = useLocation();
 
 const hideHeader =
-  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder","/admin"].includes(location.pathname) ||
+  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder","/admin","/wastage"].includes(location.pathname) ||
   (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
 
@@ -339,6 +340,7 @@ const hideHeader =
         } />
         <Route path="*" element={<Home />} />
         <Route path="/spread" element={<SpreadsheetDemo />} />
+        <Route path="/wastage" element={<WastageInput/>}/>
 
 
 

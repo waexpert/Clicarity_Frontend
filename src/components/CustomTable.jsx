@@ -2601,6 +2601,7 @@ const CustomTable = ({ type = "normal" }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const userData = useSelector((state) => state.user);
   const owner_id = userData.id;
+  const [isDataReady, setIsDataReady] = useState(false);
 
   // Get URL parameters
   const pa_id = searchParams.get('pa_id');
@@ -2615,8 +2616,11 @@ const CustomTable = ({ type = "normal" }) => {
 
   const { tableName1 } = useParams();
   const apiParams = {
-    schemaName: userData.schema_name,
-    tableName: tableName1
+    // schemaName: userData.schema_name,
+    // tableName: tableName1
+
+    schemaName:"public",
+    tableName:"testing_table"
   }
 
   // Add Delete Function
@@ -2673,6 +2677,40 @@ const CustomTable = ({ type = "normal" }) => {
   };
 
 
+// Function to fetch record data by us_id
+const fetchRecordByUsId = async (usId) => {
+  try {
+    const decodedUsId = decodeURIComponent(usId);
+    
+    const response = await axios.post(
+      `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordById`,
+      {
+        schemaName: apiParams.schemaName,
+        tableName: apiParams.tableName,
+        id: decodedUsId
+      }
+    );
+    
+    console.log("Full response:", response);
+    console.log("response.data:", response.data);
+    
+    // FIX: The data is directly in response.data, not response.data.data
+    if (response.data) {
+      console.log('Returning record:', response.data);
+      return response.data;  // Changed from response.data.data
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching record by us_id:', error);
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      toast.error(`Failed to fetch record: ${error.response.data.message || 'Unknown error'}`);
+    } else {
+      toast.error('Failed to fetch record data');
+    }
+    return null;
+  }
+};
 
   // ENHANCED: Function to fetch dropdown setup with column ordering
   const fetchDropdownSetup = async () => {
@@ -2857,6 +2895,14 @@ const CustomTable = ({ type = "normal" }) => {
     applyFiltersAndSearch();
   }, [searchTerm, statusFilter, priorityFilter, originalRecords]);
 
+  useEffect(() => {
+  if (isDataReady) {
+    console.log('Data ready, opening modal with:', newRecordData);
+    setIsAddModalOpen(true);
+    setIsDataReady(false); // Reset for next time
+  }
+}, [isDataReady, newRecordData]);
+
   // Helper function to format column names
   const formatColumnName = (key) => {
     return key
@@ -2934,43 +2980,111 @@ const CustomTable = ({ type = "normal" }) => {
   };
 
   // ENHANCED: Handle Add Record Modal with auto-fill
-  const handleOpenAddModal = () => {
-    // Don't open if columns aren't loaded yet
-    if (columns.length === 0) {
-      console.log('Columns not loaded yet, waiting...');
-      return;
+  // const handleOpenAddModal = () => {
+  //   // Don't open if columns aren't loaded yet
+  //   if (columns.length === 0) {
+  //     console.log('Columns not loaded yet, waiting...');
+  //     return;
+  //   }
+
+  //   // ENHANCED: Initialize new record data with ordered columns and auto-fill
+  //   const initialData = {};
+  //   const orderedColumns = getOrderedFormColumns();
+
+  //   orderedColumns.forEach(column => {
+  //     if (column.id === 'pa_id') {
+  //       // Auto-fill pa_id from URL params
+  //       initialData[column.id] = pa_id || '';
+  //     } else if (column.id === 'us_id') {
+  //       // Auto-generate us_id with Unix timestamp
+  //       initialData[column.id] = us_id;
+  //     } else if (column.id === 'status') {
+  //       initialData[column.id] = status;
+  //     } else {
+  //       initialData[column.id] = '';
+  //     }
+  //   });
+
+  //   console.log('Initialized form data with auto-fill:', initialData);
+  //   setNewRecordData(initialData);
+  //   setIsAddModalOpen(true);
+
+  //   // Update URL to remove show parameter after opening modal
+  //   if (show === 'true') {
+  //     const newSearchParams = new URLSearchParams(searchParams);
+  //     newSearchParams.delete('show');
+  //     setSearchParams(newSearchParams, { replace: true });
+  //   }
+  // };
+
+const handleOpenAddModal = async () => {
+  if (columns.length === 0) {
+    console.log('Columns not loaded yet, waiting...');
+    return;
+  }
+
+  const currentUrlParams = Object.fromEntries(searchParams.entries());
+  const initialData = {};
+  const orderedColumns = getOrderedFormColumns();
+
+  if (currentUrlParams.us_id) {
+    console.log('Fetching record for us_id:', currentUrlParams.us_id);
+    const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
+    
+    console.log('=== DEBUG INFO ===');
+    console.log('fetchedRecord:', fetchedRecord);
+    console.log('typeof fetchedRecord:', typeof fetchedRecord);
+    console.log('Is array?:', Array.isArray(fetchedRecord));
+    
+    if (fetchedRecord) {
+      console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
+      console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
+      
+      orderedColumns.forEach(column => {
+        console.log(`\nChecking column: ${column.id}`);
+        console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
+        console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
+        
+        if (column.id === 'quantity') {
+          initialData[column.id] = '';
+          console.log(`  - Set to empty (quantity)`);
+        } else if (fetchedRecord.hasOwnProperty(column.id)) {
+          const value = fetchedRecord[column.id];
+          initialData[column.id] = value === null ? '' : String(value);
+          console.log(`  - Set to: ${initialData[column.id]}`);
+        } else if (currentUrlParams[column.id]) {
+          initialData[column.id] = currentUrlParams[column.id];
+          console.log(`  - Set from URL param: ${initialData[column.id]}`);
+        } else {
+          initialData[column.id] = '';
+          console.log(`  - Set to empty (no match)`);
+        }
+      });
+      
+      console.log('=== FINAL initialData ===');
+      console.log(initialData);
     }
-
-    // ENHANCED: Initialize new record data with ordered columns and auto-fill
-    const initialData = {};
-    const orderedColumns = getOrderedFormColumns();
-
+  } else {
     orderedColumns.forEach(column => {
-      if (column.id === 'pa_id') {
-        // Auto-fill pa_id from URL params
-        initialData[column.id] = pa_id || '';
+      if (currentUrlParams[column.id]) {
+        initialData[column.id] = currentUrlParams[column.id];
       } else if (column.id === 'us_id') {
-        // Auto-generate us_id with Unix timestamp
-        initialData[column.id] = us_id;
-      } else if (column.id === 'status') {
-        initialData[column.id] = status;
+        initialData[column.id] = generateUsId();
       } else {
         initialData[column.id] = '';
       }
     });
+  }
 
-    console.log('Initialized form data with auto-fill:', initialData);
-    setNewRecordData(initialData);
-    setIsAddModalOpen(true);
+  setNewRecordData(initialData);
+  setIsDataReady(true);
 
-    // Update URL to remove show parameter after opening modal
-    if (show === 'true') {
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('show');
-      setSearchParams(newSearchParams, { replace: true });
-    }
-  };
-
+  if (currentUrlParams.show === 'true') {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete('show');
+    setSearchParams(newSearchParams, { replace: true });
+  }
+};
   // Handle input change in add modal
   const handleNewRecordChange = (columnId, value) => {
     setNewRecordData(prev => ({
@@ -3573,7 +3687,7 @@ const CustomTable = ({ type = "normal" }) => {
 
                           {(() => {
                             const columnMetadata = metaData.find(col => col.column_name === column.id);
-                            console.log("column Meta Data:", columnMetadata);
+                            // console.log("column Meta Data:", columnMetadata);
                             return columnMetadata?.is_nullable === "NO" && (
                               <Badge variant="default" className="text-xs h-4 px-1 text-red-100">
                                 *

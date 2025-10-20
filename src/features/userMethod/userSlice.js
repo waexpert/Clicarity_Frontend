@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { act } from "react";
 
 // Flattened initial state
 const initialState = {
@@ -31,7 +32,7 @@ export const userSlice = createSlice({
         state.country = action.payload.country;
         state.currency = action.payload.currency;
         state.is_verified = action.payload.is_verified;
-        state.isAuthenticated = true;
+        state.isAuthenticated = action.payload.isAuthenticated;
         state.schema_name = action.payload.schema_name;
         console.log("after update", state);
       },
@@ -46,7 +47,7 @@ export const userSlice = createSlice({
         state.currency = action.payload.currency;
         state.is_verified = action.payload.is_verified;
         state.schema_name = action.payload.schema_name;
-        state.isAuthenticated = true;
+        state.isAuthenticated = action.payload.isAuthenticated;
       },
       userLogout: () => {
         return {
@@ -60,9 +61,12 @@ export const userSlice = createSlice({
           currency: "",
           is_verified: false,
           isAuthenticated: false,
-            schema_name :""
+          schema_name :""
         };
       },
+      setAuthenticated: (state, action) => {
+      state.isAuthenticated = action.payload;
+    },
         setSchemaName: (state, action) => {
     state.schema_name = action.payload;
   }
@@ -70,5 +74,5 @@ export const userSlice = createSlice({
   });
   
 
-export const { userRegistration, userLogin, userLogout,setSchemaName } = userSlice.actions;
+export const { userRegistration, userLogin, userLogout,setSchemaName,setAuthenticated } = userSlice.actions;
 export default userSlice.reducer;

@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { useDispatch } from 'react-redux';
+import { setAuthenticated } from '../../features/userMethod/userSlice';
 
 
 const VerifyMFA = () => {
@@ -12,6 +14,7 @@ const VerifyMFA = () => {
   const user = useSelector((state) => state.user);
   const user_id = user.id;
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +30,7 @@ const VerifyMFA = () => {
 
       if (res.data.success) {
         setStatus('✅ MFA Verified Successfully!');
+        dispatch(setAuthenticated(true));
         navigate('/')
       } else {
         setStatus('❌ Invalid code. Please try again.');

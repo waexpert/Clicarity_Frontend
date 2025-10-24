@@ -112,8 +112,8 @@ const CustomTable = ({ type = "normal" }) => {
   const owner_id = userData.id;
 
     const apiParams = {
-    schemaName:"lakshy_76190723",
-    tableName : "leadstatus"
+    schemaName:"public",
+    tableName : "testing_table"
   }
 
   // ENHANCED: Function to fetch dropdown setup with column ordering

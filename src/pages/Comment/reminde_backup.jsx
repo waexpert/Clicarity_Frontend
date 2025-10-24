@@ -43,6 +43,8 @@ function useQueryObject() {
 }
 
 function TeamMemberDropdown({ selectedMember, setSelectedMember, teamMembers }) {
+
+    console.log("SchemaName:", teamMembers);
     return (
         <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 bg-accent py-2.5 px-3 rounded-lg w-full justify-between">

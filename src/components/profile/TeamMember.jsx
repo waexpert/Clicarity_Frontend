@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
-  DialogContent,
+  DialogContent,  
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -49,7 +49,8 @@ export default function TeamMember() {
     empid: '',
     department: '',
     manager_name: '',
-    birthday: ''
+    birthday: '',
+    email:''
   });
   const [addingMember, setAddingMember] = useState(false);
 
@@ -71,6 +72,7 @@ export default function TeamMember() {
       
       const apiUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`;
       console.log('API URL:', apiUrl);
+      console.log('schemaName:',schemaName)
       
       const response = await axios.post(apiUrl, {
         schemaName: schemaName,
@@ -80,7 +82,7 @@ export default function TeamMember() {
       console.log('Response:', response);
       
       // With Axios, the data is in response.data
-      const data = response.data;
+      const data = response.data.data;
       console.log('Fetched team members:', data);
       setTeamMembers(data);
       setFilteredMembers(data);
@@ -139,7 +141,8 @@ export default function TeamMember() {
         empid: '',
         department: '',
         manager_name: '',
-        birthday: ''
+        birthday: '',
+        email:''
       });
       setOpenAddDialog(false);
       
@@ -319,6 +322,16 @@ export default function TeamMember() {
                       type="date"
                       value={newMember.birthday}
                       onChange={(e) => setNewMember({ ...newMember, birthday: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newMember.email}
+                      onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
                     />
                   </div>
                 </div>

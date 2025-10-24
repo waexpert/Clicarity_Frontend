@@ -1,13 +1,14 @@
 import { useLocation } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
+import { useSelector } from "react-redux"; // Added missing import
 import Header from "./components/Header";
 import Register from "./pages/Auth/Register";
 import Login from "./pages/Auth/Login";
 import Home from "./pages/Home";
 import QRSetup from "./pages/Auth/QrCode";
 import VerifyMFA from "./pages/Auth/VerifyMFA";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PublicRoute from "./components/PublicRoute";
+import ProtectedRoute from "./pages/Helper/ProtectedRoute";
+import PublicRoute from "./pages/Helper/PublicRoute";
 import DbConnection from "./pages/DbConnection";
 import SchemaDashboard from "./pages/TaskStatus/SchemaDashboard"
 import Profile from "./pages/Team/Profile";
@@ -43,14 +44,13 @@ import AdminHome from "./pages/Admin/AdminHome";
 import SpreadsheetDemo from "./pages/Profile/SpreadSheet";
 import WastageInput from "./components/WastageInput";
 
-
 function App() {
-const location = useLocation();
-
-const hideHeader =
-  ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder","/admin","/wastage"].includes(location.pathname) ||
-  (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
-
+  const location = useLocation();
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  
+  const hideHeader =
+    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage"].includes(location.pathname) ||
+    (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
   return (
     <>
@@ -60,6 +60,41 @@ const hideHeader =
       </Helmet>
       {!hideHeader && <Header />}
       <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/generate-secret"
+          element={
+            <PublicRoute>
+              <QRSetup />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/verify-mfa"
+          element={
+            <PublicRoute>
+              <VerifyMFA />
+            </PublicRoute>
+          }
+        />
+
+        {/* Protected Routes */}
         <Route
           path="/"
           element={
@@ -100,7 +135,6 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/db/custom"
           element={
@@ -109,7 +143,6 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/db/custom/capture"
           element={
@@ -118,7 +151,6 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/db/custom/capture/:tableName"
           element={
@@ -137,17 +169,8 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-        {/* <Route
-          path="/tasks/record"
-          element={
-            <ProtectedRoute>
-              <RecordTaskDashboard />
-            </ProtectedRoute>
-          }
-        /> */}
-
         <Route
-          path="/tasks/record/create"
+          path="/tasks/bulk"
           element={
             <ProtectedRoute>
               <TaskManagementTable />
@@ -164,17 +187,7 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
-        {/* <Route
-          path="/jobstatus/record"
-          element={
-            <ProtectedRoute>
-              <RecordJobDashboard />
-            </ProtectedRoute>
-          }
-        /> */}
-
-                <Route
+        <Route
           path="/:tableName1/record"
           element={
             <ProtectedRoute>
@@ -182,21 +195,14 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
-        {/* <Route
-          path="/:tableName1/record1"
+        <Route 
+          path="/db/:id/job_status" 
           element={
             <ProtectedRoute>
-              <CustomTable />
+              <StructureJobStatus />
             </ProtectedRoute>
-          }
-        /> */}
-
-        <Route path="/db/:id/job_status" element={
-          <ProtectedRoute>
-            <StructureJobStatus />
-          </ProtectedRoute>
-        } />
+          } 
+        />
 
         {/* Lead Status */}
         <Route
@@ -207,24 +213,14 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
-        {/* <Route
-          path="/leadstatus/record"
+        <Route 
+          path="/db/:id/lead_status" 
           element={
             <ProtectedRoute>
-              <RecordLeadDashboard />
+              <StructureLeadStatus />
             </ProtectedRoute>
-          }
-        /> */}
-
-
-        <Route path="/db/:id/lead_status" element={
-          <ProtectedRoute>
-            <StructureLeadStatus />
-          </ProtectedRoute>
-        } />
-        {/* /////////////////////////////////////////////////////////////// */}
-
+          } 
+        />
 
         {/* Payment Status */}
         <Route
@@ -235,23 +231,15 @@ const hideHeader =
             </ProtectedRoute>
           }
         />
-
-        {/* <Route
-          path="/paymentstatus/record"
+        <Route 
+          path="/db/:id/payment_status" 
           element={
             <ProtectedRoute>
-              <RecordPaymentDashboard />
+              <StructurePaymentStatus />
             </ProtectedRoute>
-          }
-        /> */}
-
-        <Route path="/db/:id/payment_status" element={
-          <ProtectedRoute>
-            <StructurePaymentStatus />
-          </ProtectedRoute>
-        } />
+          } 
+        />
          
-        {/* /////////////////////////////////////////////////////////////// */}
         <Route
           path="/database"
           element={
@@ -261,92 +249,102 @@ const hideHeader =
           }
         />
 
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
+        {/* Special Routes */}
+        <Route 
+          path="/testing" 
+          element={<Testing />} 
         />
-        <Route
-          path="/register"
+        <Route 
+          path="/sheet" 
           element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
+            <ProtectedRoute>
+              <SheetComment />
+            </ProtectedRoute>
+          } 
         />
-        <Route
-          path="/generate-secret"
+        <Route 
+          path="/postgres" 
           element={
-            <PublicRoute>
-              <QRSetup />
-            </PublicRoute>
-
-          }
+            <ProtectedRoute>
+              <PostgresComment />
+            </ProtectedRoute>
+          } 
         />
-        <Route
-          path="/verify-mfa"
+        <Route 
+          path="/upload" 
           element={
-            <PublicRoute>
-              <VerifyMFA />
-            </PublicRoute>
-
-          }
+            <ProtectedRoute>
+              <UploadFile />
+            </ProtectedRoute>
+          } 
         />
-
-        <Route path="/testing" element={
-          // <CaptureWebhook/>
-          // <StructureJobStatus/>
-          <Testing />
-
-        } />
-
-        <Route path="/sheet" element={
-          <ProtectedRoute>
-            <SheetComment />
-          </ProtectedRoute>
-
-        } />
-        <Route path="/postgres" element={
-          <ProtectedRoute>
-            <PostgresComment />
-          </ProtectedRoute>
-        } />
-        <Route path="/upload" element={
-          <ProtectedRoute>
-            <UploadFile />
-          </ProtectedRoute>
-        } />
-        <Route path="/reminder" element={
-          <ProtectedRoute>
-            <Reminder />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/sheetTransfer/:us_id" element={
-          <ProtectedRoute>
-            <SheetTransfer/>
-          </ProtectedRoute>
-        } />
-
+        <Route 
+          path="/reminder" 
+          element={
+            <ProtectedRoute>
+              <Reminder />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/sheetTransfer/:us_id" 
+          element={
+            <ProtectedRoute>
+              <SheetTransfer/>
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Setup Routes */}
-        <Route path="/db/setup/:tableName" element={
-          <ProtectedRoute>
-            <DropDownSetup />
-          </ProtectedRoute>
-        } />
-        <Route path="*" element={<Home />} />
-        <Route path="/spread" element={<SpreadsheetDemo />} />
-        <Route path="/wastage" element={<WastageInput/>}/>
+        <Route 
+          path="/db/setup/:tableName" 
+          element={
+            <ProtectedRoute>
+              <DropDownSetup />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/spread" 
+          element={<SpreadsheetDemo />} 
+        />
+        <Route 
+          path="/wastage" 
+          element={<WastageInput/>}
+        />
 
+        {/* Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>        
+            <AdminHome/>
+            </ProtectedRoute> 
+        } 
+        />
+        
+        {/* Catch-all route */}
+        <Route 
+          path="*" 
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } 
+        />
 
+        <Route 
+          path="/mnbvcxz" 
+          element={
 
-{/* Admin Routes */}
-<Route path="/admin" element={<AdminHome/>} />
+              <Home />
+          } 
+        />
       </Routes>
+
+
+      
     </>
   );
 }

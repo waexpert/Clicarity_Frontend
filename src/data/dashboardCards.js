@@ -51,22 +51,22 @@ const dashboardCards = [
     iconColor: "#4285B4",
     route: "/birthdaystatus"
   },
-  {
-    id: 6,
-    title: "Lookup Match",
-    description: "Search and find matches across your database with advanced filters.",
-    icon: "lookup",
-    iconColor: "#4285B4",
-    route: "/lookupstatus"
-  },
-  {
-    id: 7,
-    title: "Leave Management",
-    description: "Request and approve time off while maintaining team productivity.",
-    icon: "leaves",
-    iconColor: "#4285B4",
-    route: "/leavestatus"
-  },
+  // {
+  //   id: 6,
+  //   title: "Lookup Match",
+  //   description: "Search and find matches across your database with advanced filters.",
+  //   icon: "lookup",
+  //   iconColor: "#4285B4",
+  //   route: "/lookupstatus"
+  // },
+  // {
+  //   id: 7,
+  //   title: "Leave Management",
+  //   description: "Request and approve time off while maintaining team productivity.",
+  //   icon: "leaves",
+  //   iconColor: "#4285B4",
+  //   route: "/leavestatus"
+  // },
   {
     id: 8,
     title: "Database Management",

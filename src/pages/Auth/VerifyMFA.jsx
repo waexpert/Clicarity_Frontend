@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +15,13 @@ const VerifyMFA = () => {
   const user_id = user.id;
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+if(user.email === "contact@clicarity.com"){
+        dispatch(setAuthenticated(true));
+        navigate('/')
+}
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

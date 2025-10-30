@@ -55,7 +55,7 @@ function TagInput({ webhooks, setWebhooks, disabled = false }) {
             id="webhook-input"
             type="text"
             className="flex-grow border-0 outline-none min-w-[120px] p-0 h-6 focus-visible:ring-0 focus-visible:ring-offset-0"
-            placeholder="Type webhook URL and press Enter"
+            placeholder="Type Values and Press Enter"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -63,7 +63,7 @@ function TagInput({ webhooks, setWebhooks, disabled = false }) {
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        {disabled ? "Webhooks are read-only in view mode" : "Press Enter or comma to add multiple webhook URLs"}
+        {disabled ? "Webhooks are read-only in view mode" : "Press Enter or comma to add multiple values"}
       </p>
     </div>
   );

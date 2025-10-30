@@ -135,7 +135,7 @@ const CustomSchemaDashboard = () => {
 
   return (<>
   {/* {showCapture? <CaptureWebhook/> :""} */}
-    <Card className="shadow-sm border-slate-200">
+    <Card className="shadow-sm border-slate-200 mx-[6rem]">
       
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">

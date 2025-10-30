@@ -2616,11 +2616,11 @@ const CustomTable = ({ type = "normal" }) => {
 
   const { tableName1 } = useParams();
   const apiParams = {
-    // schemaName: userData.schema_name,
-    // tableName: tableName1
+    schemaName: userData.schema_name,
+    tableName: tableName1
 
-    schemaName:"public",
-    tableName:"testing_table"
+    // schemaName:"public",
+    // tableName:"testing_table"
   }
 
   // Add Delete Function

@@ -651,7 +651,8 @@ export default function WastageInput() {
             const nextBalanceColumn = nextProcessBase + "_balance";
             
             // Calculate balance for next process
-            const nextBalance = Number(receivedValue) - Number(wastageValue);
+            // const nextBalance = Number(receivedValue) - Number(wastageValue);
+            const nextBalance = Number(receivedValue);
             
             // Update current process balance: current_balance - received - wastage
             const currentBalance = responseData?.[currentBalanceColumn] || 0;
@@ -667,7 +668,8 @@ export default function WastageInput() {
             const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
             
             // ADD to parent's existing values (not overwrite)
-            const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
+            // const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
+            const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue) + Number(wastageValue);
             const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
             const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
 
@@ -727,8 +729,9 @@ export default function WastageInput() {
             const nextBalanceColumn = nextProcessBase + "_balance";
             
             // Calculate balance for next process
-            const nextBalance = Number(receivedValue) - Number(wastageValue);
-            
+            // const nextBalance = Number(receivedValue) - Number(wastageValue);
+            const nextBalance = Number(receivedValue);
+
             // Update current process balance: current_balance - received - wastage
             const currentBalance = responseData?.[currentBalanceColumn] || 0;
             const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
@@ -941,7 +944,7 @@ export default function WastageInput() {
                             <div style={styles.valueDisplay}>
                                 <div>Received: {receivedValue || '0'}</div>
                                 <div>Wastage: {wastageValue || '0'}</div>
-                                <div>Balance: {receivedValue && wastageValue ? Number(receivedValue) - Number(wastageValue) : '0'}</div>
+                                <div>Balance: {receivedValue && wastageValue ? Number(receivedValue) + Number(wastageValue) : '0'}</div>
                             </div>
                         )}
                     </div>

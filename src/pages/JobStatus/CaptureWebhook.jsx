@@ -382,7 +382,7 @@ const CaptureWebhook = ({setColumnFields,columnName}) => {
     } catch (err) {
       console.error('Webhook generation error:', err);
       setGenerateError('Failed to generate webhook: ' + err.message);
-      toast.error('Failed to generate webhook: ' + err.message);
+      // toast.error('Failed to generate webhook: ' + err.message);
     }
   };
 
@@ -549,11 +549,11 @@ const CaptureWebhook = ({setColumnFields,columnName}) => {
         )}
 
         {/* Generate Error Display */}
-        {generateError && (
+        {/* {generateError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {generateError}
           </div>
-        )}
+        )} */}
 
         {/* Generated Webhook Display - Show if webhook exists in state or component state */}
         {(generatedWebhook || jsrWebhook) && (

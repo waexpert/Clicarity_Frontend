@@ -13,7 +13,7 @@ const Profile = () => {
   const navigate = useNavigate();
   return (
     <div>
-        <div className="headerMenu">
+        {/* <div className="headerMenu">
             <button className="menu">
             <AiFillProduct />
             <p>All Products</p>
@@ -28,10 +28,10 @@ const Profile = () => {
             <BsMicrosoftTeams />
             <p>Team Member</p>
             </button>
-        </div>
+        </div> */}
 
-        {/* <TeamMember/> */}
-        <RolesPermissions/>
+        <TeamMember/>
+        {/* <RolesPermissions/> */}
         {/* <AddNewRoles/> */}
     </div>
   )

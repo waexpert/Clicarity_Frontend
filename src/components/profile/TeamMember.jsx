@@ -216,7 +216,7 @@ export default function TeamMember() {
   }
 
   return (
-    <div className="container mx-auto space-y-6">
+    <div className=" mx-[6rem] space-y-6">
       <ProfileHeader />
       
 

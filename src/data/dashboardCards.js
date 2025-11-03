@@ -7,17 +7,26 @@ import {
   Search,
   UserX,
   DatabaseZap,
-  Network
+  Network,
+  ContactRound
 } from "lucide-react";
 
 const dashboardCards = [
+    {
+    id: 8,
+    title: "Database Management",
+    description: "Organize, store, and manage data securely with streamlined access.",
+    icon: "database",
+    iconColor: "#4285B4",
+    route: "/database"
+  },
   {
-    id: 1,
-    title: "Task Management",
-    description: "Create, assign and track tasks for efficient workflow management.",
-    icon: "tasks", // Used for conditional rendering of the icon component
-    iconColor: "#4285B4", // You can use your brand color for all or provide different colors
-    route: "/tasks"
+    id: 9,
+    title: "Job Status Report",
+    description: "Organize and manage all your processes efficentily.",
+    icon: "network",
+    iconColor: "#4285B4",
+    route: "/jobstatus"
   },
   {
     id: 2,
@@ -26,6 +35,30 @@ const dashboardCards = [
     icon: "leads",
     iconColor: "#4285B4",
     route: "/leadstatus"
+  },
+    {
+    id: 11,
+    title: "Support Ticket",
+    description: "Efficiently track, manage, and resolve support tickets with organized access.",
+    icon: "contact",
+    iconColor: "#4285B4",
+    route: "/"
+  },
+  {
+    id: 1,
+    title: "Task Management",
+    description: "Create, assign and track tasks for efficient workflow management.",
+    icon: "tasks", // Used for conditional rendering of the icon component
+    iconColor: "#4285B4", // You can use your brand color for all or provide different colors
+    route: "/tasks"
+  },
+    {
+    id: 10,
+    title: "Follow Up Reminders",
+    description: "Smart reminders to keep your processes flowing smoothly.",
+    icon: "bell-ring",
+    iconColor: "#4285B4",
+    route: "/reminder"
   },
   {
     id: 3,
@@ -67,30 +100,7 @@ const dashboardCards = [
   //   iconColor: "#4285B4",
   //   route: "/leavestatus"
   // },
-  {
-    id: 8,
-    title: "Database Management",
-    description: "Organize, store, and manage data securely with streamlined access.",
-    icon: "database",
-    iconColor: "#4285B4",
-    route: "/database"
-  },
-  {
-    id: 9,
-    title: "Job Status Report",
-    description: "Organize and manage all your processes efficentily.",
-    icon: "network",
-    iconColor: "#4285B4",
-    route: "/jobstatus"
-  },
-  {
-    id: 10,
-    title: "Follow Up Reminders",
-    description: "Smart reminders to keep your processes flowing smoothly.",
-    icon: "bell-ring",
-    iconColor: "#4285B4",
-    route: "/reminder"
-  }
+
 ];
 
 // Function to get the appropriate icon component based on the icon name
@@ -116,6 +126,8 @@ export const getIconComponent = (iconName) => {
       return Network;
     case "bell-ring":
       return BellRing;
+    case "contact":
+      return ContactRound
     default:
       return DatabaseZap;
   }

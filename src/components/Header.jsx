@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 // User Profile Card Component
-import UserProfileCard from './UserProfileCard';
+import UserProfileCard from '../pages/Profile/UserProfileCard';
 
 const Header = () => {
     const navigate = useNavigate();

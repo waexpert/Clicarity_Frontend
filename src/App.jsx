@@ -23,11 +23,10 @@ import CaptureWebhook from "./pages/JobStatus/CaptureWebhook";
 import StructureJobStatus from "./pages/JobStatus/StructureJobStatus";
 import CustomTable from "./components/CustomTable";
 import Testing from "./pages/Testing";
-import SheetComment from "./pages/Comment/SheetComment";
-import PostgresComment from "./pages/Comment/PostgresComment";
-import UploadFile from "./pages/Comment/UploadFile";
-import WorkspaceSwitcher from "./pages/Comment/Reminder";
-import Reminder from "./pages/Comment/Reminder";
+import SheetComment from "./pages/CustomForms/SheetComment";
+import PostgresComment from "./pages/CustomForms/PostgresComment";
+import UploadFile from "./pages/CustomForms/UploadFile";
+import Reminder from "./pages/CustomForms/Reminder";
 import RecordLeadDashboard from "./pages/LeadStatus/RecordLeadDashboard";
 import StructureLeadStatus from "./pages/LeadStatus/StructureLeadStatus";
 import Lead from "./pages/LeadStatus/Lead";
@@ -42,14 +41,15 @@ import DropDownSetup from "./pages/Setup/DropDownSetup";
 import SheetTransfer from "./pages/JSR_Services/SheetTransfer";
 import AdminHome from "./pages/Admin/AdminHome";
 import SpreadsheetDemo from "./pages/Profile/SpreadSheet";
-import WastageInput from "./components/WastageInput";
+import WastageInput from "./pages/CustomForms/WastageInput";
+import AssignTeamMember from "./pages/CustomForms/AssignTeamMember";
 
 function App() {
   const location = useLocation();
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   
   const hideHeader =
-    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage"].includes(location.pathname) ||
+    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member"].includes(location.pathname) ||
     (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
   return (
@@ -303,6 +303,15 @@ function App() {
               <DropDownSetup />
             </ProtectedRoute>
           } 
+        />
+
+        <Route
+        path="/assign-team-member"
+        element={
+          <ProtectedRoute>
+           <AssignTeamMember/> 
+          </ProtectedRoute> 
+        }
         />
         
         <Route 

@@ -164,6 +164,7 @@ import { useLocation } from 'react-router-dom';
 import { Input } from '../../components/ui/input';
 import { CloudUpload, File, X } from "lucide-react";
 import { Label } from "../../components/ui/label";
+import { useSelector } from 'react-redux';
 
 export default function UploadFile() {
   const [comment, setComment] = useState("");
@@ -173,6 +174,7 @@ export default function UploadFile() {
   const [dragActive, setDragActive] = useState(false);
   const queryData = useQueryObject();
 
+  const user = useSelector((state) => state.user);
   function useQueryObject() {
     const searchParams = new URLSearchParams(useLocation().search);
     const queryObj = {};
@@ -186,7 +188,7 @@ export default function UploadFile() {
     const response = await fetch(`${import.meta.env.VITE_APP_BASE_URL}/service/uploadFile`);
     const data = await response.json();
     if (!data.message) throw new Error("Presigned URL not returned");
-    return data.message; 
+    return data.message;
   };
 
   const uploadToS3 = async (file, presignedUrl) => {
@@ -242,16 +244,31 @@ export default function UploadFile() {
         fileUrl = await uploadToS3(file, presignedUrl);
       }
 
-      const payload = {
-        ...queryData,
-        fileUrlComment: comment,
-        fileUrl,
-      };
+      // const payload = {
+      //   ...queryData,
+      //   fileUrlComment: comment,
+      //   fileUrl,
+      // };
 
-      await axios.post(
-        `https://webhooks.wa.expert/webhook/${queryData.weid}`,
-        payload
-      );
+      const params = new URLSearchParams({
+        ...queryData,
+        schemaName: user.schema_name,
+        tableName: queryData.tableName,
+        recordId: queryData.recordId,
+        ownerId: queryData.ownerId,
+        col1: queryData.columnName,
+        val1: fileUrl,
+        col2: queryData.commentColumnName,
+        val2: comment
+      });
+
+      const url = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?${params.toString()}`;
+      console.log('Submitting to:', url);
+      await axios.get(url);
+      // await axios.post(
+      //   `https://webhooks.wa.expert/webhook/${queryData.weid}`,
+      //   payload
+      // );
 
       setSubmitted(true);
     } catch (err) {
@@ -300,7 +317,7 @@ export default function UploadFile() {
             onChange={handleFileChange}
             style={styles.hiddenInput}
           />
-          
+
           {!file ? (
             <Label htmlFor="fileUpload" style={styles.uploadLabel}>
               <CloudUpload size={48} style={styles.uploadIcon} />
@@ -368,7 +385,7 @@ export default function UploadFile() {
 
       {submitted && (
         <div style={styles.successMessage}>
-          <p>✅ Submitted successfully. Thank you!</p>
+          <p>Submitted successfully. Thank you!</p>
         </div>
       )}
     </div>

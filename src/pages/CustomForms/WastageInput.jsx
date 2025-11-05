@@ -656,7 +656,7 @@ export default function WastageInput() {
     const getRecordByIdData = async () => {
         try {
             const { data } = await axios.post(getRecordById, {
-                id: queryData.us_id,
+                id: decodeURIComponent(queryData.us_id),
                 schemaName: queryData.schemaName,
                 tableName: queryData.tableName
             });

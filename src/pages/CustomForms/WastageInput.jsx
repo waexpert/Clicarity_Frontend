@@ -14,11 +14,11 @@
 //     const location = useLocation();
 //     const searchParams = new URLSearchParams(location.search);
 //     const queryObj = {};
-    
+
 //     for (const [key, value] of searchParams.entries()) {
 //         queryObj[key] = value;
 //     }
-    
+
 //     return queryObj;
 // }
 
@@ -38,7 +38,7 @@
 //     const isNextProcessProvided = !!queryData.next_process;
 //     const user = useSelector((state) => state.user);
 //     const [processSteps,setProcessSteps] = useState([]);
-    
+
 //     useEffect(() => {
 //     const fetchData = async () => {
 //         const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
@@ -48,7 +48,7 @@
 //         setNextProcess(queryData.next_process);
 //     }
 //     };
-    
+
 //     fetchData();
 //     }, [user.id, tableName,isNextProcessProvided]);
 
@@ -108,12 +108,12 @@
 //             let nextProcessBase = nextProcess;
 //             // Current process columns
 //             const currentBalanceColumn = currentProcessBase + "_balance";
-            
+
 //             // Next process columns
 //             const nextReceivedColumn = nextProcessBase + "_quantity_received";
 //             const nextWastageColumn = nextProcessBase + "_wastage";
 //             const nextBalanceColumn = nextProcessBase + "_balance";
-            
+
 //             // Calculate balance for next process
 //             // const nextBalance = Number(receivedValue) - Number(wastageValue);
 //             const nextBalance = Number(receivedValue);
@@ -121,16 +121,16 @@
 //             // Update current process balance: current_balance - received - wastage
 //             const currentBalance = responseData?.[currentBalanceColumn] || 0;
 //             const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
-            
+
 //             // Get existing wastage from parent and ADD new wastage
 //             const parentWastage = responseData?.wastage || 0;
 //             const newTotalWastage = Number(parentWastage) + Number(wastageValue);
-            
+
 //             // Get existing values from parent for the next process columns
 //             const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
 //             const parentWastageQty = responseData?.[nextWastageColumn] || 0;
 //             const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
-            
+
 //             // ADD to parent's existing values (not overwrite)
 //             const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
 //             const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
@@ -146,7 +146,7 @@
 
 //             // Step 2: Create new child record
 //             const newRecordUsId = Math.floor(Date.now() / 1000); // Unix timestamp
-            
+
 //             // Copy all fields from parent record
 //             const newRecordData = {
 //                 ...responseData, // Copy all parent fields
@@ -219,7 +219,7 @@
 //                     alt="logo" 
 //                     style={styles.logo}
 //                 />
-                
+
 //                 <div style={styles.successContainer}>
 //                     <div style={styles.successIcon}>✓</div>
 //                     <h2 style={styles.successHeading}>Success!</h2>
@@ -249,13 +249,13 @@
 //                 alt="logo" 
 //                 style={styles.logo}
 //             />
-            
+
 //             <div style={styles.headerSection}>
 //                 <p style={styles.subheading}>
 //                     Please enter the wastage details below
 //                 </p>
 //             </div>
-            
+
 //             <div style={styles.form}>
 //                 <div style={styles.inputGroup}>
 
@@ -306,7 +306,7 @@
 //                         min="0"
 //                         step="1"
 //                     />
-                    
+
 //                     <Label htmlFor="wastage-number" style={styles.inputLabel}>
 //                         Enter Wastage Quantity
 //                     </Label>
@@ -334,14 +334,14 @@
 //                             </div>
 //                         )}
 //                     </div>
-                    
+
 //                     {error && (
 //                         <div style={styles.errorMessage}>
 //                             {error}
 //                         </div>
 //                     )}
 //                 </div>
-                
+
 //                 <button 
 //                     onClick={handleSubmit}
 //                     style={{
@@ -557,7 +557,7 @@
 //         0% { transform: rotate(0deg); }
 //         100% { transform: rotate(360deg); }
 //       }
-      
+
 //       @keyframes bounceIn {
 //         0% { 
 //           transform: scale(0.3);
@@ -574,13 +574,13 @@
 //           opacity: 1;
 //         }
 //       }
-      
+
 //       input:focus, select:focus {
 //         border-color: #4388c1 !important;
 //         background-color: #ffffff !important;
 //         box-shadow: 0 0 0 3px rgba(67, 136, 193, 0.1) !important;
 //       }
-      
+
 //       button:not(:disabled):hover {
 //         transform: translateY(-2px) !important;
 //         box-shadow: 0 6px 20px rgba(67, 136, 193, 0.4) !important;
@@ -608,11 +608,11 @@ function useQueryObject() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const queryObj = {};
-    
+
     for (const [key, value] of searchParams.entries()) {
         queryObj[key] = value;
     }
-    
+
     return queryObj;
 }
 
@@ -624,7 +624,7 @@ export default function WastageInput() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const queryData = useQueryObject();
-    const [responseData, setResponseData] = useState(null); 
+    const [responseData, setResponseData] = useState(null);
     const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
 
     const tableName = queryData.tableName;
@@ -634,17 +634,17 @@ export default function WastageInput() {
     }
     const user = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
-    
+
     useEffect(() => {
         const fetchData = async () => {
             const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
             const { data } = await axios.get(route);
             setProcessSteps(data.setup.process_steps);
-            
+
             // Set nextProcess from params if provided
 
         };
-        
+
         fetchData();
     }, [user.id, tableName]);
 
@@ -704,31 +704,31 @@ export default function WastageInput() {
 
             const currentProcessBase = queryData.current_process;
             const nextProcessBase = nextProcess;
-            
+
             // Current process columns
             const currentBalanceColumn = currentProcessBase + "_balance";
-            
+
             // Next process columns
             const nextReceivedColumn = nextProcessBase + "_quantity_received";
             const nextWastageColumn = nextProcessBase + "_wastage";
             const nextBalanceColumn = nextProcessBase + "_balance";
-            
+
             // Calculate balance for next process
             const nextBalance = Number(receivedValue);
 
             // Update current process balance: current_balance - received - wastage
             const currentBalance = responseData?.[currentBalanceColumn] || 0;
             const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
-            
+
             // Get existing wastage from parent and ADD new wastage
             const parentWastage = responseData?.wastage || 0;
             const newTotalWastage = Number(parentWastage) + Number(wastageValue);
-            
+
             // Get existing values from parent for the next process columns
             const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
             const parentWastageQty = responseData?.[nextWastageColumn] || 0;
             const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
-            
+
             // ADD to parent's existing values (not overwrite)
             const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
             const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
@@ -736,7 +736,19 @@ export default function WastageInput() {
 
             // Step 1: Update parent record with ADDED values
             const queryString = new URLSearchParams(queryData).toString();
-            const updateUrl = `${basemultiupdate}${queryString}&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}&col2=${nextWastageColumn}&val2=${updatedParentWastage}&col3=wastage&val3=${newTotalWastage}&col4=${nextReceivedColumn}&val4=${updatedParentReceived}&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`;
+            // const updateUrl = `${basemultiupdate}${queryString}&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}&col2=${nextWastageColumn}&val2=${updatedParentWastage}&col3=wastage&val3=${newTotalWastage}
+            // &col4=${nextReceivedColumn}&val4=${updatedParentReceived}
+            // &col5=${nextBalanceColumn}&val5=${updatedParentBalance}${updatedCurrentBalance == "0" ? `col6=${currentProcessBase}&val6=Completed` : ""}`;
+            const updateUrl = `${basemultiupdate}${queryString}`
+                + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
+                + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
+                + `&col3=wastage&val3=${newTotalWastage}`
+                + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
+                + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
+                + (Number(updatedCurrentBalance) <= 0
+                    ? `&col6=${currentProcessBase}&val6=Completed`
+                    : "");
+
 
             console.log('Update Parent URL:', updateUrl);
             const updateResponse = await axios.get(updateUrl);
@@ -744,7 +756,7 @@ export default function WastageInput() {
 
             // Step 2: Create new child record
             const newRecordUsId = Math.floor(Date.now() / 1000); // Unix timestamp
-            
+
             // Copy all fields from parent record
             const newRecordData = {
                 ...responseData, // Copy all parent fields
@@ -814,19 +826,19 @@ export default function WastageInput() {
     if (submitted) {
         return (
             <div style={styles.container}>
-                <img 
-                    src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" 
-                    alt="logo" 
+                <img
+                    src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
+                    alt="logo"
                     style={styles.logo}
                 />
-                
+
                 <div style={styles.successContainer}>
                     <div style={styles.successIcon}>✓</div>
                     <h2 style={styles.successHeading}>Success!</h2>
                     <p style={styles.successMessage}>
                         Your wastage number has been submitted successfully.
                     </p>
-                    <button 
+                    <button
                         onClick={() => {
                             setSubmitted(false);
                             setWastageValue("");
@@ -847,18 +859,18 @@ export default function WastageInput() {
 
     return (
         <div style={styles.container}>
-            <img 
-                src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" 
-                alt="logo" 
+            <img
+                src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
+                alt="logo"
                 style={styles.logo}
             />
-            
+
             <div style={styles.headerSection}>
                 <p style={styles.subheading}>
                     Please enter the wastage details below
                 </p>
             </div>
-            
+
             <div style={styles.form}>
                 <div style={styles.inputGroup}>
 
@@ -913,7 +925,7 @@ export default function WastageInput() {
                         min="0"
                         step="1"
                     />
-                    
+
                     <Label htmlFor="wastage-number" style={styles.inputLabel}>
                         Enter Wastage Quantity
                     </Label>
@@ -941,22 +953,22 @@ export default function WastageInput() {
                             </div>
                         )}
                     </div>
-                    
+
                     {error && (
                         <div style={styles.errorMessage}>
                             {error}
                         </div>
                     )}
                 </div>
-                
-                <button 
+
+                <button
                     onClick={handleSubmit}
                     style={{
                         ...styles.button,
                         ...(isSubmitting ? styles.buttonDisabled : {}),
                         ...(wastageValue.trim() && receivedValue.trim() && nextProcess ? styles.buttonActive : {})
                     }}
-                    // disabled={isSubmitting || !wastageValue.trim() || !receivedValue.trim() || !nextProcess}
+                // disabled={isSubmitting || !wastageValue.trim() || !receivedValue.trim() || !nextProcess}
                 >
                     <div style={styles.buttonContent}>
                         {isSubmitting ? (

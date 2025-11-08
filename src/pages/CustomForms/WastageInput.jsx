@@ -592,7 +592,6 @@
 //     }
 // }
 
-
 import { useEffect, useState } from 'react';
 import { Send } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -629,27 +628,37 @@ export default function WastageInput() {
 
     const tableName = queryData.tableName;
     const isNextProcessProvided = !!queryData.next_process;
-    if (isNextProcessProvided && nextProcess === '') {
-        setNextProcess(queryData.next_process);
-    }
+    
     const user = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
+    const [currentBalance, setCurrentBalance] = useState(0);
+
+    // Fixed: Move state update to useEffect
+    useEffect(() => {
+        if (isNextProcessProvided && nextProcess === '' && queryData.next_process) {
+            setNextProcess(queryData.next_process);
+        }
+    }, [isNextProcessProvided, queryData.next_process, nextProcess]);
 
     useEffect(() => {
         const fetchData = async () => {
             const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
             const { data } = await axios.get(route);
             setProcessSteps(data.setup.process_steps);
-
-            // Set nextProcess from params if provided
-
         };
 
-        fetchData();
+        if (user.id && tableName) {
+            fetchData();
+        }
     }, [user.id, tableName]);
 
-
-
+    // Fixed: Update currentBalance when responseData changes
+    useEffect(() => {
+        if (responseData && queryData.current_process) {
+            const currentBalanceColumn = queryData.current_process + "_balance";
+            setCurrentBalance(responseData[currentBalanceColumn] || 0);
+        }
+    }, [responseData, queryData.current_process]);
 
     console.log('Query Data:', queryData);
 
@@ -675,131 +684,134 @@ export default function WastageInput() {
         }
     }, [queryData.recordId, queryData.schemaName, queryData.tableName]);
 
-    const handleSubmit = async () => {
-        if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
-            !wastageValue.trim() || isNaN(wastageValue) || Number(wastageValue) < 0
-        ) {
-            setError("Please enter a valid positive number.");
-            return;
+const handleSubmit = async () => {
+    if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
+        !wastageValue.trim() || isNaN(wastageValue) || Number(wastageValue) < 0
+    ) {
+        setError("Please enter a valid positive number.");
+        return;
+    }
+
+    // NEW VALIDATION: Check if total exceeds current balance
+    const totalUsed = Number(receivedValue) + Number(wastageValue);
+    if (totalUsed > currentBalance) {
+        setError(`Total (Received + Wastage = ${totalUsed}) cannot exceed Current Balance (${currentBalance})`);
+        return;
+    }
+
+    // if (!nextProcess) {
+    //     setError("Please select next process");
+    //     return;
+    // }
+
+    if (!queryData.schemaName || !queryData.tableName || !queryData.recordId || !queryData.ownerId) {
+        setError("Please provide required details");
+        return;
+    }
+
+    if (!responseData) {
+        setError("Parent record data not loaded");
+        return;
+    }
+
+    try {
+        setIsSubmitting(true);
+        setError("");
+
+        const currentProcessBase = queryData.current_process;
+        const nextProcessBase = nextProcess;
+
+        // Current process columns
+        const currentBalanceColumn = currentProcessBase + "_balance";
+
+        // Next process columns
+        const nextReceivedColumn = nextProcessBase + "_quantity_received";
+        const nextWastageColumn = nextProcessBase + "_wastage";
+        const nextBalanceColumn = nextProcessBase + "_balance";
+
+        // Calculate balance for next process
+        const nextBalance = Number(receivedValue);
+
+        // Fixed: Use currentBalance state directly (already set in useEffect)
+        const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
+
+        // Get existing wastage from parent and ADD new wastage
+        const parentWastage = responseData?.wastage || 0;
+        const newTotalWastage = Number(parentWastage) + Number(wastageValue);
+
+        // Get existing values from parent for the next process columns
+        const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
+        const parentWastageQty = responseData?.[nextWastageColumn] || 0;
+        const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
+
+        // ADD to parent's existing values (not overwrite)
+        const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
+        const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
+        const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
+
+        // Step 1: Update parent record with ADDED values
+        const queryString = new URLSearchParams(queryData).toString();
+        const updateUrl = `${basemultiupdate}${queryString}`
+            + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
+            + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
+            + `&col3=wastage&val3=${newTotalWastage}`
+            + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
+            + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
+            + (Number(updatedCurrentBalance) <= 0
+                ? `&col6=${currentProcessBase}&val6=Completed`
+                : "");
+
+
+        console.log('Update Parent URL:', updateUrl);
+        const updateResponse = await axios.get(updateUrl);
+        console.log('Parent Update Response:', updateResponse);
+
+        // Step 2: Create new child record
+        const newRecordUsId = Math.floor(Date.now() / 1000); // Unix timestamp
+
+        // Copy all fields from parent record
+        const newRecordData = {
+            ...responseData, // Copy all parent fields
+            us_id: newRecordUsId, // New unique ID (Unix timestamp)
+            pa_id: queryData.us_id, // Link to parent record
+            [nextReceivedColumn]: receivedValue, // Set NEW values (not added)
+            [nextWastageColumn]: wastageValue,
+            [nextBalanceColumn]: nextBalance,
+            [currentBalanceColumn]: updatedCurrentBalance,
+            wastage: wastageValue, // For new record, this is just the current wastage
+        };
+
+        // Remove fields that shouldn't be copied
+        delete newRecordData.id; // Let DB generate new ID
+        delete newRecordData.recordId; // Will be auto-generated
+
+        console.log('Creating new child record:', newRecordData);
+
+        const createResponse = await axios.post(createRecord, {
+            schemaName: queryData.schemaName,
+            tableName: queryData.tableName,
+            record: newRecordData
+        });
+
+        console.log('Child Record Created:', createResponse);
+
+        setSubmitted(true);
+        setWastageValue("");
+        setReceivedValue("");
+        // Only reset nextProcess if it wasn't from params
+        if (!isNextProcessProvided) {
+            setNextProcess("");
         }
+        toast.success("Wastage submitted and new record created successfully!");
 
-        // if (!nextProcess) {
-        //     setError("Please select next process");
-        //     return;
-        // }
-
-        if (!queryData.schemaName || !queryData.tableName || !queryData.recordId || !queryData.ownerId) {
-            setError("Please provide required details");
-            return;
-        }
-
-        if (!responseData) {
-            setError("Parent record data not loaded");
-            return;
-        }
-
-        try {
-            setIsSubmitting(true);
-            setError("");
-
-            const currentProcessBase = queryData.current_process;
-            const nextProcessBase = nextProcess;
-
-            // Current process columns
-            const currentBalanceColumn = currentProcessBase + "_balance";
-
-            // Next process columns
-            const nextReceivedColumn = nextProcessBase + "_quantity_received";
-            const nextWastageColumn = nextProcessBase + "_wastage";
-            const nextBalanceColumn = nextProcessBase + "_balance";
-
-            // Calculate balance for next process
-            const nextBalance = Number(receivedValue);
-
-            // Update current process balance: current_balance - received - wastage
-            const currentBalance = responseData?.[currentBalanceColumn] || 0;
-            const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
-
-            // Get existing wastage from parent and ADD new wastage
-            const parentWastage = responseData?.wastage || 0;
-            const newTotalWastage = Number(parentWastage) + Number(wastageValue);
-
-            // Get existing values from parent for the next process columns
-            const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
-            const parentWastageQty = responseData?.[nextWastageColumn] || 0;
-            const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
-
-            // ADD to parent's existing values (not overwrite)
-            const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
-            const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
-            const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
-
-            // Step 1: Update parent record with ADDED values
-            const queryString = new URLSearchParams(queryData).toString();
-            // const updateUrl = `${basemultiupdate}${queryString}&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}&col2=${nextWastageColumn}&val2=${updatedParentWastage}&col3=wastage&val3=${newTotalWastage}
-            // &col4=${nextReceivedColumn}&val4=${updatedParentReceived}
-            // &col5=${nextBalanceColumn}&val5=${updatedParentBalance}${updatedCurrentBalance == "0" ? `col6=${currentProcessBase}&val6=Completed` : ""}`;
-            const updateUrl = `${basemultiupdate}${queryString}`
-                + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
-                + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
-                + `&col3=wastage&val3=${newTotalWastage}`
-                + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
-                + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
-                + (Number(updatedCurrentBalance) <= 0
-                    ? `&col6=${currentProcessBase}&val6=Completed`
-                    : "");
-
-
-            console.log('Update Parent URL:', updateUrl);
-            const updateResponse = await axios.get(updateUrl);
-            console.log('Parent Update Response:', updateResponse);
-
-            // Step 2: Create new child record
-            const newRecordUsId = Math.floor(Date.now() / 1000); // Unix timestamp
-
-            // Copy all fields from parent record
-            const newRecordData = {
-                ...responseData, // Copy all parent fields
-                us_id: newRecordUsId, // New unique ID (Unix timestamp)
-                pa_id: queryData.us_id, // Link to parent record
-                [nextReceivedColumn]: receivedValue, // Set NEW values (not added)
-                [nextWastageColumn]: wastageValue,
-                [nextBalanceColumn]: nextBalance,
-                [currentBalanceColumn]: updatedCurrentBalance,
-                wastage: wastageValue, // For new record, this is just the current wastage
-            };
-
-            // Remove fields that shouldn't be copied
-            delete newRecordData.id; // Let DB generate new ID
-            delete newRecordData.recordId; // Will be auto-generated
-
-            console.log('Creating new child record:', newRecordData);
-
-            const createResponse = await axios.post(createRecord, {
-                schemaName: queryData.schemaName,
-                tableName: queryData.tableName,
-                record: newRecordData
-            });
-
-            console.log('Child Record Created:', createResponse);
-
-            setSubmitted(true);
-            setWastageValue("");
-            setReceivedValue("");
-            // Only reset nextProcess if it wasn't from params
-            if (!isNextProcessProvided) {
-                setNextProcess("");
-            }
-            toast.success("Wastage submitted and new record created successfully!");
-
-        } catch (err) {
-            console.error('Submit Error:', err);
-            setError("Failed to submit. Please try again.");
-            toast.error("Failed to submit wastage");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    } catch (err) {
+        console.error('Submit Error:', err);
+        setError("Failed to submit. Please try again.");
+        toast.error("Failed to submit wastage");
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
     const handleWastageInputChange = (e) => {
         setWastageValue(e.target.value);
@@ -838,7 +850,7 @@ export default function WastageInput() {
                     <p style={styles.successMessage}>
                         Your wastage number has been submitted successfully.
                     </p>
-                    <button
+                    {/* <button
                         onClick={() => {
                             setSubmitted(false);
                             setWastageValue("");
@@ -851,7 +863,7 @@ export default function WastageInput() {
                         style={styles.newCommentButton}
                     >
                         Submit Another Number
-                    </button>
+                    </button> */}
                 </div>
             </div>
         );
@@ -905,6 +917,11 @@ export default function WastageInput() {
                             <strong>Next Process:</strong> {nextProcess ? nextProcess.charAt(0).toUpperCase() + nextProcess.slice(1) : ''}
                         </div>
                     )}
+
+                    {/* Display current balance */}
+                    <div style={styles.infoBox}>
+                        <strong>Current Balance ({queryData.current_process}):</strong> {currentBalance}
+                    </div>
 
                     <Label htmlFor="received-number" style={styles.inputLabel}>
                         Enter Received Quantity

@@ -45,7 +45,7 @@
 //         console.log('Fetched setup data:', data.setup);
 //         console.log('Fetched process steps:', data.setup?.process_steps || []);
 //     };
-    
+
 //     fetchData();
 // }, [user.id, tableName]); 
 
@@ -185,7 +185,7 @@
 
 //         alert('Process steps updated successfully!');
 //         console.log("json stringify",JSON.stringify(processSteps) );
-        
+
 //     } catch (err) {
 //         console.error('Error saving process steps:', err);
 //         alert(`Error: ${err.response?.data?.error || 'Failed to save process steps'}`);
@@ -574,8 +574,14 @@ const DropDownSetup = () => {
     const [saving, setSaving] = useState(false);
     const [processSaving, setProcessSaving] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [processSteps, setProcessSteps] = useState([]); // ✅ Always an array
+    const [processSteps, setProcessSteps] = useState([]);
     const [fetchedProcessSteps, setFetchedProcessSteps] = useState([]);
+    const processType = ["Fixed", "Dynamic", "Wastage"];
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [processTypes, setProcessTypes] = useState({});
+    const [error, setError] = useState('');
+    const [fetchedProcessTypes, setFetchedProcessTypes] = useState({});
+    const [resetting, setResetting] = useState(false);
 
     const user = useSelector((state) => state.user);
     const dispatch = useDispatch();
@@ -583,47 +589,66 @@ const DropDownSetup = () => {
     const { tableName } = useParams();
     const [columns, setColumns] = useState([]);
     const [setupData, setSetupData] = useState({}); // ✅ Fixed: Renamed from 'data'
-    
+
     console.log(webhooksByColumn);
     console.log('Column Order:', columnOrder);
 
-    // ✅ Fixed: Combined into single fetch
-    useEffect(() => {
-        const fetchSetupData = async () => {
-            try {
-                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-                const { data } = await axios.get(route);
-                
-                console.log('Fetched setup data:', data.setup);
-                
-                if (data.exists && data.setup) {
-                    setSetupExists(true);
-                    setSetupData(data.setup);
-                    
-                    // ✅ Ensure process_steps is always an array
-                    const steps = Array.isArray(data.setup?.process_steps) 
-                        ? data.setup.process_steps 
-                        : [];
-                    setFetchedProcessSteps(steps);
-                    setProcessSteps(steps);
-                    
-                    if (data.setup.mapping) {
-                        setWebhooksByColumn(data.setup.mapping);
-                    }
-                    if (data.setup.columnOrder) {
-                        setColumnOrder(data.setup.columnOrder);
-                    }
-                } else {
-                    setSetupExists(false);
+const handleNextProcessChange = (stepName, value) => {
+    setProcessTypes(prev => ({
+        ...prev,
+        [stepName]: value
+    }));
+    if (error) setError("");
+};
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
+useEffect(() => {
+    const fetchSetupData = async () => {
+        try {
+            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+            const { data } = await axios.get(route);
+
+            console.log('Fetched setup data:', data.setup);
+
+            if (data.exists && data.setup) {
+                setSetupExists(true);
+                setSetupData(data.setup);
+
+                // ✅ Load process steps
+                const steps = Array.isArray(data.setup?.process_steps)
+                    ? data.setup.process_steps
+                    : [];
+                setFetchedProcessSteps(steps);
+                setProcessSteps(steps);
+
+                // ✅ Load process type mapping
+                const typeMapping = data.setup?.process_type_mapping || {};
+                setProcessTypes(typeMapping);
+                setFetchedProcessTypes(typeMapping);
+
+                if (data.setup.mapping) {
+                    setWebhooksByColumn(data.setup.mapping);
                 }
-            } catch (err) {
-                console.error('Error fetching setup:', err);
+                if (data.setup.columnOrder) {
+                    setColumnOrder(data.setup.columnOrder);
+                }
+            } else {
                 setSetupExists(false);
             }
-        };
-        
-        fetchSetupData();
-    }, [user.id, tableName]); 
+        } catch (err) {
+            console.error('Error fetching setup:', err);
+            setSetupExists(false);
+        }
+    };
+
+    fetchSetupData();
+}, [user.id, tableName]);
 
     const getTableStructure = async () => {
         const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getTableColumns?schemaName=${schemaName}&tableName=${tableName}`;
@@ -688,6 +713,85 @@ const DropDownSetup = () => {
         }
     };
 
+    const handleSaveProcessTypes = async () => {
+    setProcessSaving(true);
+    try {
+        if (Object.keys(processTypes).length === 0) {
+            alert('Please select at least one process type');
+            setProcessSaving(false);
+            return;
+        }
+
+        console.log('Saving process type mapping:', processTypes);
+
+        const response = await axios.get(
+            `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
+            {
+                params: {
+                    schemaName: 'public',
+                    tableName: 'dropdown_setup',
+                    recordId: setupData.id,
+                    ownerId: setupData.owner_id,
+                    columnName: 'process_type_mapping',
+                    userSchemaName: user.schema_name,
+                    userTableName: tableName,
+                    value: JSON.stringify(processTypes) // ✅ Save as JSONB
+                }
+            }
+        );
+
+        alert('Process type mapping saved successfully!');
+        setFetchedProcessTypes({ ...processTypes }); // Update fetched state
+    } catch (err) {
+        console.error('Error saving process type mapping:', err);
+        alert(`Error: ${err.response?.data?.error || 'Failed to save process type mapping'}`);
+    } finally {
+        setProcessSaving(false);
+    }
+};
+
+const handleResetProcessTypes = async () => {
+    const confirmReset = window.confirm(
+        '⚠️ Are you sure you want to reset all process type mappings? This action cannot be undone.'
+    );
+
+    if (!confirmReset) return;
+
+    setResetting(true);
+    try {
+        console.log('Resetting process type mapping...');
+
+        const response = await axios.get(
+            `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
+            {
+                params: {
+                    schemaName: 'public',
+                    tableName: 'dropdown_setup',
+                    recordId: setupData.id,
+                    ownerId: setupData.owner_id,
+                    columnName: 'process_type_mapping',
+                    userSchemaName: user.schema_name,
+                    userTableName: tableName,
+                    value: JSON.stringify({}) // ✅ Reset to empty object
+                }
+            }
+        );
+
+        // Clear local state
+        setProcessTypes({});
+        setFetchedProcessTypes({});
+        
+        alert('Process type mapping reset successfully!');
+    } catch (err) {
+        console.error('Error resetting process type mapping:', err);
+        alert(`Error: ${err.response?.data?.error || 'Failed to reset process type mapping'}`);
+    } finally {
+        setResetting(false);
+    }
+};
+
+
+
     // ✅ Fixed: Proper array handling
     const handleSaveProcess = async () => {
         setProcessSaving(true);
@@ -729,27 +833,33 @@ const DropDownSetup = () => {
     };
 
     const handleRefresh = async () => {
-        setRefreshing(true);
-        try {
-            await getTableStructure();
-            // Refetch setup data
-            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-            const { data } = await axios.get(route);
+    setRefreshing(true);
+    try {
+        await getTableStructure();
+        // Refetch setup data
+        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+        const { data } = await axios.get(route);
+
+        if (data.exists && data.setup) {
+            setSetupData(data.setup);
             
-            if (data.exists && data.setup) {
-                setSetupData(data.setup);
-                const steps = Array.isArray(data.setup?.process_steps) 
-                    ? data.setup.process_steps 
-                    : [];
-                setFetchedProcessSteps(steps);
-                setProcessSteps(steps);
-            }
-        } catch (err) {
-            console.error('Error refreshing:', err);
-        } finally {
-            setRefreshing(false);
+            const steps = Array.isArray(data.setup?.process_steps)
+                ? data.setup.process_steps
+                : [];
+            setFetchedProcessSteps(steps);
+            setProcessSteps(steps);
+
+            // ✅ Refresh process type mapping
+            const typeMapping = data.setup?.process_type_mapping || {};
+            setProcessTypes(typeMapping);
+            setFetchedProcessTypes(typeMapping);
         }
-    };
+    } catch (err) {
+        console.error('Error refreshing:', err);
+    } finally {
+        setRefreshing(false);
+    }
+};
 
     const handleOrderChange = (columnName, newOrder) => {
         const orderValue = newOrder === '' ? 0 : parseInt(newOrder) || 0;
@@ -972,7 +1082,7 @@ const DropDownSetup = () => {
                         <Button
                             onClick={handleSaveProcess}
                             disabled={processSaving} // ✅ Fixed: Use processSaving
-                            className="flex items-center gap-2 min-w-32 h-10 mt-4" 
+                            className="flex items-center gap-2 min-w-32 h-10 mt-4"
                             size="lg"
                         >
                             {processSaving ? (
@@ -985,6 +1095,116 @@ const DropDownSetup = () => {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card className="mb-6 bg-gray-50 border-gray-200">
+    <CardContent className="pt-6">
+        <div className="text-sm">
+            <div className="flex items-center justify-between mb-4">
+                <h4 className="font-semibold text-lg">Define Process Type:</h4>
+                {Object.keys(processTypes).length > 0 && (
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleResetProcessTypes}
+                        disabled={resetting || processSaving}
+                        className="flex items-center gap-2"
+                    >
+                        {resetting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <RefreshCw className="h-4 w-4" />
+                        )}
+                        {resetting ? 'Resetting...' : 'Reset All'}
+                    </Button>
+                )}
+            </div>
+
+            {processSteps.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 bg-white rounded border">
+                    <Settings className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No process steps defined yet.</p>
+                    <p className="text-xs mt-1">Add process steps in the section above first.</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {processSteps.map((step, index) => (
+                        <div 
+                            key={index} 
+                            className="flex gap-4 items-center p-4 bg-white rounded-lg border hover:border-blue-300 transition-colors"
+                        >
+                            <div className="min-w-[200px]">
+                                <p className="font-medium text-gray-700 capitalize">
+                                    {step.replace(/_/g, ' ')}
+                                </p>
+                            </div>
+                            <div className="flex-1">
+                                <select
+                                    id={`process-type-${index}`}
+                                    value={processTypes[step] || ''}
+                                    onChange={(e) => handleNextProcessChange(step, e.target.value)}
+                                    disabled={processSaving || resetting}
+                                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                >
+                                    <option value="" disabled>
+                                        -- Select Process Type --
+                                    </option>
+                                    {processType.map((type) => (
+                                        <option key={type} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {processTypes[step] && (
+                                <Badge variant="default" className="ml-2">
+                                    {processTypes[step]}
+                                </Badge>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Summary of current mapping */}
+            {/* {Object.keys(processTypes).length > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs font-medium text-blue-900 mb-2">Current Mapping:</p>
+                    <div className="text-xs text-blue-800">
+                        {Object.entries(processTypes).map(([step, type]) => (
+                            <span key={step} className="inline-block mr-3 mb-1">
+                                <strong>{step}:</strong> {type}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )} */}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-4">
+                <Button
+                    onClick={handleSaveProcessTypes}
+                    disabled={processSaving || resetting || processSteps.length === 0 || Object.keys(processTypes).length === 0}
+                    className="flex items-center gap-2 min-w-32 h-10"
+                    size="lg"
+                >
+                    {processSaving ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Save className="h-4 w-4" />
+                    )}
+                    {processSaving ? 'Saving...' : 'Save Process Types'}
+                </Button>
+
+                {/* Show changes indicator */}
+                {JSON.stringify(processTypes) !== JSON.stringify(fetchedProcessTypes) && (
+                    <Badge variant="outline" className="ml-2 self-center">
+                        Unsaved changes
+                    </Badge>
+                )}
+            </div>
+        </div>
+    </CardContent>
+</Card>
         </div>
     );
 };

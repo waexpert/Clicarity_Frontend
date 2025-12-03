@@ -43,13 +43,16 @@ import AdminHome from "./pages/Admin/AdminHome";
 import SpreadsheetDemo from "./pages/Profile/SpreadSheet";
 import WastageInput from "./pages/CustomForms/WastageInput";
 import AssignTeamMember from "./pages/CustomForms/AssignTeamMember";
+import CustomUpdateForm from "./pages/CustomForms/CustomUpdateForm";
+import StatusUpdate from "./pages/CustomForms/StatusUpdate";
+import AutocompleteInput from "./pages/test/AutoCompletionTest";
 
 function App() {
   const location = useLocation();
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   
   const hideHeader =
-    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member"].includes(location.pathname) ||
+    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member","/status-update","/custom-update"].includes(location.pathname) ||
     (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
   return (
@@ -344,12 +347,26 @@ function App() {
         />
 
         <Route 
-          path="/mnbvcxz" 
+          path="/custom-update" 
           element={
-
-              <Home />
+              <CustomUpdateForm/>
           } 
         />
+
+        <Route 
+          path="/status-update" 
+          element={
+              <StatusUpdate/>
+          } 
+        />
+
+        <Route 
+          path="/autocomplete" 
+          element={
+              <AutocompleteInput/>
+          } 
+        />
+
       </Routes>
 
 

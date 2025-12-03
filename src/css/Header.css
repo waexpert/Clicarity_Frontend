@@ -1,47 +1,101 @@
-/* Add these rules to your existing header.css file */
-
-.headerWrapper {
-  position: relative;
-  width: 100vw; /* Changed back to 100% */
-  max-width: 100vw;
-  overflow-x: hidden;
-  margin-bottom: 20px;
+/* Base styles with box-sizing reset */
+* {
   box-sizing: border-box;
-   /* background-color: aqua; */
-
 }
 
-.header1 {
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header wrapper */
+.header-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin-bottom: 1.25rem;
+}
+
+/* Top header section */
+.header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width:calc(100% - 12rem);
+  width: calc(100% - 12rem);
   max-width: calc(100% - 12rem);
-  box-sizing: border-box;
-  padding: 0.5rem; 
+  margin: 0 auto;
+  padding: 0.5rem;
   overflow: hidden;
-  position: relative;
-  /* background: #000; */
-   margin: 0 auto;
 }
 
-.logo {
+/* Logo container */
+.header-logo {
   flex-shrink: 0;
-  height: 7rem;
   display: flex;
   align-items: center;
 }
 
-.menus {
+.logo-image {
+  height: 7rem;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Header actions (logout + avatar) */
+.header-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
   flex-shrink: 0;
-  position: relative;
-
 }
 
-/* Enhanced dropdown positioning */
+/* Avatar button */
+.avatar-button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+  outline: none;
+  transition: transform 0.2s ease;
+}
+
+.avatar-button:hover {
+  transform: scale(1.05);
+}
+
+.avatar-button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.avatar-image {
+  transition: all 0.2s ease;
+}
+
+.avatar-image:hover {
+  ring: 2px solid #3b82f6;
+  ring-offset: 2px;
+}
+
+.avatar-fallback {
+  background-color: #dbeafe;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Profile dropdown */
+.profile-dropdown {
+  width: auto;
+  padding: 0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: none;
+  z-index: 9999;
+}
+
+/* Radix UI dropdown positioning fix */
 [data-radix-popper-content-wrapper] {
   position: fixed !important;
   z-index: 9999 !important;
@@ -52,29 +106,16 @@
   pointer-events: auto;
 }
 
-/* Prevent any overflow issues */
-.breadcrumb-container {
+/* Breadcrumb navigation */
+.breadcrumb-navigation {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
-  padding: 0; /* No additional padding since wrapper handles it */
-  box-sizing: border-box;
   padding: 0 6rem;
-}
-
-/* Additional safety measures */
-* {
   box-sizing: border-box;
 }
 
-/* Enhanced body overflow control */
-body {
-  overflow-x: hidden;
-  margin: 0;
-  padding: 0;
-}
-
-/* Prevent dropdown-specific layout shifts */
+/* Radix Select components */
 [data-radix-select-trigger] {
   width: 100%;
 }
@@ -83,4 +124,63 @@ body {
   min-width: var(--radix-select-trigger-width);
   max-height: 300px;
   overflow-y: auto;
+}
+
+/* Tablet responsiveness (768px - 1024px) */
+@media (max-width: 1024px) {
+  .header-top {
+    width: calc(100% - 4rem);
+    max-width: calc(100% - 4rem);
+  }
+
+  .breadcrumb-navigation {
+    padding: 0 2rem;
+  }
+
+  .logo-image {
+    height: 5rem;
+  }
+}
+
+/* Mobile responsiveness (max-width: 768px) */
+@media (max-width: 768px) {
+  .header-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .header-top {
+    width: calc(100% - 2rem);
+    max-width: calc(100% - 2rem);
+    padding: 0.5rem 0;
+  }
+
+  .logo-image {
+    height: 3.5rem;
+  }
+
+  .header-actions {
+    gap: 0.75rem;
+  }
+
+  /* Hide breadcrumb on mobile */
+  .breadcrumb-navigation {
+    display: none;
+  }
+}
+
+/* Small mobile responsiveness (max-width: 480px) */
+@media (max-width: 480px) {
+  .header-top {
+    width: calc(100% - 1rem);
+    max-width: calc(100% - 1rem);
+    padding: 0.25rem 0;
+  }
+
+  .logo-image {
+    height: 3rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
 }

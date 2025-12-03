@@ -1,0 +1,290 @@
+/* ============================================
+   ICON SYSTEM - Lucide Icons
+   ============================================ */
+
+/* Base icon class - targets the SVG element directly */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 1;
+  transition: all 0.2s ease;
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2;
+}
+
+/* Icon size variants */
+.icon-xs {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.icon-sm {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.icon-md {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-lg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-xl {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.icon-2xl {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Icon with text alignment */
+.icon-with-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Icon button styles */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-button:active {
+  transform: scale(0.95);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Icon color variants */
+.icon-primary {
+  color: #3b82f6;
+  stroke: currentColor;
+}
+
+.icon-secondary {
+  color: #6b7280;
+  stroke: currentColor;
+}
+
+.icon-success {
+  color: #10b981;
+  stroke: currentColor;
+}
+
+.icon-danger {
+  color: #ef4444;
+  stroke: currentColor;
+}
+
+.icon-warning {
+  color: #f59e0b;
+  stroke: currentColor;
+}
+
+.icon-info {
+  color: #06b6d4;
+  stroke: currentColor;
+}
+
+.icon-dark {
+  color: #1f2937;
+  stroke: currentColor;
+}
+
+.icon-light {
+  color: #f9fafb;
+  stroke: currentColor;
+}
+
+/* Icon states */
+.icon-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.icon-clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.icon-clickable:hover {
+  transform: scale(1.1);
+}
+
+.icon-clickable:active {
+  transform: scale(0.95);
+}
+
+/* Icon animations */
+.icon-spin {
+  animation: icon-spin 1s linear infinite;
+}
+
+.icon-pulse {
+  animation: icon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive icon sizing - Tablet (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .icon {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .icon-xs {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  .icon-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .icon-md {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .icon-lg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .icon-xl {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .icon-2xl {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+/* Responsive icon sizing - Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .icon-xs {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .icon-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .icon-md {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .icon-lg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .icon-xl {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .icon-2xl {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .icon-button {
+    padding: 0.375rem;
+  }
+
+  .icon-with-text {
+    gap: 0.375rem;
+  }
+}
+
+/* Responsive icon sizing - Small Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .icon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .icon-xs {
+    width: 0.675rem;
+    height: 0.675rem;
+  }
+
+  .icon-sm {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .icon-md {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .icon-lg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .icon-xl {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .icon-2xl {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}

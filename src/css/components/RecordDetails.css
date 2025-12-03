@@ -1,0 +1,387 @@
+/* ========================================
+   RECORD DETAILS COMPONENT STYLES
+   TABLE FORMAT WITH BORDERS
+   ======================================== */
+
+/* Container */
+.record-details-container {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1rem 0px;
+  height: auto;
+}
+
+/* Card */
+.record-details-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Header */
+.record-details-header {
+  background: linear-gradient(to right, #eff6ff, #eef2ff);
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Dark mode support for header */
+@media (prefers-color-scheme: dark) {
+  .record-details-header {
+    background: linear-gradient(to right, #1e3a8a, #312e81);
+    border-bottom-color: #374151;
+  }
+}
+
+.record-details-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-details-title {
+    color: #f9fafb;
+  }
+}
+
+.record-details-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-details-subtitle {
+    color: #9ca3af;
+  }
+}
+
+/* Content */
+.record-details-content {
+  height: max-content;
+  padding: 0;
+}
+
+/* Table Wrapper for Horizontal Scroll on Mobile */
+.table-wrapper {
+  width: 100%;
+  height: max-content;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table Styles with Borders */
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: 1px solid #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table {
+    border-color: #374151;
+  }
+}
+
+/* Table Header */
+.record-table thead {
+  background-color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table thead {
+    background-color: #1f2937;
+  }
+}
+
+.record-table thead th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  background-color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table thead th {
+    color: #f9fafb;
+    border-color: #374151;
+    background-color: #1f2937;
+  }
+}
+
+/* First column (Column Name) */
+.record-table thead th:first-child {
+  min-width: 180px;
+  width: 40%;
+}
+
+/* Second column (Value) */
+.record-table thead th:last-child {
+  width: 60%;
+}
+
+/* Table Body */
+.record-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.record-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table tbody tr:hover {
+    background-color: #1f2937;
+  }
+}
+
+.record-table tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.record-table tbody tr:nth-child(odd) {
+  background-color: #f9fafb;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table tbody tr:nth-child(even) {
+    background-color: #111827;
+  }
+
+  .record-table tbody tr:nth-child(odd) {
+    background-color: #1f2937;
+  }
+}
+
+/* Table Cells with Borders */
+.record-table tbody td {
+  padding: 0.875rem 1rem;
+  vertical-align: middle;
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table tbody td {
+    border-color: #374151;
+    color: #f3f4f6;
+  }
+}
+
+/* Column Name Cell */
+.record-table tbody td.column-name {
+  font-weight: 600;
+  color: #111827;
+  word-break: break-word;
+  background-color: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table tbody td.column-name {
+    color: #e5e7eb;
+    background-color: #1f2937;
+  }
+}
+
+/* Column Value Cell */
+.record-table tbody td.column-value {
+  word-break: break-word;
+  color: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  .record-table tbody td.column-value {
+    color: #d1d5db;
+  }
+}
+
+/* Empty Value */
+.empty-value {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+@media (prefers-color-scheme: dark) {
+  .empty-value {
+    color: #6b7280;
+  }
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  border: none;
+}
+
+.status-hot {
+  background-color: #ef4444;
+}
+
+.status-warm {
+  background-color: #f97316;
+}
+
+.status-cold {
+  background-color: #3b82f6;
+}
+
+.status-badge:not(.status-hot):not(.status-warm):not(.status-cold) {
+  background-color: #6b7280;
+}
+
+/* Loading States */
+.loading-title {
+  height: 2rem;
+  width: 12rem;
+}
+
+.loading-field {
+  height: 1.25rem;
+  width: 100%;
+}
+
+.loading-value {
+  height: 1.25rem;
+  width: 100%;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Mobile Styles */
+@media (max-width: 639px) {
+  .record-details-container {
+    padding: 0.5rem 0px;
+  }
+
+  .record-details-header {
+    padding: 1rem;
+  }
+
+  .record-details-title {
+    font-size: 1.25rem;
+  }
+
+  .record-table {
+    font-size: 0.813rem;
+  }
+
+  .record-table thead th,
+  .record-table tbody td {
+    padding: 0.625rem 0.5rem;
+  }
+
+  .record-table thead th:first-child {
+    min-width: 130px;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .record-details-container {
+    padding: 1.5rem;
+  }
+
+  .record-table thead th:first-child {
+    min-width: 200px;
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+  .record-details-container {
+    padding: 2rem;
+  }
+
+  .record-table {
+    font-size: 0.938rem;
+  }
+
+  .record-table thead th,
+  .record-table tbody td {
+    padding: 1rem 1.25rem;
+  }
+
+  .record-table thead th:first-child {
+    min-width: 220px;
+    width: 35%;
+  }
+
+  .record-table thead th:last-child {
+    width: 65%;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .record-details-card {
+    box-shadow: none;
+  }
+
+  .record-details-header {
+    background: white !important;
+    border-bottom: 2px solid #000;
+  }
+
+  .record-table tbody tr:hover {
+    background-color: transparent !important;
+  }
+
+  .record-table {
+    border: 2px solid #000;
+  }
+
+  .record-table thead th,
+  .record-table tbody td {
+    border: 1px solid #000;
+  }
+
+  .table-wrapper {
+    overflow-x: visible;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Focus styles for keyboard navigation */
+.record-table:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .record-table,
+  .record-table thead th,
+  .record-table tbody td {
+    border-width: 2px;
+    border-color: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .record-table tbody tr {
+    transition: none;
+  }
+}

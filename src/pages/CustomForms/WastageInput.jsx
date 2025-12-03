@@ -592,14 +592,18 @@
 //     }
 // }
 
+
+
 import { useEffect, useState } from 'react';
 import { Send } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getRecordById, createRecord } from '../../api/apiConfig';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
+
+
 
 // http://localhost:5173/wastage?schemaName=public&tableName=testing_table&recordId=010f953c-4c25-4075-854f-5c088a9c6e99&ownerId=1c17a5f5-6b0a-4300-9311-4701cb95abc4&us_id=10729/25&current_process=artwork&next_process=printing
 
@@ -616,6 +620,7 @@ function useQueryObject() {
 }
 
 export default function WastageInput() {
+    const navigate = useNavigate();
     const [wastageValue, setWastageValue] = useState('');
     const [receivedValue, setReceivedValue] = useState('');
     const [nextProcess, setNextProcess] = useState('');
@@ -632,6 +637,7 @@ export default function WastageInput() {
     const user = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
     const [currentBalance, setCurrentBalance] = useState(0);
+    const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process);
 
     // Fixed: Move state update to useEffect
     useEffect(() => {
@@ -683,6 +689,17 @@ export default function WastageInput() {
             getRecordByIdData();
         }
     }, [queryData.recordId, queryData.schemaName, queryData.tableName]);
+
+        // Navigate back after successful submission
+    useEffect(() => {
+        if (submitted) {
+            const timer = setTimeout(() => {
+                navigate(-1);
+            }, 2000);
+            
+            return () => clearTimeout(timer); // Cleanup
+        }
+    }, [submitted, navigate]);
 
 const handleSubmit = async () => {
     if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
@@ -904,7 +921,7 @@ const handleSubmit = async () => {
                                 disabled={isSubmitting}
                             >
                                 <option value="">-- Select Next Process --</option>
-                                {processSteps.map((step) => (
+                                {finalProcessSteps.map((step) => (
                                     <option key={step} value={step}>
                                         {step.charAt(0).toUpperCase() + step.slice(1)}
                                     </option>

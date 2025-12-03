@@ -457,7 +457,7 @@ const CustomUpdateForm = () => {
         if (data.exists && data.setup) {
           setSetupExists(true);
           setSetupData(data.setup);
-          setSelectedColumns(data.setup.filter_form_columns);
+          setSelectedColumns(data.setup.filter_form_columns || []);
           setProcessTypeMapping(data.setup.process_type_mapping || {});
         } else {
           setSetupExists(false);

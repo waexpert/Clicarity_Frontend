@@ -51,7 +51,7 @@ useEffect(() => {
             if (data.exists && data.setup) {
                 setSetupExists(true);
                 setSetupData(data.setup);
-                setSelectedColumns(data.setup.filter_form_columns);
+                setSelectedColumns(Array.isArray(data.setup.filter_form_columns) ? data.setup.filter_form_columns : []);
             } else {
                 setSetupExists(false);
                 // Set default columns if no setup exists
@@ -86,6 +86,7 @@ const saveFilter = async (cols) => {
     "record": {
       "owner_id": owner_id,
       "product_name": tableName,
+      "us_id":`${owner_id}_${tableName}`,
       "filter_form_columns": JSON.stringify(cols) // Use 'cols' parameter, not 'selectedColumns'
     }
   }
@@ -214,7 +215,7 @@ const saveFilter = async (cols) => {
                                 className={someSelected ? 'checkbox-indeterminate' : ''}
                             />
                             <Label htmlFor="select-all" className="select-all-label">
-                                Select All ({selectedColumns.length}/{columns.length})
+                                Select All ({selectedColumns?.length}/{columns.length})
                             </Label>
                         </div>
                         <Button

@@ -602,6 +602,7 @@ import axios from 'axios';
 import { getRecordById, createRecord } from '../../api/apiConfig';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
+import { Badge } from '@/components/ui/badge';
 
 
 
@@ -623,11 +624,11 @@ export default function WastageInput() {
     const navigate = useNavigate();
     const [wastageValue, setWastageValue] = useState('');
     const [receivedValue, setReceivedValue] = useState('');
-    const [nextProcess, setNextProcess] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const queryData = useQueryObject();
+    const [nextProcess, setNextProcess] = useState(queryData.next_process || '');
     const [responseData, setResponseData] = useState(null);
     const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
 
@@ -645,6 +646,12 @@ export default function WastageInput() {
             setNextProcess(queryData.next_process);
         }
     }, [isNextProcessProvided, queryData.next_process, nextProcess]);
+
+    useEffect(() => {
+         const index = processSteps.findIndex( p => p === queryData.current_process);
+         setNextProcess(index !== -1 && index < processSteps.length - 1? processSteps[index + 1]: '')
+         console.log("Next Process Set To:", nextProcess);
+    },[setNextProcess, processSteps]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -898,6 +905,9 @@ const handleSubmit = async () => {
                 <p style={styles.subheading}>
                     Please enter the wastage details below
                 </p>
+                        <Badge className={`status-badge bg-blue-100 text-blue-800 mt-2`}>
+                          Current Process {"-> "+queryData.current_process.charAt(0).toUpperCase() + queryData.current_process.slice(1)}
+                        </Badge>
             </div>
 
             <div style={styles.form}>

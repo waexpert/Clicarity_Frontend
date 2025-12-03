@@ -233,6 +233,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
   const [selectedChildId, setSelectedChildId] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processSteps, setProcessSteps] = useState([]);
 
   // Filter parent data to keep only keys that exist in visibleColumns
   const filteredData = useMemo(() => {
@@ -254,7 +255,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       return [];
     }
 
-    const processSteps = setupData.process_steps;
+    setProcessSteps(setupData.process_steps);
     const available = [];
 
     // Check parent record for processes with balance > 0
@@ -277,7 +278,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
 
     console.log('Available processes from PARENT record:', available);
     return available;
-  }, [data, setupData]);
+  }, [data, setupData, processSteps]);
 
   // Get the selected process details
   const selectedProcessData = useMemo(() => {
@@ -298,6 +299,8 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       alert('Please select a process from the dropdown');
       return;
     }
+  
+ 
 
     console.log('Moving to wastage with:', selectedProcessData);
     const params = new URLSearchParams({
@@ -307,8 +310,12 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       us_id: data?.us_id,
       ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
       current_process: selectedProcessData.processName,
-    });
+      
 
+    });
+    // console.log('next_process param:', index !== -1 && index < processSteps.length - 1? processSteps[index + 1]:'');
+    // console.log('index', index);
+    console.log('processSteps', processSteps);
     // Navigate to wastage page with selected process data
     navigate(`/wastage?${params.toString()}`, {
       state: {
@@ -322,7 +329,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
         setupData
       }
     });
-  }; // ← Close the function here
+  }; 
 
   console.log('=== WastageUpdateForm Debug ===');
   console.log('Parent/Original Data:', data);

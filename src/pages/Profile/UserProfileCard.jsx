@@ -80,7 +80,7 @@ const UserProfileCard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">EMAIL</p>
-              <p className="text-sm text-slate-900 truncate">
+              <p className="text-sm text-slate-700 truncate">
                 {userData.email || 'N/A'}
               </p>
             </div>
@@ -93,7 +93,7 @@ const UserProfileCard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">PHONE</p>
-              <p className="text-sm text-slate-900">
+              <p className="text-sm text-slate-700">
                 {userData.phone_number || 'N/A'}
               </p>
             </div>
@@ -106,7 +106,7 @@ const UserProfileCard = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">USER ID</p>
-              <p className="text-sm text-slate-900 font-mono">
+              <p className="text-sm text-slate-700 font-mono">
                 {userData.id ? userData.id.substring(0, 8) + '...' : 'N/A'}
               </p>
             </div>
@@ -120,7 +120,7 @@ const UserProfileCard = () => {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">LOCATION</p>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-900">
+                <span className="text-sm text-slate-700">
                   {userData.country ? userData.country.toUpperCase() : 'N/A'}
                 </span>
                 {userData.currency && (
@@ -145,7 +145,7 @@ const UserProfileCard = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">SCHEMA</p>
-                <Badge className="bg-blue-100 text-blue-800 text-xs">
+                <Badge className="bg-blue-100 text-blue-700 text-xs">
                   {userData.schema_name}
                 </Badge>
               </div>

@@ -159,13 +159,13 @@ const Header = () => {
     return (
         <div className='header-wrapper'>
             <div className="header-top">
-                <div className="header-logo">
+                <Link to="/" className="header-logo">
                     <img 
                         src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" 
                         alt="Clicarity Logo" 
                         className='logo-image' 
                     />
-                </div>
+                </Link>
                 
                 <div className="header-actions">
                     <LogoutButton />

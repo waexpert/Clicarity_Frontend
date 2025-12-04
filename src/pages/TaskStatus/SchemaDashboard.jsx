@@ -137,12 +137,12 @@ const SchemaDashboard = () => {
 
   return (<>
   {/* {showCapture? <CaptureWebhook/> :""} */}
-    <Card className="shadow-sm border-slate-200 mx-[6rem]">
+    <Card className="tableCard shadow-sm border-slate-200 mx-[6rem]">
       
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle className="text-2xl font-semibold text-slate-800">All Products</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-slate-700">All Products</CardTitle>
             <CardDescription className="mt-1">
               Manage your data stores and schemas
             </CardDescription>

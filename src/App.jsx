@@ -52,7 +52,7 @@ function App() {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   
   const hideHeader =
-    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member","/status-update","/custom-update"].includes(location.pathname) ||
+    ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member","/status-update"].includes(location.pathname) ||
     (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
 
   return (

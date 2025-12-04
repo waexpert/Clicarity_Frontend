@@ -331,7 +331,7 @@
 //                         <div key={obj.name} className="space-y-3 p-4 bg-gray-50 rounded-lg border">
 //                             <div className="flex items-center gap-2 justify-between">
 //                                 <div className="flex items-center gap-2">
-//                                     <h4 className="font-medium text-gray-800 capitalize text-sm">
+//                                     <h4 className="font-medium text-gray-700 capitalize text-sm">
 //                                         {obj.name.replace(/_/g, ' ')}
 //                                     </h4>
 //                                     <Badge variant="outline" className="text-xs h-5">
@@ -385,7 +385,7 @@
 //                     <div className="flex items-center gap-3">
 //                         {/* <Settings className="h-8 w-8 text-blue-600" /> */}
 //                         <div>
-//                             <h1 className="text-3xl font-bold text-gray-900">Dropdown Setup</h1>
+//                             <h1 className="text-3xl font-bold text-gray-700">Dropdown Setup</h1>
 //                             <p className="text-gray-600 mt-1">Configure dropdown values and display order for <span className="font-semibold text-blue-600">{tableName}</span></p>
 //                         </div>
 //                     </div>
@@ -417,7 +417,7 @@
 //                 <Card>
 //                     <CardContent className="text-center py-12">
 //                         <Settings className="h-16 w-16 mx-auto mb-4 opacity-30" />
-//                         <h3 className="text-lg font-medium text-gray-900 mb-2">No configurable columns found</h3>
+//                         <h3 className="text-lg font-medium text-gray-700 mb-2">No configurable columns found</h3>
 //                         <p className="text-gray-500">This table doesn't have any columns that can be configured for dropdowns.</p>
 //                     </CardContent>
 //                 </Card>
@@ -556,7 +556,7 @@
 import React, { useEffect, useState } from 'react';
 import TagInput from '../../components/setup/TagInput';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom'; // ✅ Fixed: Removed 'data' import
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { setDynamicData } from '../../features/dataMethod/tableStructureSlice';
 import { Button } from '../../components/ui/button';
@@ -565,6 +565,7 @@ import { Badge } from '../../components/ui/badge';
 import { Separator } from '../../components/ui/separator';
 import { Input } from '../../components/ui/input';
 import { Loader2, Settings, Save, Plus, RefreshCw, Database, Info, ArrowUpDown } from 'lucide-react';
+import "../../css/components/CustomTable.css"
 
 const DropDownSetup = () => {
     const [webhooksByColumn, setWebhooksByColumn] = useState({});
@@ -588,18 +589,18 @@ const DropDownSetup = () => {
     const schemaName = user.schema_name;
     const { tableName } = useParams();
     const [columns, setColumns] = useState([]);
-    const [setupData, setSetupData] = useState({}); // ✅ Fixed: Renamed from 'data'
+    const [setupData, setSetupData] = useState({});
 
     console.log(webhooksByColumn);
     console.log('Column Order:', columnOrder);
 
-const handleNextProcessChange = (stepName, value) => {
-    setProcessTypes(prev => ({
-        ...prev,
-        [stepName]: value
-    }));
-    if (error) setError("");
-};
+    const handleNextProcessChange = (stepName, value) => {
+        setProcessTypes(prev => ({
+            ...prev,
+            [stepName]: value
+        }));
+        if (error) setError("");
+    };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -608,47 +609,45 @@ const handleNextProcessChange = (stepName, value) => {
         }
     };
 
-useEffect(() => {
-    const fetchSetupData = async () => {
-        try {
-            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-            const { data } = await axios.get(route);
+    useEffect(() => {
+        const fetchSetupData = async () => {
+            try {
+                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+                const { data } = await axios.get(route);
 
-            console.log('Fetched setup data:', data.setup);
+                console.log('Fetched setup data:', data.setup);
 
-            if (data.exists && data.setup) {
-                setSetupExists(true);
-                setSetupData(data.setup);
+                if (data.exists && data.setup) {
+                    setSetupExists(true);
+                    setSetupData(data.setup);
 
-                // ✅ Load process steps
-                const steps = Array.isArray(data.setup?.process_steps)
-                    ? data.setup.process_steps
-                    : [];
-                setFetchedProcessSteps(steps);
-                setProcessSteps(steps);
+                    const steps = Array.isArray(data.setup?.process_steps)
+                        ? data.setup.process_steps
+                        : [];
+                    setFetchedProcessSteps(steps);
+                    setProcessSteps(steps);
 
-                // ✅ Load process type mapping
-                const typeMapping = data.setup?.process_type_mapping || {};
-                setProcessTypes(typeMapping);
-                setFetchedProcessTypes(typeMapping);
+                    const typeMapping = data.setup?.process_type_mapping || {};
+                    setProcessTypes(typeMapping);
+                    setFetchedProcessTypes(typeMapping);
 
-                if (data.setup.mapping) {
-                    setWebhooksByColumn(data.setup.mapping);
+                    if (data.setup.mapping) {
+                        setWebhooksByColumn(data.setup.mapping);
+                    }
+                    if (data.setup.columnOrder) {
+                        setColumnOrder(data.setup.columnOrder);
+                    }
+                } else {
+                    setSetupExists(false);
                 }
-                if (data.setup.columnOrder) {
-                    setColumnOrder(data.setup.columnOrder);
-                }
-            } else {
+            } catch (err) {
+                console.error('Error fetching setup:', err);
                 setSetupExists(false);
             }
-        } catch (err) {
-            console.error('Error fetching setup:', err);
-            setSetupExists(false);
-        }
-    };
+        };
 
-    fetchSetupData();
-}, [user.id, tableName]);
+        fetchSetupData();
+    }, [user.id, tableName]);
 
     const getTableStructure = async () => {
         const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getTableColumns?schemaName=${schemaName}&tableName=${tableName}`;
@@ -714,89 +713,84 @@ useEffect(() => {
     };
 
     const handleSaveProcessTypes = async () => {
-    setProcessSaving(true);
-    try {
-        if (Object.keys(processTypes).length === 0) {
-            alert('Please select at least one process type');
+        setProcessSaving(true);
+        try {
+            if (Object.keys(processTypes).length === 0) {
+                alert('Please select at least one process type');
+                setProcessSaving(false);
+                return;
+            }
+
+            console.log('Saving process type mapping:', processTypes);
+
+            const response = await axios.get(
+                `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
+                {
+                    params: {
+                        schemaName: 'public',
+                        tableName: 'dropdown_setup',
+                        recordId: setupData.id,
+                        ownerId: setupData.owner_id,
+                        columnName: 'process_type_mapping',
+                        userSchemaName: user.schema_name,
+                        userTableName: tableName,
+                        value: JSON.stringify(processTypes)
+                    }
+                }
+            );
+
+            alert('Process type mapping saved successfully!');
+            setFetchedProcessTypes({ ...processTypes });
+        } catch (err) {
+            console.error('Error saving process type mapping:', err);
+            alert(`Error: ${err.response?.data?.error || 'Failed to save process type mapping'}`);
+        } finally {
             setProcessSaving(false);
-            return;
         }
+    };
 
-        console.log('Saving process type mapping:', processTypes);
-
-        const response = await axios.get(
-            `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
-            {
-                params: {
-                    schemaName: 'public',
-                    tableName: 'dropdown_setup',
-                    recordId: setupData.id,
-                    ownerId: setupData.owner_id,
-                    columnName: 'process_type_mapping',
-                    userSchemaName: user.schema_name,
-                    userTableName: tableName,
-                    value: JSON.stringify(processTypes) // ✅ Save as JSONB
-                }
-            }
+    const handleResetProcessTypes = async () => {
+        const confirmReset = window.confirm(
+            '⚠️ Are you sure you want to reset all process type mappings? This action cannot be undone.'
         );
 
-        alert('Process type mapping saved successfully!');
-        setFetchedProcessTypes({ ...processTypes }); // Update fetched state
-    } catch (err) {
-        console.error('Error saving process type mapping:', err);
-        alert(`Error: ${err.response?.data?.error || 'Failed to save process type mapping'}`);
-    } finally {
-        setProcessSaving(false);
-    }
-};
+        if (!confirmReset) return;
 
-const handleResetProcessTypes = async () => {
-    const confirmReset = window.confirm(
-        '⚠️ Are you sure you want to reset all process type mappings? This action cannot be undone.'
-    );
+        setResetting(true);
+        try {
+            console.log('Resetting process type mapping...');
 
-    if (!confirmReset) return;
-
-    setResetting(true);
-    try {
-        console.log('Resetting process type mapping...');
-
-        const response = await axios.get(
-            `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
-            {
-                params: {
-                    schemaName: 'public',
-                    tableName: 'dropdown_setup',
-                    recordId: setupData.id,
-                    ownerId: setupData.owner_id,
-                    columnName: 'process_type_mapping',
-                    userSchemaName: user.schema_name,
-                    userTableName: tableName,
-                    value: JSON.stringify({}) // ✅ Reset to empty object
+            const response = await axios.get(
+                `${import.meta.env.VITE_APP_BASE_URL}/data/updateRecord`,
+                {
+                    params: {
+                        schemaName: 'public',
+                        tableName: 'dropdown_setup',
+                        recordId: setupData.id,
+                        ownerId: setupData.owner_id,
+                        columnName: 'process_type_mapping',
+                        userSchemaName: user.schema_name,
+                        userTableName: tableName,
+                        value: JSON.stringify({})
+                    }
                 }
-            }
-        );
+            );
 
-        // Clear local state
-        setProcessTypes({});
-        setFetchedProcessTypes({});
-        
-        alert('Process type mapping reset successfully!');
-    } catch (err) {
-        console.error('Error resetting process type mapping:', err);
-        alert(`Error: ${err.response?.data?.error || 'Failed to reset process type mapping'}`);
-    } finally {
-        setResetting(false);
-    }
-};
+            setProcessTypes({});
+            setFetchedProcessTypes({});
+            
+            alert('Process type mapping reset successfully!');
+        } catch (err) {
+            console.error('Error resetting process type mapping:', err);
+            alert(`Error: ${err.response?.data?.error || 'Failed to reset process type mapping'}`);
+        } finally {
+            setResetting(false);
+        }
+    };
 
-
-
-    // ✅ Fixed: Proper array handling
     const handleSaveProcess = async () => {
         setProcessSaving(true);
         try {
-            // ✅ Ensure processSteps is an array
             if (!Array.isArray(processSteps) || processSteps.length === 0) {
                 alert('Please enter at least one process step');
                 setProcessSaving(false);
@@ -817,13 +811,13 @@ const handleResetProcessTypes = async () => {
                         columnName: 'process_steps',
                         userSchemaName: user.schema_name,
                         userTableName: tableName,
-                        value: JSON.stringify(processSteps) // ✅ Now always stringifying an array
+                        value: JSON.stringify(processSteps)
                     }
                 }
             );
 
             alert('Process steps updated successfully!');
-            setFetchedProcessSteps([...processSteps]); // Update fetched steps
+            setFetchedProcessSteps([...processSteps]);
         } catch (err) {
             console.error('Error saving process steps:', err);
             alert(`Error: ${err.response?.data?.error || 'Failed to save process steps'}`);
@@ -833,33 +827,31 @@ const handleResetProcessTypes = async () => {
     };
 
     const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-        await getTableStructure();
-        // Refetch setup data
-        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-        const { data } = await axios.get(route);
+        setRefreshing(true);
+        try {
+            await getTableStructure();
+            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+            const { data } = await axios.get(route);
 
-        if (data.exists && data.setup) {
-            setSetupData(data.setup);
-            
-            const steps = Array.isArray(data.setup?.process_steps)
-                ? data.setup.process_steps
-                : [];
-            setFetchedProcessSteps(steps);
-            setProcessSteps(steps);
+            if (data.exists && data.setup) {
+                setSetupData(data.setup);
+                
+                const steps = Array.isArray(data.setup?.process_steps)
+                    ? data.setup.process_steps
+                    : [];
+                setFetchedProcessSteps(steps);
+                setProcessSteps(steps);
 
-            // ✅ Refresh process type mapping
-            const typeMapping = data.setup?.process_type_mapping || {};
-            setProcessTypes(typeMapping);
-            setFetchedProcessTypes(typeMapping);
+                const typeMapping = data.setup?.process_type_mapping || {};
+                setProcessTypes(typeMapping);
+                setFetchedProcessTypes(typeMapping);
+            }
+        } catch (err) {
+            console.error('Error refreshing:', err);
+        } finally {
+            setRefreshing(false);
         }
-    } catch (err) {
-        console.error('Error refreshing:', err);
-    } finally {
-        setRefreshing(false);
-    }
-};
+    };
 
     const handleOrderChange = (columnName, newOrder) => {
         const orderValue = newOrder === '' ? 0 : parseInt(newOrder) || 0;
@@ -909,23 +901,23 @@ const handleResetProcessTypes = async () => {
         return (
             <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading setup...</span>
+                <span className="ml-2 text-base">Loading setup...</span>
             </div>
         );
     }
 
     const ColumnCard = ({ columns, title }) => (
         <Card className="h-fit">
-            <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
+            <CardHeader className="pb-4 px-3 md:px-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                     <Database className="h-5 w-5 text-blue-600" />
                     {title}
                 </CardTitle>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-xs md:text-sm">
                     Configure dropdown values and display order for these columns
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 px-3 md:px-6">
                 {columns.length === 0 ? (
                     <div className="text-center py-4 text-gray-500">
                         <Database className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -933,10 +925,10 @@ const handleResetProcessTypes = async () => {
                     </div>
                 ) : (
                     columns.map(obj => (
-                        <div key={obj.name} className="space-y-3 p-4 bg-gray-50 rounded-lg border">
+                        <div key={obj.name} className="space-y-3 p-3 md:p-4 bg-gray-50 rounded-lg border">
                             <div className="flex items-center gap-2 justify-between">
                                 <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-800 capitalize text-sm">
+                                    <h4 className="font-medium text-gray-700 capitalize text-sm md:text-base">
                                         {obj.name.replace(/_/g, ' ')}
                                     </h4>
                                     <Badge variant="outline" className="text-xs h-5">
@@ -959,7 +951,7 @@ const handleResetProcessTypes = async () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-medium text-gray-600">
+                                <label className="text-xs md:text-sm font-medium text-gray-600">
                                     Dropdown Values:
                                 </label>
                                 <TagInput
@@ -982,19 +974,23 @@ const handleResetProcessTypes = async () => {
     );
 
     return (
-        <div className="mx-[6rem]">
-            <div className="mb-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+        <div className="mx-4 md:mx-24">
+            {/* Header Section */}
+            <div className="mb-4">
+                <div className="flex items-center justify-between gap-4"> 
+                    <div className="flex items-center gap-3 px-2">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Dropdown Setup</h1>
-                            <p className="text-gray-600 mt-1">Configure dropdown values and display order for <span className="font-semibold text-blue-600">{tableName}</span></p>
+                            <h1 className="text-xl md:text-3xl font-bold text-gray-700 ">Dropdown Setup</h1>
+                            <p className="text-sm md:text-base text-gray-600 mt-1">
+                                Configure dropdown values and display order for{' '}
+                                <span className="font-semibold text-blue-600">{tableName}</span>
+                            </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                         <Badge
                             variant={setupExists ? "default" : "secondary"}
-                            className="text-sm px-3 py-1"
+                            className="text-xs md:text-sm px-3 py-1"
                         >
                             {setupExists ? "✓ Configured" : "Not Configured"}
                         </Badge>
@@ -1003,10 +999,10 @@ const handleResetProcessTypes = async () => {
                             size="sm"
                             onClick={handleRefresh}
                             disabled={refreshing}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 text-sm"
                         >
                             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <span className="hidden sm:inline">Refresh</span>
                         </Button>
                     </div>
                 </div>
@@ -1014,12 +1010,13 @@ const handleResetProcessTypes = async () => {
 
             <Separator className="mb-6" />
 
+            {/* Columns Grid */}
             {filteredColumns.length === 0 ? (
                 <Card>
-                    <CardContent className="text-center py-12">
+                    <CardContent className="text-center py-12 px-3 md:px-6">
                         <Settings className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No configurable columns found</h3>
-                        <p className="text-gray-500">This table doesn't have any columns that can be configured for dropdowns.</p>
+                        <h3 className="text-base md:text-lg font-medium text-gray-700 mb-2">No configurable columns found</h3>
+                        <p className="text-sm text-gray-500">This table doesn't have any columns that can be configured for dropdowns.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -1035,9 +1032,10 @@ const handleResetProcessTypes = async () => {
                 </div>
             )}
 
-            <div className="flex justify-between items-center mb-6">
+            {/* Save Setup Section */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
                         <Info className="h-4 w-4" />
                         <span>Total configurable columns: <strong>{filteredColumns.length}</strong></span>
                     </div>
@@ -1045,7 +1043,7 @@ const handleResetProcessTypes = async () => {
                 <Button
                     onClick={handleSaveSetup}
                     disabled={saving || filteredColumns.length === 0}
-                    className="flex items-center gap-2 min-w-32 h-10"
+                    className="flex items-center gap-2 min-w-32 h-10 text-sm md:text-base"
                     size="lg"
                 >
                     {saving ? (
@@ -1059,16 +1057,15 @@ const handleResetProcessTypes = async () => {
                 </Button>
             </div>
 
-            {/* ✅ Fixed: Process Steps Section */}
+            {/* Process Steps Section */}
             <Card className="mb-6 bg-gray-50 border-gray-200">
-                <CardContent className="pt-6">
-                    <div className="text-sm">
-                        <h4 className="font-semibold mb-2">Configure Process Steps:</h4>
+                <CardContent className="pt-6 px-3 md:px-6">
+                    <div className="text-sm md:text-base">
+                        <h4 className="text-base md:text-lg font-semibold mb-3 text-gray-700">Configure Process Steps:</h4>
                         <div className="space-y-2 flex flex-col">
-                            <label className="text-xs font-medium text-gray-600">
+                            <label className="text-xs md:text-sm font-medium text-gray-600">
                                 Process Steps:
                             </label>
-                            {/* ✅ Use TagInput instead of regular input */}
                             <TagInput
                                 webhooks={processSteps}
                                 setWebhooks={setProcessSteps}
@@ -1081,8 +1078,8 @@ const handleResetProcessTypes = async () => {
                         </div>
                         <Button
                             onClick={handleSaveProcess}
-                            disabled={processSaving} // ✅ Fixed: Use processSaving
-                            className="flex items-center gap-2 min-w-32 h-10 mt-4"
+                            disabled={processSaving}
+                            className="flex items-center gap-2 min-w-32 h-10 mt-4 text-sm md:text-base"
                             size="lg"
                         >
                             {processSaving ? (
@@ -1096,117 +1093,104 @@ const handleResetProcessTypes = async () => {
                 </CardContent>
             </Card>
 
+            {/* Process Type Mapping Section */}
             <Card className="mb-6 bg-gray-50 border-gray-200">
-    <CardContent className="pt-6">
-        <div className="text-sm">
-            <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold text-lg">Define Process Type:</h4>
-                {Object.keys(processTypes).length > 0 && (
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleResetProcessTypes}
-                        disabled={resetting || processSaving}
-                        className="flex items-center gap-2"
-                    >
-                        {resetting ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <RefreshCw className="h-4 w-4" />
-                        )}
-                        {resetting ? 'Resetting...' : 'Reset All'}
-                    </Button>
-                )}
-            </div>
-
-            {processSteps.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 bg-white rounded border">
-                    <Settings className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No process steps defined yet.</p>
-                    <p className="text-xs mt-1">Add process steps in the section above first.</p>
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {processSteps.map((step, index) => (
-                        <div 
-                            key={index} 
-                            className="flex gap-4 items-center p-4 bg-white rounded-lg border hover:border-blue-300 transition-colors"
-                        >
-                            <div className="min-w-[200px]">
-                                <p className="font-medium text-gray-700 capitalize">
-                                    {step.replace(/_/g, ' ')}
-                                </p>
-                            </div>
-                            <div className="flex-1">
-                                <select
-                                    id={`process-type-${index}`}
-                                    value={processTypes[step] || ''}
-                                    onChange={(e) => handleNextProcessChange(step, e.target.value)}
-                                    disabled={processSaving || resetting}
-                                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                <CardContent className="pt-6 px-3 md:px-6">
+                    <div className="text-sm md:text-base">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                            <h4 className="text-base md:text-lg font-semibold text-gray-700">Define Process Type:</h4>
+                            {Object.keys(processTypes).length > 0 && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleResetProcessTypes}
+                                    disabled={resetting || processSaving}
+                                    className="flex items-center gap-2 text-sm w-full sm:w-auto"
                                 >
-                                    <option value="" disabled>
-                                        -- Select Process Type --
-                                    </option>
-                                    {processType.map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </select>
+                                    {resetting ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <RefreshCw className="h-4 w-4" />
+                                    )}
+                                    {resetting ? 'Resetting...' : 'Reset All'}
+                                </Button>
+                            )}
+                        </div>
+
+                        {processSteps.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500 bg-white rounded border">
+                                <Settings className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                                <p className="text-sm md:text-base">No process steps defined yet.</p>
+                                <p className="text-xs md:text-sm mt-1">Add process steps in the section above first.</p>
                             </div>
-                            {processTypes[step] && (
-                                <Badge variant="default" className="ml-2">
-                                    {processTypes[step]}
+                        ) : (
+                            <div className="space-y-3">
+                                {processSteps.map((step, index) => (
+                                    <div 
+                                        key={index} 
+                                        className="flex flex-col md:flex-row gap-3 md:gap-4 items-start md:items-center p-3 md:p-4 bg-white rounded-lg border hover:border-blue-300 transition-colors"
+                                    >
+                                        <div className="md:min-w-[200px] w-full md:w-auto">
+                                            <p className="text-sm md:text-base font-medium text-gray-700 capitalize">
+                                                {step.replace(/_/g, ' ')}
+                                            </p>
+                                        </div>
+                                        <div className="flex-1 w-full">
+                                            <select
+                                                id={`process-type-${index}`}
+                                                value={processTypes[step] || ''}
+                                                onChange={(e) => handleNextProcessChange(step, e.target.value)}
+                                                disabled={processSaving || resetting}
+                                                className="w-full px-3 md:px-4 py-2 text-sm md:text-base border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="" disabled>
+                                                    -- Select Process Type --
+                                                </option>
+                                                {processType.map((type) => (
+                                                    <option key={type} value={type}>
+                                                        {type}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {processTypes[step] && (
+                                            <Badge variant="default" className="md:ml-2 self-start md:self-center text-xs md:text-sm">
+                                                {processTypes[step]}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                            <Button
+                                onClick={handleSaveProcessTypes}
+                                disabled={processSaving || resetting || processSteps.length === 0 || Object.keys(processTypes).length === 0}
+                                className="flex items-center gap-2 min-w-32 h-10 text-sm md:text-base"
+                                size="lg"
+                            >
+                                {processSaving ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Save className="h-4 w-4" />
+                                )}
+                                {processSaving ? 'Saving...' : 'Save Process Types'}
+                            </Button>
+
+                            {/* Show changes indicator */}
+                            {JSON.stringify(processTypes) !== JSON.stringify(fetchedProcessTypes) && (
+                                <Badge variant="outline" className="self-center text-xs md:text-sm">
+                                    Unsaved changes
                                 </Badge>
                             )}
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Summary of current mapping */}
-            {/* {Object.keys(processTypes).length > 0 && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs font-medium text-blue-900 mb-2">Current Mapping:</p>
-                    <div className="text-xs text-blue-800">
-                        {Object.entries(processTypes).map(([step, type]) => (
-                            <span key={step} className="inline-block mr-3 mb-1">
-                                <strong>{step}:</strong> {type}
-                            </span>
-                        ))}
                     </div>
-                </div>
-            )} */}
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 mt-4">
-                <Button
-                    onClick={handleSaveProcessTypes}
-                    disabled={processSaving || resetting || processSteps.length === 0 || Object.keys(processTypes).length === 0}
-                    className="flex items-center gap-2 min-w-32 h-10"
-                    size="lg"
-                >
-                    {processSaving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Save className="h-4 w-4" />
-                    )}
-                    {processSaving ? 'Saving...' : 'Save Process Types'}
-                </Button>
-
-                {/* Show changes indicator */}
-                {JSON.stringify(processTypes) !== JSON.stringify(fetchedProcessTypes) && (
-                    <Badge variant="outline" className="ml-2 self-center">
-                        Unsaved changes
-                    </Badge>
-                )}
-            </div>
-        </div>
-    </CardContent>
-</Card>
+                </CardContent>
+            </Card>
         </div>
     );
 };
 
-export default DropDownSetup;               
+export default DropDownSetup;

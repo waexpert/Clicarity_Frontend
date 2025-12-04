@@ -249,7 +249,7 @@
 //           value={searchId}
 //           onChange={(e) => setSearchId(e.target.value)}
 //           onKeyPress={handleKeyPress}
-//           className="bg-gray-50 text-gray-900"
+//           className="bg-gray-50 text-gray-700"
 //           placeholder="Enter the ID"
 //           aria-label="Search ID"
 //           disabled={loading}
@@ -578,7 +578,7 @@ const CustomUpdateForm = () => {
           value={searchId}
           onChange={(e) => setSearchId(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="bg-gray-50 text-gray-900"
+          className="bg-gray-50 text-gray-700"
           placeholder="Enter the ID"
           aria-label="Search ID"
           disabled={loading}

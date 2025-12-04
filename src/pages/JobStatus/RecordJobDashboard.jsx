@@ -342,13 +342,13 @@
 //   const getStatusBadgeColor = (status) => {
 //     switch(status.toLowerCase()) {
 //       case 'pending':
-//         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+//         return 'bg-yellow-100 text-yellow-700 border-yellow-200';
 //       case 'in progress':
-//         return 'bg-blue-100 text-blue-800 border-blue-200';
+//         return 'bg-blue-100 text-blue-700 border-blue-200';
 //       case 'completed':
-//         return 'bg-green-100 text-green-800 border-green-200';
+//         return 'bg-green-100 text-green-700 border-green-200';
 //       default:
-//         return 'bg-gray-100 text-gray-800 border-gray-200';
+//         return 'bg-gray-100 text-gray-700 border-gray-200';
 //     }
 //   };
 
@@ -356,13 +356,13 @@
 //   const getPriorityBadgeColor = (priority) => {
 //     switch(priority.toLowerCase()) {
 //       case 'high':
-//         return 'bg-red-100 text-red-800 border-red-200';
+//         return 'bg-red-100 text-red-700 border-red-200';
 //       case 'medium':
-//         return 'bg-orange-100 text-orange-800 border-orange-200';
+//         return 'bg-orange-100 text-orange-700 border-orange-200';
 //       case 'low':
-//         return 'bg-green-100 text-green-800 border-green-200';
+//         return 'bg-green-100 text-green-700 border-green-200';
 //       default:
-//         return 'bg-gray-100 text-gray-800 border-gray-200';
+//         return 'bg-gray-100 text-gray-700 border-gray-200';
 //     }
 //   };
 
@@ -385,7 +385,7 @@
 //       <CardHeader className="pb-3">
 //         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 //           <div>
-//             <CardTitle className="text-2xl font-semibold text-slate-800">All Records</CardTitle>
+//             <CardTitle className="text-2xl font-semibold text-slate-700">All Records</CardTitle>
 //             <CardDescription className="mt-1">
 //               View and manage all database records
 //             </CardDescription>

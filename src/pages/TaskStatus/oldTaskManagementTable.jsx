@@ -148,7 +148,7 @@
 
 //           <div className="max-h-screen overflow-auto">
 //             <Table>
-//               <TableHeader className="sticky top-0 bg-white dark:bg-gray-900">
+//               <TableHeader className="sticky top-0 bg-white dark:bg-gray-700">
 //                 <TableRow>
 //                   <TableHead className="w-12">#</TableHead>
 //                   <TableHead>Task Name</TableHead>
@@ -563,7 +563,7 @@
 
 //           <div className="max-h-screen overflow-auto">
 //             <Table>
-//               <TableHeader className="sticky top-0 bg-white dark:bg-gray-900">
+//               <TableHeader className="sticky top-0 bg-white dark:bg-gray-700">
 //                 <TableRow>
 //                   <TableHead className="w-12">#</TableHead>
 //                   <TableHead>Task Name</TableHead>

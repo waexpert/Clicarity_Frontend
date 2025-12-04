@@ -1,0 +1,7 @@
+@media (max-width: 768px) {
+.tableCard {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    /* background: #000; */
+  }
+}

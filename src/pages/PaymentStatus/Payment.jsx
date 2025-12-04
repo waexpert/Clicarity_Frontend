@@ -847,7 +847,7 @@ const Payment = () => {
           {!setupExists && (
             <Alert className="border-orange-200 bg-orange-50">
               <AlertCircle className="h-4 w-4 text-orange-600" />
-              <AlertTitle className="text-orange-800">No Configuration Found</AlertTitle>
+              <AlertTitle className="text-orange-700">No Configuration Found</AlertTitle>
               <AlertDescription className="text-orange-700">
                 No payment setup exists for your account. Please create your configuration below to get started.
               </AlertDescription>
@@ -857,7 +857,7 @@ const Payment = () => {
           {setupExists && !isEditing && (
             <Alert className="border-green-200 bg-green-50">
               <Settings className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800">Configuration Active</AlertTitle>
+              <AlertTitle className="text-green-700">Configuration Active</AlertTitle>
               <AlertDescription className="text-green-700">
                 Your payment reminder system is configured and active. Click "Edit Setup" to make changes.
               </AlertDescription>

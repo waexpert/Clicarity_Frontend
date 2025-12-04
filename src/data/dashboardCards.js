@@ -26,7 +26,7 @@ const dashboardCards = [
     description: "Organize and manage all your processes efficentily.",
     icon: "network",
     iconColor: "#4285B4",
-    route: "/jobstatus"
+    route: "/jobstatus/record"
   },
   {
     id: 2,
@@ -34,7 +34,7 @@ const dashboardCards = [
     description: "Track and manage potential clients through your sales pipeline.",
     icon: "leads",
     iconColor: "#4285B4",
-    route: "/leadstatus"
+    route: "/leadstatus/record"
   },
     {
     id: 11,
@@ -50,7 +50,7 @@ const dashboardCards = [
     description: "Create, assign and track tasks for efficient workflow management.",
     icon: "tasks", // Used for conditional rendering of the icon component
     iconColor: "#4285B4", // You can use your brand color for all or provide different colors
-    route: "/tasks"
+    route: "/taskstatus/record"
   },
     {
     id: 10,

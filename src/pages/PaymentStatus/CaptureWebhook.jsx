@@ -262,7 +262,7 @@
 //         {webhookData && (
 //           <div className="bg-gray-50 p-4 rounded-lg">
 //             <h4 className="font-semibold mb-2">Latest Webhook Data:</h4>
-//             <div className="bg-gray-800 text-green-400 p-4 rounded-md overflow-auto max-h-64">
+//             <div className="bg-gray-700 text-green-400 p-4 rounded-md overflow-auto max-h-64">
 //               <pre className="text-sm">{JSON.stringify(webhookData.query, null, 2)}</pre>
 //             </div>
 //             <p className="mt-2 text-sm text-gray-600">
@@ -633,7 +633,7 @@ const CaptureWebhook = ({setColumnFields,columnName}) => {
         {webhookData && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-semibold mb-2">Latest Webhook Data:</h4>
-            <div className="bg-gray-800 text-green-400 p-4 rounded-md overflow-auto max-h-64">
+            <div className="bg-gray-700 text-green-400 p-4 rounded-md overflow-auto max-h-64">
               <pre className="text-sm">{JSON.stringify(webhookData.query, null, 2)}</pre>
             </div>
             <p className="mt-2 text-sm text-gray-600">

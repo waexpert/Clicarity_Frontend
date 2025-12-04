@@ -1,9 +1,10 @@
 import React from 'react';
 import '../css/components/Card.css';
+import "../css/components/CustomTable.css";
 
 const Card = ({ title, description, icon, buttonText }) => {
   return (
-    <div className="channel-card">
+    <div className="tableCard channel-card">
       <div className="icon-box">
         <img
           src={icon}

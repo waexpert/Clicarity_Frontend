@@ -324,21 +324,21 @@ const handleLoginAsUser = async (userEmail) => {
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-gray-500">{user.id}</span>
                             <Copy className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600" />
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-700">{user.name}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-900">{user.email}</span>
+                            <span className="text-sm text-gray-700">{user.email}</span>
                             <Copy className="w-3 h-3 text-gray-400 cursor-pointer hover:text-gray-600" />
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{user.country}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{user.currency}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.amount}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{user.joinDate}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{user.lastActive}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{user.lastSeen}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{user.country}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{user.currency}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-700">{user.amount}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{user.joinDate}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{user.lastActive}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{user.lastSeen}</td>
                       </tr>
                     ))
                   ) : (
@@ -346,7 +346,7 @@ const handleLoginAsUser = async (userEmail) => {
                       <td colSpan="9" className="px-6 py-12 text-center">
                         <div className="text-gray-500">
                           <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                          <h3 className="text-lg font-medium text-gray-700 mb-2">No users found</h3>
                           <p className="text-sm">There are no users to display at the moment.</p>
                         </div>
                       </td>

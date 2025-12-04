@@ -905,7 +905,7 @@ const handleSubmit = async () => {
                 <p style={styles.subheading}>
                     Please enter the wastage details below
                 </p>
-                        <Badge className={`status-badge bg-blue-100 text-blue-800 mt-2`}>
+                        <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2`}>
                           Current Process {"-> "+queryData.current_process.charAt(0).toUpperCase() + queryData.current_process.slice(1)}
                         </Badge>
             </div>

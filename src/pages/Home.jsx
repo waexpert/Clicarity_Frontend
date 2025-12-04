@@ -32,7 +32,7 @@ const Home = () => {
   return (
     <>
       {/* <ProfileHeader /> */}
-      <div className='homeWrapper w-full px-6 py-6'>
+      <div className=' homeWrapper w-full px-6 py-6'>
         {/* Map over the dashboardCards array to render multiple cards */}
         {dashboardCards.map((card) => {
           // Get the proper icon component based on the icon name in the card data
@@ -41,10 +41,10 @@ const Home = () => {
           return (
             <Card 
               key={card.id}
-              className="w-[300px] overflow-hidden border border-slate-200 rounded-lg transition-all duration-300 hover:shadow-md group relative"
+              className=" sm:w-[300px] w-[100% - 2rem] overflow-hidden border border-slate-200 rounded-lg transition-all duration-300 hover:shadow-md group relative"
             >
               {/* Left accent border */}
-              <div className="h-full w-1.5 bg-[#4285B4] absolute left-0 top-0"></div>
+              <div className=" h-full w-1.5 bg-[#4285B4] absolute left-0 top-0"></div>
 
               <div className="p-6 pl-8">
                 <div className="mb-4 flex items-center gap-3">
@@ -55,7 +55,7 @@ const Home = () => {
                     {/* Use the dynamically determined icon component */}
                     <IconComponent className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-medium text-slate-800">{card.title}</h3>
+                  <h3 className="text-lg font-medium text-slate-700">{card.title}</h3>
                 </div>
 
                 <p className="text-sm text-slate-600 mb-5 leading-relaxed">

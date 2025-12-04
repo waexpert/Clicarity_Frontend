@@ -131,6 +131,7 @@ body {
   .header-top {
     width: calc(100% - 4rem);
     max-width: calc(100% - 4rem);
+    margin-top: .5rem;
   }
 
   .breadcrumb-navigation {
@@ -149,9 +150,10 @@ body {
   }
 
   .header-top {
-    width: calc(100% - 2rem);
-    max-width: calc(100% - 2rem);
+    width: calc(100% - 3rem);
+    max-width: calc(100% - 3rem);
     padding: 0.5rem 0;
+    margin-top: .5rem;
   }
 
   .logo-image {
@@ -171,9 +173,10 @@ body {
 /* Small mobile responsiveness (max-width: 480px) */
 @media (max-width: 480px) {
   .header-top {
-    width: calc(100% - 1rem);
-    max-width: calc(100% - 1rem);
+    width: calc(100% - 2rem);
+    max-width: calc(100% - 2rem);
     padding: 0.25rem 0;
+    margin-top: .5rem;
   }
 
   .logo-image {

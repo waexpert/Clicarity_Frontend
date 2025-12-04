@@ -232,7 +232,7 @@ export default function TeamMember() {
         <CardHeader>
                 {/* Header Section */}
         <div className="space-y-1 mb-6">
-          <h1 className="text-2xl font-medium text-slate-800">Team Members</h1>
+          <h1 className="text-2xl font-medium text-slate-700">Team Members</h1>
           <p className="text-sm text-slate-500">Details of team member</p>
         </div>
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -414,7 +414,7 @@ export default function TeamMember() {
                   filteredMembers.map((member, index) => (
                     <TableRow key={member.id || index}>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Active
                         </Badge>

@@ -30,25 +30,49 @@ export default function StatusUpdate() {
     const user = useSelector((state) => state.user);
     const tableName = queryData.tableName;
     const [processSteps, setProcessSteps] = useState([]);
-    const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process);
+    const currentProcess = queryData.current_process || '';
+    const [finalProcessSteps, setFinalProcessSteps] = useState(processSteps.filter(step => step !== queryData.current_process));
 
-    // Fetch process steps
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-                const { data } = await axios.get(route);
-                setProcessSteps(data.setup.process_steps || []);
-            } catch (error) {
-                console.error('Error fetching process steps:', error);
-                toast.error("Failed to load process steps");
-            }
-        };
+// Fetch process steps
+useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+            console.log('user.id:', user.id, 'tableName:', tableName);
+            const { data } = await axios.get(route);
+            console.log('Setup Data:', data);
+            const steps = data.setup.process_steps || [];
+            setProcessSteps(steps);
+            
+            const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
+            const recordResponse = await axios.post(getRecordRoute, {
+                schemaName: queryData.schemaName,
+                tableName: queryData.tableName,
+                targetColumn: queryData.targetColumn || 'id',
+                targetValue: queryData.recordId
+            });
 
-        if (user.id && tableName) {
-            fetchData();
+            const recordData = recordResponse.data;
+            
+            // Filter out current process and steps marked as "Not Required"
+            const filteredSteps = steps.filter(step => 
+                step !== queryData.current_process && 
+                recordData[step] !== "Not Required"
+            );
+            
+            console.log('Filtered steps:', filteredSteps);
+            setFinalProcessSteps(filteredSteps);
+            
+        } catch (error) {
+            console.error('Error fetching process steps:', error);
+            toast.error("Failed to load process steps");
         }
-    }, [user.id, tableName]);
+    };
+
+    if (user.id && tableName) {
+        fetchData();
+    }
+}, [user.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
 
     // Set next process from URL if provided
     useEffect(() => {
@@ -76,12 +100,14 @@ export default function StatusUpdate() {
             setError("");
 
             // Build the update URL
-            const updateUrl = `https://click.wa.expert/api/data/updateMultiple?` +
-                `schemaName=${queryData.schemaName}` +
-                `&tableName=${queryData.tableName}` +
+            const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?` +
+                `schemaName=${queryData.schemaName.toLowerCase()}` +
+                `&tableName=${queryData.tableName.toLowerCase()}` +
                 `&recordId=${queryData.recordId}` +
-                `&col1=${columnToUpdate}` +
-                `&val1=${nextProcess}`;
+                `&col1=${columnToUpdate.toLowerCase()}` +
+                `&val1=${nextProcess.toLowerCase()}`+
+                `&col2=${currentProcess.toLowerCase()}_date`+
+                `&val2=${new Date().toISOString()}`; 
 
             console.log('Update URL:', updateUrl);
 

@@ -783,7 +783,8 @@ const handleSubmit = async () => {
             + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
             + (Number(updatedCurrentBalance) <= 0
                 ? `&col6=${currentProcessBase}&val6=Completed`
-                : "");
+                : "")
+            + `&col7=${queryData.current_process}_date&val7=${new Date().toISOString()}`;
 
 
         console.log('Update Parent URL:', updateUrl);

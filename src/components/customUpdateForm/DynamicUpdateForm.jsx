@@ -5,7 +5,7 @@ import '../../css/components/fixedUpdateForm.css'
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns }) => {
+const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,tableName }) => {
   const navigate = useNavigate();
   const userData = useSelector((state) => state.user);
   const schemaName = userData?.schema_name || 'default_schema';
@@ -35,7 +35,7 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns }) =>
         <Button 
           className="button" 
           onClick={() => {
-            navigate(`/status-update?schemaName=${schemaName}&current_process=${data?.status}&tableName=leadstatus&recordId=` + data?.id);
+            navigate(`/status-update?schemaName=${schemaName}&current_process=${data?.status}&tableName=${tableName}&recordId=` + data?.id);
           }}
           disabled={loading || !data}
           aria-label="Search for lead status"

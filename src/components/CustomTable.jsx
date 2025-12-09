@@ -2498,7 +2498,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -2557,6 +2557,7 @@ import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../ap
 import { useSelector } from 'react-redux';
 import { showText } from 'pdf-lib';
 import "../css/components/CustomTable.css";
+import ResponsivePagination from './customTable/Pagination';
 
 
 
@@ -2566,7 +2567,7 @@ const CustomTable = ({ type = "normal" }) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRecords, setSelectedRecords] = useState([]);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -2979,44 +2980,6 @@ const fetchRecordByUsId = async (usId) => {
     setStatusFilter([]);
     setPriorityFilter([]);
   };
-
-  // ENHANCED: Handle Add Record Modal with auto-fill
-  // const handleOpenAddModal = () => {
-  //   // Don't open if columns aren't loaded yet
-  //   if (columns.length === 0) {
-  //     console.log('Columns not loaded yet, waiting...');
-  //     return;
-  //   }
-
-  //   // ENHANCED: Initialize new record data with ordered columns and auto-fill
-  //   const initialData = {};
-  //   const orderedColumns = getOrderedFormColumns();
-
-  //   orderedColumns.forEach(column => {
-  //     if (column.id === 'pa_id') {
-  //       // Auto-fill pa_id from URL params
-  //       initialData[column.id] = pa_id || '';
-  //     } else if (column.id === 'us_id') {
-  //       // Auto-generate us_id with Unix timestamp
-  //       initialData[column.id] = us_id;
-  //     } else if (column.id === 'status') {
-  //       initialData[column.id] = status;
-  //     } else {
-  //       initialData[column.id] = '';
-  //     }
-  //   });
-
-  //   console.log('Initialized form data with auto-fill:', initialData);
-  //   setNewRecordData(initialData);
-  //   setIsAddModalOpen(true);
-
-  //   // Update URL to remove show parameter after opening modal
-  //   if (show === 'true') {
-  //     const newSearchParams = new URLSearchParams(searchParams);
-  //     newSearchParams.delete('show');
-  //     setSearchParams(newSearchParams, { replace: true });
-  //   }
-  // };
 
 const handleOpenAddModal = async () => {
   if (columns.length === 0) {
@@ -3530,58 +3493,159 @@ const handleOpenAddModal = async () => {
     }
   };
 
-  const handleSave = async (originalId) => {
-    const schemaName = apiParams.schemaName;
-    const tableName = apiParams.tableName;
+  // Working Get Request based Update Function
 
-    const params = new URLSearchParams({
-      schemaName,
-      tableName,
-      recordId: originalId,
-      ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
-    });
+  // const handleSave = async (originalId) => {
+  //   const schemaName = apiParams.schemaName;
+  //   const tableName = apiParams.tableName;
 
-    let colIndex = 1;
-    Object.entries(editingValues).forEach(([key, val]) => {
-      if (val === undefined) return;
+  //   const params = new URLSearchParams({
+  //     schemaName,
+  //     tableName,
+  //     recordId: originalId,
+  //     ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
+  //   });
 
-      // Handle date fields specifically
-      if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-        // Skip empty/null date fields entirely to avoid database errors
-        if (val === null || val === 'null' || val === '' || val === undefined) {
-          return; // Don't add this field to the update
-        }
+  //   let colIndex = 1;
+  //   Object.entries(editingValues).forEach(([key, val]) => {
+  //     if (val === undefined) return;
 
-        // Validate date format if value exists
-        const dateValue = new Date(val);
-        if (isNaN(dateValue.getTime())) {
-          console.warn(`Invalid date format for ${key}:`, val);
-          return; // Skip invalid dates
-        }
+  //     // Handle date fields specifically
+  //     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+  //       // Skip empty/null date fields entirely to avoid database errors
+  //       if (val === null || val === 'null' || val === '' || val === undefined) {
+  //         return; // Don't add this field to the update
+  //       }
 
-        // Use ISO format for dates
-        params.append(`col${colIndex}`, key);
-        params.append(`val${colIndex}`, dateValue.toISOString().split('T')[0]); // YYYY-MM-DD format
-        colIndex++;
-      } else {
-        // Handle non-date fields
-        const sanitizedVal = val === null || val === 'null' ? '' : val;
-        params.append(`col${colIndex}`, key);
-        params.append(`val${colIndex}`, sanitizedVal);
-        colIndex++;
+  //       // Validate date format if value exists
+  //       const dateValue = new Date(val);
+  //       if (isNaN(dateValue.getTime())) {
+  //         console.warn(`Invalid date format for ${key}:`, val);
+  //         return; // Skip invalid dates
+  //       }
+
+  //       // Use ISO format for dates
+  //       params.append(`col${colIndex}`, key);
+  //       params.append(`val${colIndex}`, dateValue.toISOString().split('T')[0]); // YYYY-MM-DD format
+  //       colIndex++;
+  //     } else {
+  //       // Handle non-date fields
+  //       const sanitizedVal = val === null || val === 'null' ? '' : val;
+  //       params.append(`col${colIndex}`, key);
+  //       params.append(`val${colIndex}`, sanitizedVal);
+  //       colIndex++;
+  //     }
+  //   });
+
+  //   try {
+  //     const result = await axios.get(`${updateRecord}?${params.toString()}`);
+  //     toast.success("Record updated");
+  //     setEditingRowId(null);
+  //     handleRefresh();
+  //   } catch (err) {
+  //     console.error('Update error:', err);
+  //     toast.error("Update failed");
+  //   }
+  // };
+
+
+// Updated handleSave function for multiple column updates using request body
+const handleSave = async (originalId) => {
+  const schemaName = apiParams.schemaName;
+  const tableName = apiParams.tableName;
+
+  // Build updates object from editingValues
+  const updates = {};
+
+  Object.entries(editingValues).forEach(([key, val]) => {
+    if (val === undefined) return;
+
+    // Handle date fields specifically
+    if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+      // Skip empty/null date fields entirely to avoid database errors
+      if (val === null || val === 'null' || val === '' || val === undefined) {
+        return; // Don't add this field to the update
+      }
+
+      // Validate date format if value exists
+      const dateValue = new Date(val);
+      if (isNaN(dateValue.getTime())) {
+        console.warn(`Invalid date format for ${key}:`, val);
+        return; // Skip invalid dates
+      }
+
+      // Use ISO format for dates
+      updates[key] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
+    } else {
+      // Handle non-date fields (including arrays)
+      const sanitizedVal = val === null || val === 'null' ? '' : val;
+      updates[key] = sanitizedVal;
+    }
+  });
+
+  // Check if there are any fields to update
+  if (Object.keys(updates).length === 0) {
+    toast.warning("No changes to save");
+    return;
+  }
+
+  // Prepare request body
+  const requestBody = {
+    schemaName,
+    tableName,
+    recordId: originalId,
+    ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
+    updates
+  };
+
+  // Add optional fields if they exist
+  if (apiParams.userSchemaName) {
+    requestBody.userSchemaName = apiParams.userSchemaName;
+  }
+  if (apiParams.userTableName) {
+    requestBody.userTableName = apiParams.userTableName;
+  }
+  if (apiParams.vname) {
+    requestBody.vname = apiParams.vname;
+  }
+  if (apiParams.wid) {
+    requestBody.wid = apiParams.wid;
+  }
+
+  console.log('Update request body:', requestBody);
+
+  try {
+    // Use POST request for multiple column updates
+    const result = await axios.post(updateRecord, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
       }
     });
-
-    try {
-      const result = await axios.get(`${updateRecord}?${params.toString()}`);
-      toast.success("Record updated");
-      setEditingRowId(null);
-      handleRefresh();
-    } catch (err) {
-      console.error('Update error:', err);
+    
+    toast.success("Record updated successfully");
+    setEditingRowId(null);
+    handleRefresh();
+    
+    // Log response for debugging
+    console.log('Update response:', result.data);
+    
+    // Show which columns were updated
+    if (result.data.updatedColumns) {
+      console.log('Updated columns:', result.data.updatedColumns.join(', '));
+    }
+  } catch (err) {
+    console.error('Update error:', err);
+    
+    // Provide more specific error messages
+    if (err.response?.data?.error) {
+      toast.error(err.response.data.error);
+    } else if (err.response?.data?.details) {
+      toast.error(`Update failed: ${err.response.data.details}`);
+    } else {
       toast.error("Update failed");
     }
-  };
+  }
+};
 
   // Get unique statuses for filters
   const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);
@@ -3655,17 +3719,20 @@ const handleOpenAddModal = async () => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {/* ENHANCED: Add Record Button with Ordered Modal */}
-            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={handleOpenAddModal}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Record</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+<Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+  <DialogTrigger asChild>
+    <Button
+      className="flex items-center gap-2"
+      onClick={handleOpenAddModal}
+    >
+      <Plus className="h-4 w-4" />
+      <span className="hidden sm:inline">Add Record</span>
+    </Button>
+  </DialogTrigger>
+  <DialogContent 
+    className="max-w-3xl max-h-[80vh] overflow-y-auto"
+    onInteractOutside={(e) => e.preventDefault()}  // <-- Add this line
+  >
                 <DialogHeader>
                   <DialogTitle>Add New Record</DialogTitle>
                   <DialogDescription>
@@ -3990,52 +4057,11 @@ const handleOpenAddModal = async () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-slate-500">
-            Showing <span className="font-medium">{Math.min(records.length, pageSize)}</span> of <span className="font-medium">{totalRecords}</span> records
-          </div>
-
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) setCurrentPage(currentPage - 1);
-                  }}
-                  className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-
-              {[...Array(totalPages)].map((_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(i + 1);
-                    }}
-                    isActive={currentPage === i + 1}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                  }}
-                  className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+        <ResponsivePagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+        />
 
         <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
   <DialogContent className="max-w-md">

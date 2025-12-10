@@ -583,6 +583,8 @@ const DropDownSetup = () => {
     const [error, setError] = useState('');
     const [fetchedProcessTypes, setFetchedProcessTypes] = useState({});
     const [resetting, setResetting] = useState(false);
+    // Webhook input state
+    const [webhookInput, setWebhookInput] = useState('');
 
     const user = useSelector((state) => state.user);
     const dispatch = useDispatch();
@@ -616,6 +618,7 @@ const DropDownSetup = () => {
                 const { data } = await axios.get(route);
 
                 console.log('Fetched setup data:', data.setup);
+                setWebhookInput(data.setup?.webhook || '');
 
                 if (data.exists && data.setup) {
                     setSetupExists(true);
@@ -682,7 +685,8 @@ const DropDownSetup = () => {
                 owner_id: user.id,
                 product_name: tableName,
                 mapping: webhooksByColumn,
-                columnOrder: columnOrder
+                columnOrder: columnOrder,
+                webhook_input: webhookInput
             };
 
             console.log('Saving payload:', payload);
@@ -978,9 +982,9 @@ const DropDownSetup = () => {
             {/* Header Section */}
             <div className="mb-4">
                 <div className="flex items-center justify-between gap-4"> 
-                    <div className="flex items-center gap-3 px-2">
+                    <div className="flex items-center gap-3 ">
                         <div>
-                            <h1 className="text-xl md:text-3xl font-bold text-gray-700 ">Dropdown Setup</h1>
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-700 ">Dropdown Setup</h1>
                             <p className="text-sm md:text-base text-gray-600 mt-1">
                                 Configure dropdown values and display order for{' '}
                                 <span className="font-semibold text-blue-600">{tableName}</span>
@@ -1009,6 +1013,12 @@ const DropDownSetup = () => {
             </div>
 
             <Separator className="mb-6" />
+            <div className="mb-6">
+
+                <h2 className="text-lg font-medium text-gray-700 mb-2">Add Outgoing Webhook</h2>
+                <Input type="text" value={webhookInput} placeholder="Webhook Url" onChange={(e)=> setWebhookInput(e.target.value)} />
+            </div>
+     
 
             {/* Columns Grid */}
             {filteredColumns.length === 0 ? (

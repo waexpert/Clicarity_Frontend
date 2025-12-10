@@ -26,14 +26,58 @@ export default function StatusUpdate() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const queryData = useQueryObject();
-    
+
     const user = useSelector((state) => state.user);
     const tableName = queryData.tableName;
     const [processSteps, setProcessSteps] = useState([]);
     const currentProcess = queryData.current_process || '';
-    const [finalProcessSteps, setFinalProcessSteps] = useState(processSteps.filter(step => step !== queryData.current_process));
+    const [webhook, setWebhook] = useState('');
 
-// Fetch process steps
+    const [finalProcessSteps, setFinalProcessSteps] = useState([]);
+
+    // Fetch process steps
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+    //             console.log('user.id:', user.id, 'tableName:', tableName);
+    //             const { data } = await axios.get(route);
+    //             console.log('Setup Data:', data);
+    //             const steps = data.setup.process_steps || [];
+    //             setProcessSteps(steps);
+
+    //             const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
+    //             const recordResponse = await axios.post(getRecordRoute, {
+    //                 schemaName: queryData.schemaName,
+    //                 tableName: queryData.tableName,
+    //                 targetColumn: queryData.targetColumn || 'id',
+    //                 targetValue: queryData.recordId
+    //             });
+
+    //             const recordData = recordResponse.data;
+
+    //             // Filter out current process and steps marked as "Not Required"
+    //             const currentIndex = processSteps.indexOf(queryData.current_process);
+    //             const filteredSteps = steps.filter((step,index) =>
+    //                 index > currentIndex &&
+    //                 recordData[step] !== "Not Required"
+    //             );
+
+    //             console.log('Filtered steps:', filteredSteps);
+    //             setFinalProcessSteps(filteredSteps);
+
+    //         } catch (error) {
+    //             console.error('Error fetching process steps:', error);
+    //             toast.error("Failed to load process steps");
+    //         }
+    //     };
+
+    //     if (user.id && tableName) {
+    //         fetchData();
+    //     }
+    // }, [user.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
+
+    // Fetch process steps
 useEffect(() => {
     const fetchData = async () => {
         try {
@@ -43,7 +87,13 @@ useEffect(() => {
             console.log('Setup Data:', data);
             const steps = data.setup.process_steps || [];
             setProcessSteps(steps);
-            
+            setWebhook(data.setup.webhook || '');
+
+            // ✅ FIX: Calculate currentIndex HERE after steps are fetched
+            const currentIdx = steps.indexOf(queryData.current_process);
+            console.log('Current process:', queryData.current_process);
+            console.log('Current index:', currentIdx);
+
             const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
             const recordResponse = await axios.post(getRecordRoute, {
                 schemaName: queryData.schemaName,
@@ -53,16 +103,16 @@ useEffect(() => {
             });
 
             const recordData = recordResponse.data;
-            
-            // Filter out current process and steps marked as "Not Required"
-            const filteredSteps = steps.filter(step => 
-                step !== queryData.current_process && 
+
+            // ✅ FIX: Use currentIdx instead of currentIndex
+            const filteredSteps = steps.filter((step, index) =>
+                index > currentIdx &&
                 recordData[step] !== "Not Required"
             );
-            
+
             console.log('Filtered steps:', filteredSteps);
             setFinalProcessSteps(filteredSteps);
-            
+
         } catch (error) {
             console.error('Error fetching process steps:', error);
             toast.error("Failed to load process steps");
@@ -98,6 +148,9 @@ useEffect(() => {
         try {
             setIsSubmitting(true);
             setError("");
+            const webhookElements = webhook ? webhook.split('/') : [];
+            const wid = webhook ? webhookElements[webhookElements.length - 1] : null;
+            console.log('Webhook ID:', wid);
 
             // Build the update URL
             const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?` +
@@ -105,14 +158,15 @@ useEffect(() => {
                 `&tableName=${queryData.tableName.toLowerCase()}` +
                 `&recordId=${queryData.recordId}` +
                 `&col1=${columnToUpdate.toLowerCase()}` +
-                `&val1=${nextProcess.toLowerCase()}`+
-                `&col2=${currentProcess.toLowerCase()}_date`+
-                `&val2=${new Date().toISOString()}`; 
+                `&val1=${nextProcess.toLowerCase()}` +
+                `&col2=${currentProcess.toLowerCase()}_date` +
+                `&val2=${new Date().toISOString()}`
+                + (wid ? `&wid=${wid}` : '');
 
             console.log('Update URL:', updateUrl);
 
             const response = await axios.get(updateUrl);
-            
+
             console.log('Update Response:', response.data);
 
             setSubmitted(true);
@@ -141,7 +195,7 @@ useEffect(() => {
 
     if (submitted) {
         setTimeout(() => navigate(-1), 2000); // Navigate back after 2 seconds
-        
+
         return (
             <div className="status-update-container">
                 <img
@@ -184,7 +238,7 @@ useEffect(() => {
                     <Label htmlFor="next-process" className="input-label">
                         Next Process
                     </Label>
-                    
+
                     <div className="select-wrapper">
                         <select
                             id="next-process"
@@ -205,11 +259,11 @@ useEffect(() => {
                         </select>
                         <div className="select-arrow">
                             <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                                <path 
-                                    d="M1 1.5L6 6.5L11 1.5" 
-                                    stroke="currentColor" 
-                                    strokeWidth="2" 
-                                    strokeLinecap="round" 
+                                <path
+                                    d="M1 1.5L6 6.5L11 1.5"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
                                     strokeLinejoin="round"
                                 />
                             </svg>

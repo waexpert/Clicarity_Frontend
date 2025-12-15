@@ -9,6 +9,16 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,table
   const navigate = useNavigate();
   const userData = useSelector((state) => state.user);
   const schemaName = userData?.schema_name || 'default_schema';
+
+   const handleSplitJob = () => {
+    console.log('Split job clicked for record:', data);
+    // FIXED: Use data.us_id instead of selectedRecord?.us_id
+    if (data?.us_id) {
+      navigate(`/${tableName}/record?pa_id=${data.us_id}&show=true`);
+    } else {
+      setError('Record ID not found');
+    }
+  };
   
   // Filter data to keep only keys that exist in visibleColumns
   const filteredData = React.useMemo(() => {
@@ -42,14 +52,14 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,table
         >
           Move to Next Stage Dynamic
         </Button>
-        <Button 
-          className="button" 
-          onClick={() => console.log('Add Comment clicked')}
-          aria-label="Search for lead status"
-          disabled={loading || !data}
-        >
-          Add Comment
-        </Button>
+       <Button
+                 className="button"
+                 onClick={handleSplitJob}
+                 aria-label="Split job"
+                 disabled={loading || !data}
+               >
+                 Split This Job
+               </Button>
       </div>
     </div>
   )

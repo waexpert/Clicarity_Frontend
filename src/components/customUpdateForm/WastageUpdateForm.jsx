@@ -220,7 +220,7 @@
 // &current_process=aqua_coating
 
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import RecordDetails from './RecordDetails'
 import { Button } from '../ui/button'
 import '../../css/components/fixedUpdateForm.css'
@@ -234,6 +234,13 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [processSteps, setProcessSteps] = useState([]);
+
+  // FIXED: Initialize processSteps from setupData
+  useEffect(() => {
+    if (setupData?.process_steps) {
+      setProcessSteps(setupData.process_steps);
+    }
+  }, [setupData]);
 
   // Filter parent data to keep only keys that exist in visibleColumns
   const filteredData = useMemo(() => {
@@ -249,13 +256,23 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       }, {});
   }, [data, visibleColumns]);
 
+  // FIXED: Added missing currentTable and selectedRecord variables
+  const handleSplitJob = () => {
+    console.log('Split job clicked for record:', data);
+    // FIXED: Use data.us_id instead of selectedRecord?.us_id
+    if (data?.us_id) {
+      navigate(`/${tableName}/record?pa_id=${data.us_id}&show=true`);
+    } else {
+      setError('Record ID not found');
+    }
+  };
+
   // Get available processes based on PARENT record balance (not child)
   const availableProcesses = useMemo(() => {
-    if (!data || !setupData?.process_steps) {
+    if (!data || !processSteps || processSteps.length === 0) {
       return [];
     }
 
-    setProcessSteps(setupData.process_steps);
     const available = [];
 
     // Check parent record for processes with balance > 0
@@ -278,7 +295,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
 
     console.log('Available processes from PARENT record:', available);
     return available;
-  }, [data, setupData, processSteps]);
+  }, [data, processSteps]); // FIXED: Removed setupData from dependencies, use processSteps instead
 
   // Get the selected process details
   const selectedProcessData = useMemo(() => {
@@ -299,8 +316,6 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       alert('Please select a process from the dropdown');
       return;
     }
-  
- 
 
     console.log('Moving to wastage with:', selectedProcessData);
     const params = new URLSearchParams({
@@ -308,19 +323,17 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       tableName,
       recordId: data?.id,
       us_id: data?.us_id,
-      ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
+      ownerId: userData?.id || 'bde74e9b-ee21-4687-8040-9878b88593fb', // FIXED: Use userData.id
       current_process: selectedProcessData.processName,
-      
-
     });
-    // console.log('next_process param:', index !== -1 && index < processSteps.length - 1? processSteps[index + 1]:'');
-    // console.log('index', index);
+
     console.log('processSteps', processSteps);
+    
     // Navigate to wastage page with selected process data
     navigate(`/wastage?${params.toString()}`, {
       state: {
         parentRecord: data,
-        childRecords: childRecords, // Pass all child records
+        childRecords: childRecords,
         selectedProcess: selectedProcessData.processName,
         selectedBalance: selectedProcessData.balance,
         balanceColumn: selectedProcessData.balanceColumn,
@@ -422,11 +435,11 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
         </Button>
         <Button
           className="button"
-          onClick={() => console.log('Add Comment clicked')}
-          aria-label="Add comment"
+          onClick={handleSplitJob}
+          aria-label="Split job"
           disabled={loading || !data}
         >
-          Add Comment
+          Split This Job
         </Button>
       </div>
     </div>

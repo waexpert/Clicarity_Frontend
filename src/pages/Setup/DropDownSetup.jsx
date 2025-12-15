@@ -686,7 +686,8 @@ const DropDownSetup = () => {
                 product_name: tableName,
                 mapping: webhooksByColumn,
                 columnOrder: columnOrder,
-                webhook_input: webhookInput
+                webhook_input: webhookInput,
+                us_id : `${user.id}_${tableName}`
             };
 
             console.log('Saving payload:', payload);

@@ -46,6 +46,7 @@ import AssignTeamMember from "./pages/CustomForms/AssignTeamMember";
 import CustomUpdateForm from "./pages/CustomForms/CustomUpdateForm";
 import StatusUpdate from "./pages/CustomForms/StatusUpdate";
 import AutocompleteInput from "./pages/test/AutoCompletionTest";
+import CustomViewForm from "./pages/CustomForms/CustomViewForm";
 
 function App() {
   const location = useLocation();
@@ -352,6 +353,13 @@ function App() {
               <CustomUpdateForm/>
           } 
         />
+
+        <Route
+         path ="/custom-view"
+         element={
+          <CustomViewForm/>
+         }
+         />
 
         <Route 
           path="/status-update" 

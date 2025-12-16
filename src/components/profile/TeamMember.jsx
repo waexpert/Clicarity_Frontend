@@ -616,8 +616,8 @@ export default function TeamMember() {
           birthday: newMember.birthday
         },
         owner: {
-          country: userData.country || 'US',
-          currency: userData.currency || 'USD',
+          country: userData.country || 'India',
+          currency: userData.currency || 'INR',
           schemaName: userData.schema_name,
           first_name: userData.first_name || userData.name || 'Owner',
           id: userData.id

@@ -34,6 +34,7 @@ export const userSlice = createSlice({
         state.is_verified = action.payload.is_verified;
         state.isAuthenticated = action.payload.isAuthenticated;
         state.schema_name = action.payload.schema_name;
+        state.owner_id = action.payload.owner_id;
         console.log("after update", state);
       },
       userLogin: (state, action) => {
@@ -47,6 +48,7 @@ export const userSlice = createSlice({
         state.currency = action.payload.currency;
         state.is_verified = action.payload.is_verified;
         state.schema_name = action.payload.schema_name;
+        state.owner_id = action.payload.owner_id;
         state.isAuthenticated = action.payload.isAuthenticated;
       },
       userLogout: () => {
@@ -61,6 +63,7 @@ export const userSlice = createSlice({
           currency: "",
           is_verified: false,
           isAuthenticated: false,
+          owner_id :"",
           schema_name :""
         };
       },

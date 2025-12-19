@@ -36,7 +36,7 @@ const Filter = ({
 
     console.log(selectedColumns);
     const userData = useSelector((state) => state.user);
-    const owner_id = userData.id;
+const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
     const user = useSelector((state) => state.user);
 
 
@@ -45,7 +45,7 @@ const [isInitialized, setIsInitialized] = useState(false);
 useEffect(() => {
     const fetchSetupData = async () => {
         try {
-            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
             const { data } = await axios.get(route);
             
             if (data.exists && data.setup) {

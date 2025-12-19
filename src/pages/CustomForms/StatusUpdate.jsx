@@ -374,7 +374,7 @@ export default function StatusUpdate() {
     const [error, setError] = useState('');
     const queryData = useQueryObject();
 
-    const user = useSelector((state) => state.user);
+    const userData = useSelector((state) => state.user);
     const tableName = queryData.tableName;
     const [processSteps, setProcessSteps] = useState([]);
     const currentProcess = queryData.current_process || '';
@@ -395,7 +395,7 @@ export default function StatusUpdate() {
 const fetchVendors = async () => {
     try {
         const apiParams = {
-            schemaName: user.schema_name,
+            schemaName: userData.schema_name,
             tableName: "vendors"
         };
 
@@ -451,12 +451,14 @@ useEffect(() => {
     setSelectedVendor('');
 }, [nextProcess, allVendors]);
 
+const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
+
     // Fetch process steps and vendors
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
-                console.log('user.id:', user.id, 'tableName:', tableName);
+                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
+                console.log('user.id:', userData.id, 'tableName:', tableName);
                 const { data } = await axios.get(route);
                 console.log('Setup Data:', data);
                 const steps = data.setup.process_steps || [];
@@ -494,10 +496,10 @@ useEffect(() => {
             }
         };
 
-        if (user.id && tableName) {
+        if (userData.id && tableName) {
             fetchData();
         }
-    }, [user.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
+    }, [userData.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
 
     // Set next process from URL if provided
     useEffect(() => {

@@ -323,7 +323,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
       tableName,
       recordId: data?.id,
       us_id: data?.us_id,
-      ownerId: userData?.id || 'bde74e9b-ee21-4687-8040-9878b88593fb', // FIXED: Use userData.id
+      ownerId: userData.owner_id === null ? userData.id : userData.owner_id,
       current_process: selectedProcessData.processName,
     });
 

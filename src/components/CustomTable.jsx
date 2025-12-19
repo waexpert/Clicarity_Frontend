@@ -1773,7 +1773,7 @@ const CustomTable = ({ type = "normal" }) => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const userData = useSelector((state) => state.user);
-  const owner_id = userData.id;
+  const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
   const [isDataReady, setIsDataReady] = useState(false);
 
   // Get URL parameters

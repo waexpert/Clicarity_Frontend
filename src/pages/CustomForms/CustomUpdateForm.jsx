@@ -353,9 +353,9 @@ const CustomUpdateForm = () => {
   const [processTypeMapping, setProcessTypeMapping] = useState({});
   const [childRecords, setChildRecords] = useState([]); // Child records where pa_id matches
 
-  const user = useSelector((state) => state.user);
+  const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const schemaName = user?.schema_name || 'default_schema';
+  const schemaName = userData?.schema_name || 'default_schema';
 
   const handleSearch = async () => {
     if (!searchId.trim()) {
@@ -448,10 +448,11 @@ const CustomUpdateForm = () => {
     getAllTables();
   }, []);
 
+  const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
   useEffect(() => {
     const fetchSetupData = async () => {
       try {
-        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
         const { data } = await axios.get(route);
         
         if (data.exists && data.setup) {
@@ -486,7 +487,7 @@ const CustomUpdateForm = () => {
     if (tableName) {
       fetchSetupData();
     }
-  }, [user.id, tableName]);
+  }, [userData.id, tableName]);
 
   const getAllTables = async () => {
     const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`;

@@ -444,19 +444,20 @@ const CustomViewForm = () => {
   const [setupData, setSetupData] = useState({});
   const [childRecords, setChildRecords] = useState([]);
   
-  const user = useSelector((state) => state.user);
+  const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const schemaName = user?.schema_name || 'default_schema';
+  const schemaName = userData?.schema_name || 'default_schema';
   const navigate = useNavigate();
 
   useEffect(() => {
     getAllTables();
   }, []);
+  const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 
   useEffect(() => {
     const fetchSetupData = async () => {
       try {
-        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${currentTable}`;
+        const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${currentTable}`;
         const { data } = await axios.get(route);
         
         if (data.exists && data.setup) {
@@ -479,10 +480,10 @@ const CustomViewForm = () => {
       }
     };
     
-    if (currentTable && user?.id) {
+    if (currentTable && userData?.id) {
       fetchSetupData();
     }
-  }, [user?.id, currentTable]);
+  }, [userData?.id, currentTable]);
 
   const getAllTables = async () => {
     try {

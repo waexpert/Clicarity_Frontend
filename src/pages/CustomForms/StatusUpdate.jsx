@@ -396,7 +396,7 @@ const fetchVendors = async () => {
     try {
         const apiParams = {
             schemaName: userData.schema_name,
-            tableName: "vendors"
+            tableName: "vendor"
         };
 
         const response = await axios.post(

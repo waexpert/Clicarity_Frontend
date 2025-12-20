@@ -608,7 +608,7 @@ const CustomViewForm = () => {
     setSelectedRecord(null);
     setChildRecords([]);
   };
-
+const status = selectedRecord.status;
   const handleSplitJob = () => {
     console.log('Split job clicked for record:', selectedRecord);
     navigate(`/${currentTable}/record?pa_id=${selectedRecord?.us_id}&show=true`);
@@ -618,7 +618,7 @@ const CustomViewForm = () => {
   const currentProcessType = useMemo(() => {
     if (!selectedRecord || !processTypeMapping) return 'Dynamic';
     
-    const status = selectedRecord.status;
+    
     const processType = processTypeMapping[status];
     
     console.log('🔍 Current Status:', status);

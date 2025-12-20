@@ -14,7 +14,7 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,table
     console.log('Split job clicked for record:', data);
     // FIXED: Use data.us_id instead of selectedRecord?.us_id
     if (data?.us_id) {
-      navigate(`/${tableName}/record?pa_id=${data.us_id}&show=true`);
+      navigate(`/${tableName}/record?pa_id=${data.us_id}&status=${data?.status}&show=true`);
     } else {
       setError('Record ID not found');
     }

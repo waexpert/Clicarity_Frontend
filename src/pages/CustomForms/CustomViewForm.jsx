@@ -608,10 +608,10 @@ const CustomViewForm = () => {
     setSelectedRecord(null);
     setChildRecords([]);
   };
-const status = selectedRecord.status;
+const status = processName;
   const handleSplitJob = () => {
     console.log('Split job clicked for record:', selectedRecord);
-    navigate(`/${currentTable}/record?pa_id=${selectedRecord?.us_id}&show=true`);
+    navigate(`/${currentTable}/record?pa_id=${selectedRecord?.us_id}&status=${status}&show=true`);
   };
 
   // Determine the process type for the selected record

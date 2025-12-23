@@ -1312,10 +1312,11 @@ export default function WastageInput() {
     const tableName = queryData.tableName;
     const isNextProcessProvided = !!queryData.next_process;
     
-    const user = useSelector((state) => state.user);
+    const userData = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
     const [currentBalance, setCurrentBalance] = useState(0);
     const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process);
+    const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 
     // Fixed: Move state update to useEffect
     useEffect(() => {
@@ -1328,19 +1329,21 @@ export default function WastageInput() {
          const index = processSteps.findIndex( p => p === queryData.current_process);
          setNextProcess(index !== -1 && index < processSteps.length - 1? processSteps[index + 1]: '')
          console.log("Next Process Set To:", nextProcess);
+         console.log("Process Steps",processSteps)
     },[setNextProcess, processSteps]);
 
     useEffect(() => {
         const fetchData = async () => {
-            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
             const { data } = await axios.get(route);
             setProcessSteps(data.setup.process_steps);
+             console.log("Process Steps",processSteps)
         };
 
-        if (user.id && tableName) {
+        if (owner_id && tableName) {
             fetchData();
         }
-    }, [user.id, tableName]);
+    }, [owner_id, tableName]);
 
     // Fixed: Update currentBalance when responseData changes
     useEffect(() => {
@@ -1627,6 +1630,7 @@ const handleSubmit = async () => {
                                 disabled={isSubmitting}
                             >
                                 <option value="">-- Select Next Process --</option>
+                                {console.log("finalProcessSteps:",finalProcessSteps)}
                                 {finalProcessSteps.map((step) => (
                                     <option key={step} value={step}>
                                         {step.charAt(0).toUpperCase() + step.slice(1)}

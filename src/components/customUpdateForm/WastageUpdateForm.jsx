@@ -239,6 +239,7 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
   useEffect(() => {
     if (setupData?.process_steps) {
       setProcessSteps(setupData.process_steps);
+      console.log("Process Steps",processSteps)
     }
   }, [setupData]);
 

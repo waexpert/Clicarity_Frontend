@@ -47,6 +47,8 @@ import CustomUpdateForm from "./pages/CustomForms/CustomUpdateForm";
 import StatusUpdate from "./pages/CustomForms/StatusUpdate";
 import AutocompleteInput from "./pages/test/AutoCompletionTest";
 import CustomViewForm from "./pages/CustomForms/CustomViewForm";
+import ViewBuilder from "./pages/Views/ViewBuilder";
+import CreateView from "./pages/Views/CreateView";
 
 function App() {
   const location = useLocation();
@@ -374,6 +376,26 @@ function App() {
               <AutocompleteInput/>
           } 
         />
+
+{/* Views Route */}
+        <Route 
+          path="/views/view-builder" 
+          element={
+            <ProtectedRoute>
+              <ViewBuilder />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/views/create-view" 
+          element={
+            <ProtectedRoute>
+              <CreateView />
+            </ProtectedRoute>
+          } 
+        />
+    
 
       </Routes>
 

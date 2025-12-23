@@ -2423,6 +2423,10 @@ const handleOpenAddModal = async () => {
           record: cleanedRecord
         };
 
+        if((status && pa_id) || (process_name && pa_id)){
+          cleanedRecord.us_id = pa_id + " - " + cleanedRecord.us_id; 
+        }
+
         console.log("Sending to regular endpoint:", recordData);
 
         const response = await axios.post(createRecord, recordData);

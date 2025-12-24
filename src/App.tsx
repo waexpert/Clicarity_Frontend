@@ -352,21 +352,30 @@ function App() {
         <Route 
           path="/custom-update" 
           element={
+            <ProtectedRoute>
               <CustomUpdateForm/>
+            </ProtectedRoute>
+
           } 
         />
 
         <Route
          path ="/custom-view"
          element={
-          <CustomViewForm/>
+           <ProtectedRoute>
+     <CustomViewForm/>
+           </ProtectedRoute>
+     
          }
          />
 
         <Route 
           path="/status-update" 
           element={
+            <ProtectedRoute>
               <StatusUpdate/>
+            </ProtectedRoute>
+             
           } 
         />
 

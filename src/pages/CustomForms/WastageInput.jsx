@@ -2352,7 +2352,7 @@ export default function WastageInput() {
             // Add vendor if selected
             if (selectedVendor) {
                 colIndex++;
-                updateUrl += `&col${colIndex}=${currentProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
+                updateUrl += `&col${colIndex}=${nextProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
             }
 
             // Add comment if provided

@@ -2382,7 +2382,7 @@ export default function WastageInput() {
 
             // Add vendor to child record if selected
             if (selectedVendor) {
-                newRecordData[`${currentProcessBase}_vendor`] = selectedVendor;
+                newRecordData[`${nextProcessBase}_vendor`] = selectedVendor;
             }
 
             // Add comment to child record if provided

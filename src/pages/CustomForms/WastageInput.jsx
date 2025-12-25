@@ -2344,9 +2344,11 @@ export default function WastageInput() {
                 + `&col3=wastage&val3=${newTotalWastage}`
                 + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
                 + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
-                + (Number(updatedCurrentBalance) <= 0
-                    ? `&col6=${currentProcessBase}&val6=Completed`
-                    : "")
+                // + (Number(updatedCurrentBalance) <= 0
+                //     ? `&col6=${currentProcessBase}&val6=Completed`
+                //     : "")
+                + `&col6=${currentProcessBase}&val6=${Number(updatedCurrentBalance) <= 0 ? 'Completed' : responseData[currentProcessBase]}`
+
                 + `&col7=${queryData.current_process}_date&val7=${new Date().toISOString()}`;
 
             // Add vendor if selected

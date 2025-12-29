@@ -2424,7 +2424,7 @@ const handleOpenAddModal = async () => {
         };
 
         if((status && pa_id) || (process_name && pa_id)){
-          cleanedRecord.us_id = pa_id + " - " + cleanedRecord.us_id; 
+          cleanedRecord.us_id = pa_id + " -S- " + cleanedRecord.us_id; 
         }
 
         console.log("Sending to regular endpoint:", recordData);

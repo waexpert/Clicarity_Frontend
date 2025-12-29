@@ -1,14 +1,13 @@
 /**
- * CreateView Component
+ * Updated CreateView Component - WITH WORKING API INTEGRATION
  *
- * This component allows users to create custom database views by:
- * 1. Selecting tables from available database tables
- * 2. Choosing which columns to include in the view (using checkboxes)
- * 3. Setting up table joins
- * 4. Adding WHERE conditions to filter data
- * 5. Assigning team members who can access the view
+ * CHANGES MADE:
+ * 1. Import API service functions
+ * 2. Replace all fetch calls with API service calls
+ * 3. Add proper error handling and user feedback
+ * 4. Add validation before saving
  *
- * The component uses drag-and-drop for table selection and generates SQL automatically.
+ * TO USE: Replace the existing CreateView.tsx with this file
  */
 
 import React, { useState, useEffect } from 'react'
@@ -17,7 +16,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Save, Play, ArrowLeft, Plus, Trash2, Table, Users, Download } from 'lucide-react'
 
-// Import shadcn/ui components for better UX
+// Import shadcn/ui components
 import { Button } from '../../components/ui/button'
 import { Checkbox } from '../../components/ui/checkbox'
 import { Label } from '../../components/ui/label'
@@ -30,12 +29,12 @@ import {
   SelectValue,
 } from '../../components/ui/select'
 
+// Import API service - NEW!
+import * as viewsApi from '../../api/viewsApi'
+
 import "../../css/pages/Views/CreateViews.css"
 
-// API Base URL
-const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL
-
-// TypeScript interfaces for type safety
+// TypeScript interfaces
 interface Column {
   name: string
   type: string
@@ -68,7 +67,7 @@ interface WhereCondition {
   column: string
   operator: string
   value: string
-  logicalOperator?: 'AND' | 'OR' // New: Allow AND/OR between conditions
+  logicalOperator?: 'AND' | 'OR'
 }
 
 interface TeamMember {
@@ -78,14 +77,12 @@ interface TeamMember {
 }
 
 const CreateView = () => {
-  // Get route parameters
+  // Route parameters
   const { viewId } = useParams()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isNewView = viewId === 'new'
   const folder = searchParams.get('folder')
-
-  // State management - organized by category
 
   // View metadata
   const [viewName, setViewName] = useState('')
@@ -101,7 +98,7 @@ const CreateView = () => {
   const [joins, setJoins] = useState<Join[]>([])
   const [whereConditions, setWhereConditions] = useState<WhereCondition[]>([])
 
-  // Team members - NEW FEATURE
+  // Team members
   const [availableTeamMembers, setAvailableTeamMembers] = useState<TeamMember[]>([])
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<string[]>([])
 
@@ -111,7 +108,7 @@ const CreateView = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   /**
-   * Load data when component mounts or viewId changes
+   * Load data when component mounts
    */
   useEffect(() => {
     fetchAvailableTables()
@@ -122,14 +119,12 @@ const CreateView = () => {
   }, [viewId])
 
   /**
-   * Fetch all available database tables - UPDATED WITH REAL API
+   * Fetch all available database tables - UPDATED WITH API
    */
   const fetchAvailableTables = async () => {
     try {
       setIsLoading(true)
-      const schemaName = 'public' // TODO: Get from user context/Redux
-      const response = await fetch(`${API_BASE_URL}/data/getAllTables?schemaName=${schemaName}`)
-      const data = await response.json()
+      const data = await viewsApi.fetchTables()
       setAvailableTables(data)
     } catch (error) {
       console.error('Error fetching tables:', error)
@@ -140,42 +135,33 @@ const CreateView = () => {
   }
 
   /**
-   * Fetch available team members - UPDATED WITH REAL API
+   * Fetch team members - UPDATED WITH API
    */
   const fetchTeamMembers = async () => {
     try {
-      const schemaName = 'public' // TODO: Get from user context/Redux
-      const response = await fetch(`${API_BASE_URL}/views/team-members?schemaName=${schemaName}`)
-      const data = await response.json()
+      const data = await viewsApi.fetchTeamMembers()
       setAvailableTeamMembers(data)
     } catch (error) {
       console.error('Error fetching team members:', error)
-      // Set empty array if API fails - team member selection is optional
-      setAvailableTeamMembers([])
     }
   }
 
   /**
-   * Load existing view data when editing - UPDATED WITH REAL API
+   * Load existing view data - UPDATED WITH API
    */
   const fetchViewData = async () => {
     try {
       setIsLoading(true)
-      const schemaName = 'public' // TODO: Get from user context/Redux
-      const response = await fetch(`${API_BASE_URL}/views/${viewId}?schemaName=${schemaName}`)
-      const data = await response.json()
+      const data = await viewsApi.fetchView(viewId!)
 
-      // Populate all form fields with existing data
       setViewName(data.name)
       setSqlViewName(data.sql_view_name)
       setDescription(data.description || '')
-
-      // Parse JSON fields if they're strings
-      setSelectedTables(typeof data.selected_tables === 'string' ? JSON.parse(data.selected_tables) : data.selected_tables || [])
-      setSelectedColumns(typeof data.selected_columns === 'string' ? JSON.parse(data.selected_columns) : data.selected_columns || [])
-      setJoins(typeof data.joins === 'string' ? JSON.parse(data.joins) : data.joins || [])
-      setWhereConditions(typeof data.where_conditions === 'string' ? JSON.parse(data.where_conditions) : data.where_conditions || [])
-      setSelectedTeamMembers(typeof data.team_members === 'string' ? JSON.parse(data.team_members) : data.team_members || [])
+      setSelectedTables(data.selected_tables)
+      setSelectedColumns(data.selected_columns)
+      setJoins(data.joins)
+      setWhereConditions(data.where_conditions)
+      setSelectedTeamMembers(data.team_members)
     } catch (error) {
       console.error('Error fetching view:', error)
       alert('Failed to load view data')
@@ -185,42 +171,36 @@ const CreateView = () => {
   }
 
   /**
-   * Handle dropping a table into the canvas
-   * This is called when user drags a table from the left panel
+   * Handle dropping a table
    */
   const handleTableDrop = (table: TableData) => {
-    // Check if table is already added
-    const alreadyExists = selectedTables.find(t => t.name === table.name)
-    if (!alreadyExists) {
+    if (!selectedTables.find(t => t.name === table.name)) {
       setSelectedTables([...selectedTables, table])
     }
   }
 
   /**
-   * Toggle column selection - NEW: Enhanced with checkbox UI
-   * When a user clicks a column checkbox, add or remove it from selected columns
+   * Toggle column selection
    */
   const handleColumnSelect = (table: TableData, column: Column) => {
     const columnKey = `${table.name}.${column.name}`
     const existing = selectedColumns.find(c => c.key === columnKey)
 
     if (existing) {
-      // Remove if already selected
       setSelectedColumns(selectedColumns.filter(c => c.key !== columnKey))
     } else {
-      // Add new column selection
       setSelectedColumns([...selectedColumns, {
         key: columnKey,
         table: table.name,
         column: column.name,
-        alias: column.name, // Default alias is column name
+        alias: column.name,
         type: column.type
       }])
     }
   }
 
   /**
-   * Add a new join between tables
+   * Add a join
    */
   const addJoin = () => {
     if (selectedTables.length >= 2) {
@@ -236,21 +216,21 @@ const CreateView = () => {
   }
 
   /**
-   * Update a specific field in a join
+   * Update join
    */
   const updateJoin = (id: number, field: string, value: string) => {
     setJoins(joins.map(j => j.id === id ? { ...j, [field]: value } : j))
   }
 
   /**
-   * Remove a join
+   * Remove join
    */
   const removeJoin = (id: number) => {
     setJoins(joins.filter(j => j.id !== id))
   }
 
   /**
-   * Add a new WHERE condition - NEW: Enhanced with logical operators
+   * Add WHERE condition
    */
   const addWhereCondition = () => {
     setWhereConditions([...whereConditions, {
@@ -258,12 +238,12 @@ const CreateView = () => {
       column: '',
       operator: '=',
       value: '',
-      logicalOperator: 'AND' // Default to AND
+      logicalOperator: 'AND'
     }])
   }
 
   /**
-   * Update a WHERE condition field
+   * Update WHERE condition
    */
   const updateWhereCondition = (id: number, field: string, value: string) => {
     setWhereConditions(whereConditions.map(w =>
@@ -272,14 +252,14 @@ const CreateView = () => {
   }
 
   /**
-   * Remove a WHERE condition
+   * Remove WHERE condition
    */
   const removeWhereCondition = (id: number) => {
     setWhereConditions(whereConditions.filter(w => w.id !== id))
   }
 
   /**
-   * Toggle team member selection - NEW FEATURE
+   * Toggle team member
    */
   const handleTeamMemberToggle = (memberId: string) => {
     if (selectedTeamMembers.includes(memberId)) {
@@ -290,37 +270,29 @@ const CreateView = () => {
   }
 
   /**
-   * Generate SQL from current selections
-   * This creates the actual SQL CREATE VIEW statement
+   * Generate SQL
    */
   const generateSQL = () => {
-    // Build SELECT clause
     const selectClause = selectedColumns.length > 0
       ? selectedColumns.map(c => `${c.table}.${c.column} AS ${c.alias}`).join(',\n    ')
       : '*'
 
-    // Build FROM clause
     const fromClause = selectedTables.length > 0 ? selectedTables[0].name : ''
 
-    // Build JOIN clauses
     const joinClauses = joins.map(j =>
       `${j.joinType} JOIN ${j.rightTable} ON ${j.leftTable}.${j.leftColumn} = ${j.rightTable}.${j.rightColumn}`
     ).join('\n')
 
-    // Build WHERE clause - NEW: Support for AND/OR
     let whereClause = ''
     if (whereConditions.length > 0) {
       const conditions = whereConditions.map((w, index) => {
         const condition = `${w.column} ${w.operator} '${w.value}'`
-        if (index === 0) {
-          return condition
-        }
+        if (index === 0) return condition
         return `  ${w.logicalOperator || 'AND'} ${condition}`
       }).join('\n')
       whereClause = `WHERE ${conditions}`
     }
 
-    // Combine all parts into final SQL
     const sql = `CREATE OR REPLACE VIEW ${sqlViewName} AS
 SELECT
     ${selectClause}
@@ -333,38 +305,24 @@ ${whereClause};`
   }
 
   /**
-   * Preview the view data - UPDATED WITH REAL API
-   * Executes the query and shows sample results
+   * Preview view - UPDATED WITH API
    */
   const handlePreview = async () => {
     try {
       setIsLoading(true)
       const sql = generateSQL()
-      const schemaName = 'public' // TODO: Get from user context/Redux
-
-      const response = await fetch(`${API_BASE_URL}/views/preview?schemaName=${schemaName}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sql })
-      })
-      const data = await response.json()
-
-      if (response.ok) {
-        setPreviewData(data)
-      } else {
-        alert('Error previewing view: ' + (data.message || 'Unknown error'))
-      }
-    } catch (error) {
+      const data = await viewsApi.previewView(sql)
+      setPreviewData(data)
+    } catch (error: any) {
       console.error('Error previewing view:', error)
-      alert('Error previewing view. Please check your configuration.')
+      alert('Error previewing view: ' + error.message)
     } finally {
       setIsLoading(false)
     }
   }
 
   /**
-   * Save the view to database - UPDATED WITH REAL API
-   * Works for both creating new views and updating existing ones
+   * Save view - UPDATED WITH API
    */
   const handleSave = async () => {
     // Validation
@@ -384,8 +342,6 @@ ${whereClause};`
     try {
       setIsLoading(true)
       const sql = generateSQL()
-      const schemaName = 'public' // TODO: Get from user context/Redux
-
       const payload = {
         name: viewName,
         sql_view_name: sqlViewName,
@@ -399,28 +355,18 @@ ${whereClause};`
         sql
       }
 
-      const url = isNewView
-        ? `${API_BASE_URL}/views?schemaName=${schemaName}`
-        : `${API_BASE_URL}/views/${viewId}?schemaName=${schemaName}`
-      const method = isNewView ? 'POST' : 'PUT'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        alert(isNewView ? 'View created successfully!' : 'View updated successfully!')
-        navigate('/view-builder')
+      if (isNewView) {
+        await viewsApi.createView(payload)
+        alert('View created successfully!')
       } else {
-        alert('Error saving view: ' + (data.message || 'Unknown error'))
+        await viewsApi.updateView(viewId!, payload)
+        alert('View updated successfully!')
       }
-    } catch (error) {
+
+      navigate('/view-builder')
+    } catch (error: any) {
       console.error('Error saving view:', error)
-      alert('Error saving view. Please try again.')
+      alert('Error saving view: ' + error.message)
     } finally {
       setIsLoading(false)
     }
@@ -436,32 +382,22 @@ ${whereClause};`
     }
 
     try {
-      const schemaName = 'public'
-      const response = await fetch(`${API_BASE_URL}/views/${viewId}/looker-studio?schemaName=${schemaName}`)
-      const data = await response.json()
+      const info = await viewsApi.getLookerStudioInfo(viewId!)
 
-      if (response.ok) {
-        // Show connection instructions
-        alert(data.connection_info.instructions)
-      } else {
-        alert('Error: ' + (data.message || 'Unknown error'))
-      }
-    } catch (error) {
+      // Show connection instructions in a modal or alert
+      alert(info.connection_info.instructions)
+    } catch (error: any) {
       console.error('Error getting Looker Studio info:', error)
-      alert('Error getting Looker Studio connection info')
+      alert('Error: ' + error.message)
     }
   }
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="create-view-container">
-        {/* Header Section */}
+        {/* Header */}
         <div className="create-view-header">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/view-builder')}
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate('/view-builder')}>
             <ArrowLeft size={20} />
           </Button>
 
@@ -469,7 +405,7 @@ ${whereClause};`
 
           <div className="header-actions flex gap-2">
             {!isNewView && (
-              <Button variant="secondary" onClick={handleLookerStudioExport} disabled={isLoading}>
+              <Button variant="secondary" onClick={handleLookerStudioExport}>
                 <Download size={16} />
                 Looker Studio
               </Button>
@@ -485,17 +421,14 @@ ${whereClause};`
           </div>
         </div>
 
-        {/* View Details Form */}
+        {/* View Details */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>View Information</CardTitle>
-            <CardDescription>
-              Basic information about your database view
-            </CardDescription>
+            <CardDescription>Basic information about your database view</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              {/* View Name Input */}
               <div className="space-y-2">
                 <Label htmlFor="viewName">View Name</Label>
                 <input
@@ -508,7 +441,6 @@ ${whereClause};`
                 />
               </div>
 
-              {/* SQL View Name Input */}
               <div className="space-y-2">
                 <Label htmlFor="sqlViewName">SQL View Name</Label>
                 <input
@@ -521,7 +453,6 @@ ${whereClause};`
                 />
               </div>
 
-              {/* Description Input */}
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="description">Description</Label>
                 <input
@@ -537,61 +468,49 @@ ${whereClause};`
           </CardContent>
         </Card>
 
-        {/* Team Members Selection - NEW FEATURE */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users size={20} />
-              Team Members Access
-            </CardTitle>
-            <CardDescription>
-              Select team members who can access this view
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {availableTeamMembers.map(member => (
-                <div key={member.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`member-${member.id}`}
-                    checked={selectedTeamMembers.includes(member.id)}
-                    onCheckedChange={() => handleTeamMemberToggle(member.id)}
-                  />
-                  <Label
-                    htmlFor={`member-${member.id}`}
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {member.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-            {selectedTeamMembers.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-4">
-                No team members selected. View will be accessible to all users.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Team Members */}
+        {availableTeamMembers.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users size={20} />
+                Team Members Access
+              </CardTitle>
+              <CardDescription>Select team members who can access this view</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {availableTeamMembers.map(member => (
+                  <div key={member.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`member-${member.id}`}
+                      checked={selectedTeamMembers.includes(member.id)}
+                      onCheckedChange={() => handleTeamMemberToggle(member.id)}
+                    />
+                    <Label htmlFor={`member-${member.id}`} className="text-sm font-normal cursor-pointer">
+                      {member.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main Builder Area */}
         <div className="builder-layout">
-          {/* Left Panel: Available Tables */}
+          {/* Left: Tables */}
           <div className="tables-panel">
             <h3>Available Tables</h3>
             <div className="tables-list">
               {availableTables.map(table => (
-                <DraggableTable
-                  key={table.name}
-                  table={table}
-                />
+                <DraggableTable key={table.name} table={table} />
               ))}
             </div>
           </div>
 
-          {/* Middle Panel: Canvas and Configuration */}
+          {/* Middle: Canvas */}
           <div className="canvas-panel">
-            {/* Selected Tables Section */}
             <h3>Selected Tables & Columns</h3>
             <TableDropZone onDrop={handleTableDrop}>
               {selectedTables.map(table => (
@@ -605,7 +524,7 @@ ${whereClause};`
               ))}
             </TableDropZone>
 
-            {/* Joins Section - Only show if multiple tables */}
+            {/* Joins */}
             {selectedTables.length >= 2 && (
               <Card className="mt-6">
                 <CardHeader>
@@ -616,9 +535,7 @@ ${whereClause};`
                       Add Join
                     </Button>
                   </div>
-                  <CardDescription>
-                    Define how tables should be joined together
-                  </CardDescription>
+                  <CardDescription>Define how tables should be joined</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {joins.map(join => (
@@ -630,16 +547,11 @@ ${whereClause};`
                       onRemove={removeJoin}
                     />
                   ))}
-                  {joins.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      No joins defined. Click "Add Join" to connect tables.
-                    </p>
-                  )}
                 </CardContent>
               </Card>
             )}
 
-            {/* WHERE Conditions Section - NEW: Enhanced UI */}
+            {/* WHERE Conditions */}
             <Card className="mt-6">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -649,9 +561,7 @@ ${whereClause};`
                     Add Filter
                   </Button>
                 </div>
-                <CardDescription>
-                  Add conditions to filter your data
-                </CardDescription>
+                <CardDescription>Add conditions to filter your data</CardDescription>
               </CardHeader>
               <CardContent>
                 {whereConditions.map((condition, index) => (
@@ -661,26 +571,20 @@ ${whereClause};`
                     columns={selectedColumns}
                     onChange={updateWhereCondition}
                     onRemove={removeWhereCondition}
-                    showLogicalOperator={index > 0} // Show AND/OR for all except first
+                    showLogicalOperator={index > 0}
                   />
                 ))}
-                {whereConditions.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    No filters applied. Click "Add Filter" to add conditions.
-                  </p>
-                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Panel: SQL Preview */}
+          {/* Right: SQL Preview */}
           <div className="sql-panel">
             <h3>Generated SQL</h3>
             <pre className="sql-preview">
               {generatedSQL || 'Configure your view to see SQL...'}
             </pre>
 
-            {/* Preview Data Table */}
             {previewData && (
               <div className="preview-data">
                 <h4>Preview Data (First 10 rows)</h4>
@@ -713,24 +617,20 @@ ${whereClause};`
   )
 }
 
-/**
- * DraggableTable Component
- * Renders a table in the left panel that can be dragged to the canvas
- */
+// ============================================================================
+// SUB-COMPONENTS (DraggableTable, TableDropZone, TableCard, etc.)
+// These remain the same as before
+// ============================================================================
+
 const DraggableTable = ({ table }: { table: TableData }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'table',
     item: table,
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging()
-    })
+    collect: (monitor) => ({ isDragging: monitor.isDragging() })
   }))
 
   return (
-    <div
-      ref={drag as any}
-      className={`draggable-table ${isDragging ? 'dragging' : ''}`}
-    >
+    <div ref={drag as any} className={`draggable-table ${isDragging ? 'dragging' : ''}`}>
       <Table size={16} />
       <span>{table.name}</span>
       <span className="column-count">{table.columns?.length || 0} cols</span>
@@ -738,86 +638,45 @@ const DraggableTable = ({ table }: { table: TableData }) => {
   )
 }
 
-/**
- * TableDropZone Component
- * Area where users can drop tables from the left panel
- */
-const TableDropZone = ({
-  children,
-  onDrop
-}: {
-  children: React.ReactNode
-  onDrop: (table: TableData) => void
-}) => {
+const TableDropZone = ({ children, onDrop }: { children: React.ReactNode, onDrop: (table: TableData) => void }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'table',
     drop: (item: TableData) => onDrop(item),
-    collect: (monitor) => ({
-      isOver: monitor.isOver()
-    })
+    collect: (monitor) => ({ isOver: monitor.isOver() })
   }))
 
   return (
-    <div
-      ref={drop as any}
-      className={`table-drop-zone ${isOver ? 'drag-over' : ''} ${!children ? 'empty' : ''}`}
-    >
+    <div ref={drop as any} className={`table-drop-zone ${isOver ? 'drag-over' : ''}`}>
       {!children || (Array.isArray(children) && children.length === 0) ? (
         <p className="drop-hint">Drag tables here to start building your view</p>
-      ) : (
-        children
-      )}
+      ) : children}
     </div>
   )
 }
 
-/**
- * TableCard Component
- * Shows a table with checkboxes for column selection
- * NEW: Enhanced with shadcn/ui Checkbox components
- */
-const TableCard = ({
-  table,
-  selectedColumns,
-  onColumnSelect,
-  onRemove
-}: {
-  table: TableData
-  selectedColumns: SelectedColumn[]
-  onColumnSelect: (table: TableData, column: Column) => void
-  onRemove: () => void
-}) => {
+const TableCard = ({ table, selectedColumns, onColumnSelect, onRemove }: any) => {
   const [expanded, setExpanded] = useState(true)
 
   return (
     <Card className="table-card mb-4">
       <div className="table-card-header flex items-center justify-between p-4">
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="expand-btn"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setExpanded(!expanded)}>
             {expanded ? '▼' : '▶'}
           </Button>
           <h4 className="font-semibold">{table.name}</h4>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onRemove}
-        >
+        <Button variant="ghost" size="icon" onClick={onRemove}>
           <Trash2 size={14} />
         </Button>
       </div>
 
       {expanded && (
-        <CardContent className="table-columns pt-0">
+        <CardContent className="pt-0">
           <div className="space-y-3">
-            {table.columns?.map(column => {
+            {table.columns?.map((column: Column) => {
               const columnKey = `${table.name}.${column.name}`
-              const isSelected = selectedColumns.some(c => c.key === columnKey)
+              const isSelected = selectedColumns.some((c: SelectedColumn) => c.key === columnKey)
 
               return (
                 <div key={column.name} className="flex items-center justify-between">
@@ -827,16 +686,11 @@ const TableCard = ({
                       checked={isSelected}
                       onCheckedChange={() => onColumnSelect(table, column)}
                     />
-                    <Label
-                      htmlFor={columnKey}
-                      className="text-sm font-normal cursor-pointer"
-                    >
+                    <Label htmlFor={columnKey} className="text-sm font-normal cursor-pointer">
                       {column.name}
                     </Label>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {column.type}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{column.type}</span>
                 </div>
               )
             })}
@@ -847,66 +701,27 @@ const TableCard = ({
   )
 }
 
-/**
- * JoinBuilder Component
- * Interface for configuring table joins
- * NEW: Enhanced with shadcn/ui Select components
- */
-const JoinBuilder = ({
-  join,
-  tables,
-  onChange,
-  onRemove
-}: {
-  join: Join
-  tables: TableData[]
-  onChange: (id: number, field: string, value: string) => void
-  onRemove: (id: number) => void
-}) => {
+const JoinBuilder = ({ join, tables, onChange, onRemove }: any) => {
   return (
-    <div className="join-builder flex items-center gap-2 mb-4 p-4 border rounded-lg">
-      {/* Left Table Selection */}
-      <Select
-        value={join.leftTable}
-        onValueChange={(value) => onChange(join.id, 'leftTable', value)}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue />
-        </SelectTrigger>
+    <div className="flex items-center gap-2 mb-4 p-4 border rounded-lg">
+      <Select value={join.leftTable} onValueChange={(v) => onChange(join.id, 'leftTable', v)}>
+        <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
         <SelectContent>
-          {tables.map(t => (
-            <SelectItem key={t.name} value={t.name}>
-              {t.name}
-            </SelectItem>
+          {tables.map((t: TableData) => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
+
+      <Select value={join.leftColumn} onValueChange={(v) => onChange(join.id, 'leftColumn', v)}>
+        <SelectTrigger className="w-[150px]"><SelectValue placeholder="Column" /></SelectTrigger>
+        <SelectContent>
+          {tables.find((t: TableData) => t.name === join.leftTable)?.columns?.map((c: Column) => (
+            <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {/* Left Column Selection */}
-      <Select
-        value={join.leftColumn}
-        onValueChange={(value) => onChange(join.id, 'leftColumn', value)}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Select column" />
-        </SelectTrigger>
-        <SelectContent>
-          {tables.find(t => t.name === join.leftTable)?.columns?.map(c => (
-            <SelectItem key={c.name} value={c.name}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Join Type Selection */}
-      <Select
-        value={join.joinType}
-        onValueChange={(value) => onChange(join.id, 'joinType', value)}
-      >
-        <SelectTrigger className="w-[140px]">
-          <SelectValue />
-        </SelectTrigger>
+      <Select value={join.joinType} onValueChange={(v) => onChange(join.id, 'joinType', v)}>
+        <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="INNER">INNER JOIN</SelectItem>
           <SelectItem value="LEFT">LEFT JOIN</SelectItem>
@@ -915,81 +730,35 @@ const JoinBuilder = ({
         </SelectContent>
       </Select>
 
-      {/* Right Table Selection */}
-      <Select
-        value={join.rightTable}
-        onValueChange={(value) => onChange(join.id, 'rightTable', value)}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue />
-        </SelectTrigger>
+      <Select value={join.rightTable} onValueChange={(v) => onChange(join.id, 'rightTable', v)}>
+        <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
         <SelectContent>
-          {tables.map(t => (
-            <SelectItem key={t.name} value={t.name}>
-              {t.name}
-            </SelectItem>
+          {tables.map((t: TableData) => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
+
+      <Select value={join.rightColumn} onValueChange={(v) => onChange(join.id, 'rightColumn', v)}>
+        <SelectTrigger className="w-[150px]"><SelectValue placeholder="Column" /></SelectTrigger>
+        <SelectContent>
+          {tables.find((t: TableData) => t.name === join.rightTable)?.columns?.map((c: Column) => (
+            <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      {/* Right Column Selection */}
-      <Select
-        value={join.rightColumn}
-        onValueChange={(value) => onChange(join.id, 'rightColumn', value)}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Select column" />
-        </SelectTrigger>
-        <SelectContent>
-          {tables.find(t => t.name === join.rightTable)?.columns?.map(c => (
-            <SelectItem key={c.name} value={c.name}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Remove Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(join.id)}
-      >
+      <Button variant="ghost" size="icon" onClick={() => onRemove(join.id)}>
         <Trash2 size={14} />
       </Button>
     </div>
   )
 }
 
-/**
- * WhereConditionBuilder Component
- * Interface for building WHERE clause conditions
- * NEW: Enhanced with logical operator support (AND/OR) and shadcn/ui components
- */
-const WhereConditionBuilder = ({
-  condition,
-  columns,
-  onChange,
-  onRemove,
-  showLogicalOperator
-}: {
-  condition: WhereCondition
-  columns: SelectedColumn[]
-  onChange: (id: number, field: string, value: string) => void
-  onRemove: (id: number) => void
-  showLogicalOperator: boolean
-}) => {
+const WhereConditionBuilder = ({ condition, columns, onChange, onRemove, showLogicalOperator }: any) => {
   return (
-    <div className="where-builder flex items-center gap-2 mb-4 p-4 border rounded-lg">
-      {/* Logical Operator (AND/OR) - Only show for 2nd condition onwards */}
+    <div className="flex items-center gap-2 mb-4 p-4 border rounded-lg">
       {showLogicalOperator && (
-        <Select
-          value={condition.logicalOperator || 'AND'}
-          onValueChange={(value) => onChange(condition.id, 'logicalOperator', value)}
-        >
-          <SelectTrigger className="w-[80px]">
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={condition.logicalOperator || 'AND'} onValueChange={(v) => onChange(condition.id, 'logicalOperator', v)}>
+          <SelectTrigger className="w-[80px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="AND">AND</SelectItem>
             <SelectItem value="OR">OR</SelectItem>
@@ -997,31 +766,15 @@ const WhereConditionBuilder = ({
         </Select>
       )}
 
-      {/* Column Selection */}
-      <Select
-        value={condition.column}
-        onValueChange={(value) => onChange(condition.id, 'column', value)}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select column" />
-        </SelectTrigger>
+      <Select value={condition.column} onValueChange={(v) => onChange(condition.id, 'column', v)}>
+        <SelectTrigger className="w-[200px]"><SelectValue placeholder="Column" /></SelectTrigger>
         <SelectContent>
-          {columns.map(c => (
-            <SelectItem key={c.key} value={c.key}>
-              {c.key}
-            </SelectItem>
-          ))}
+          {columns.map((c: SelectedColumn) => <SelectItem key={c.key} value={c.key}>{c.key}</SelectItem>)}
         </SelectContent>
       </Select>
 
-      {/* Operator Selection */}
-      <Select
-        value={condition.operator}
-        onValueChange={(value) => onChange(condition.id, 'operator', value)}
-      >
-        <SelectTrigger className="w-[100px]">
-          <SelectValue />
-        </SelectTrigger>
+      <Select value={condition.operator} onValueChange={(v) => onChange(condition.id, 'operator', v)}>
+        <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="=">=</SelectItem>
           <SelectItem value="!=">!=</SelectItem>
@@ -1037,21 +790,15 @@ const WhereConditionBuilder = ({
         </SelectContent>
       </Select>
 
-      {/* Value Input */}
       <input
         type="text"
         className="flex-1 px-3 py-2 border rounded-md"
         value={condition.value}
         onChange={(e) => onChange(condition.id, 'value', e.target.value)}
-        placeholder="Enter value"
+        placeholder="Value"
       />
 
-      {/* Remove Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => onRemove(condition.id)}
-      >
+      <Button variant="ghost" size="icon" onClick={() => onRemove(condition.id)}>
         <Trash2 size={14} />
       </Button>
     </div>

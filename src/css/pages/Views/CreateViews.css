@@ -1,0 +1,309 @@
+/* ===============================
+   Create View Container
+================================ */
+.create-view-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+/* ===============================
+   Header
+================================ */
+.create-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    /* border-bottom: 2px solid var(--color-secondary); */
+}
+
+.create-view-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* ===============================
+   Buttons
+================================ */
+.btn-primary,
+.btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    filter: brightness(0.9);
+}
+
+.btn-secondary {
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    color: var(--color-text);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* ===============================
+   View Details Form
+================================ */
+.view-details-form {
+    background: var(--color-background);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--color-secondary);
+    margin-bottom: 24px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.form-group input {
+    padding: 10px 12px;
+    border: 1px solid var(--color-secondary);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(66, 133, 180, 0.15);
+}
+
+/* ===============================
+   Builder Layout
+================================ */
+.builder-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 400px;
+    gap: 20px;
+    min-height: 600px;
+}
+
+/* ===============================
+   Tables Panel (Left)
+================================ */
+.tables-panel {
+    background: rgba(66, 133, 180, 0.08);
+    border: 1px solid var(--color-secondary);
+    border-radius: 8px;
+    padding: 16px;
+    height: fit-content;
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+}
+
+.tables-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.tables-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.table-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.table-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.table-item.selected {
+    background: rgba(66, 133, 180, 0.15);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.column-count {
+    font-size: 12px;
+    color: var(--color-text);
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.table-item.selected .column-count {
+    background: rgba(66, 133, 180, 0.25);
+    color: var(--color-primary);
+}
+
+/* ===============================
+   Canvas Panel (Middle)
+================================ */
+.canvas-panel {
+    background: rgba(66, 133, 180, 0.06);
+    border: 1px solid var(--color-secondary);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+}
+
+.canvas-panel h3 {
+    color: var(--color-text);
+}
+
+.empty-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: var(--color-secondary);
+}
+
+/* ===============================
+   Table Card
+================================ */
+.table-card {
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid var(--color-secondary);
+}
+
+.table-card-header h4 {
+    color: var(--color-text);
+}
+
+.remove-btn:hover {
+    color: var(--color-error);
+}
+
+/* ===============================
+   Joins & Where Section
+================================ */
+.joins-section,
+.where-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    border-radius: 8px;
+}
+
+.section-header h4 {
+    color: var(--color-text);
+}
+
+.btn-add {
+    background: var(--color-background);
+    border: 1px solid var(--color-secondary);
+    color: var(--color-text);
+}
+
+.btn-add:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+/* ===============================
+   SQL Panel (Intentionally Dark)
+================================ */
+.sql-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.sql-panel h3,
+.preview-data h4 {
+    color: #f1f5f9;
+}
+
+.sql-preview {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+/* ===============================
+   Responsive
+================================ */
+@media (max-width: 1200px) {
+    .builder-layout {
+        grid-template-columns: 1fr;
+    }
+}

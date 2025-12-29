@@ -1,4 +1,7 @@
 @import url('./css/element/icon.css');
+*{
+  border: rgb(66, 133, 180) !important;
+}
 
 .App {
   text-align: center;

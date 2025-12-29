@@ -1,0 +1,9 @@
+/* src/variables.css */
+:root {
+  --color-primary: rgb(66, 133, 180); /* Blue */
+  --color-secondary: #6c757d; /* Gray */
+  --color-success: #28a745; /* Green */
+  --color-error: #dc3545; /* Red */
+  --color-background: #ffffff; /* White */
+  --color-text: rgb(51, 51, 51); /* Dark gray */
+}

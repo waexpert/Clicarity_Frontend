@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import './variables/color.css'
 import { Routes, Route } from "react-router-dom";
 import { useSelector } from "react-redux"; // Added missing import
 import Header from "./components/Header";
@@ -397,7 +398,7 @@ function App() {
         />
 
         <Route 
-          path="/views/create-view" 
+          path="/views/create-view/new" 
           element={
             <ProtectedRoute>
               <CreateView />

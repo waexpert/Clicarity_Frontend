@@ -593,7 +593,7 @@ const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
 const defaultPredefinedFields = [
   { name: 'id', type: 'Text', defaultValue: 'Auto', locked: true, systemField: true },
   { name: 'us_id', type: 'Text', locked: true, systemField: true },
-   { name: 'pa_id', type: 'Text', locked: true, systemField: false },
+   { name: 'pa_id', type: 'Text', locked: false, systemField: false },
       { name: 'status', type: 'Text', defaultValue: 'pending', locked: true, systemField: true },
          { name: 'wastage', type: 'Number', defaultValue: 0, locked: true, systemField: true },
 ];

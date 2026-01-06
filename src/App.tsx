@@ -50,6 +50,7 @@ import AutocompleteInput from "./pages/test/AutoCompletionTest";
 import CustomViewForm from "./pages/CustomForms/CustomViewForm";
 import ViewBuilder from "./pages/Views/ViewBuilder";
 import CreateView from "./pages/Views/CreateView";
+import RLSManagement from "./pages/Admin/RLSManagement";
 
 function App() {
   const location = useLocation();
@@ -331,15 +332,24 @@ function App() {
         />
 
         {/* Admin Routes */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
-            // <ProtectedRoute>        
+            // <ProtectedRoute>
             <AdminHome/>
-            // </ProtectedRoute> 
-        } 
+            // </ProtectedRoute>
+        }
         />
-        
+
+        <Route
+          path="/admin/rls"
+          element={
+            <ProtectedRoute>
+              <RLSManagement/>
+            </ProtectedRoute>
+        }
+        />
+
         {/* Catch-all route */}
         <Route 
           path="*" 

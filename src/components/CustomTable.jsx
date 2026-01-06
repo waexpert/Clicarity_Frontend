@@ -2194,7 +2194,77 @@ const fetchRecordByUsId = async (usId) => {
     setPriorityFilter([]);
   };
 
-const handleOpenAddModal = async () => {
+// const handleOpenAddModal = async () => {
+//   if (columns.length === 0) {
+//     console.log('Columns not loaded yet, waiting...');
+//     return;
+//   }
+
+//   const currentUrlParams = Object.fromEntries(searchParams.entries());
+//   const initialData = {};
+//   const orderedColumns = getOrderedFormColumns();
+
+//   if (currentUrlParams.us_id) {
+//     console.log('Fetching record for us_id:', currentUrlParams.us_id);
+//     const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
+    
+//     console.log('=== DEBUG INFO ===');
+//     console.log('fetchedRecord:', fetchedRecord);
+//     console.log('typeof fetchedRecord:', typeof fetchedRecord);
+//     console.log('Is array?:', Array.isArray(fetchedRecord));
+    
+//     if (fetchedRecord) {
+//       console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
+//       console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
+      
+//       orderedColumns.forEach(column => {
+//         console.log(`\nChecking column: ${column.id}`);
+//         console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
+//         console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
+        
+//         if (column.id === 'quantity') {
+//           initialData[column.id] = '';
+//           console.log(`  - Set to empty (quantity)`);
+//         } else if (fetchedRecord.hasOwnProperty(column.id)) {
+//           const value = fetchedRecord[column.id];
+//           initialData[column.id] = value === null ? '' : String(value);
+//           console.log(`  - Set to: ${initialData[column.id]}`);
+//         } else if (currentUrlParams[column.id]) {
+//           initialData[column.id] = currentUrlParams[column.id];
+//           console.log(`  - Set from URL param: ${initialData[column.id]}`);
+//         } else {
+//           initialData[column.id] = '';
+//           console.log(`  - Set to empty (no match)`);
+//         }
+//       });
+      
+//       console.log('=== FINAL initialData ===');
+//       console.log(initialData);
+//     }
+//   } else {
+//     orderedColumns.forEach(column => {
+//       if (currentUrlParams[column.id]) {
+//         initialData[column.id] = currentUrlParams[column.id];
+//       } else if (column.id === 'us_id') {
+//         initialData[column.id] = generateUsId();
+//       } else {
+//         initialData[column.id] = '';
+//       }
+//     });
+//   }
+
+//   setNewRecordData(initialData);
+//   setIsDataReady(true);
+
+//   if (currentUrlParams.show === 'true') {
+//     const newSearchParams = new URLSearchParams(searchParams);
+//     newSearchParams.delete('show');
+//     setSearchParams(newSearchParams, { replace: true });
+//   }
+// };
+  // Handle input change in add modal
+  
+  const handleOpenAddModal = async () => {
   if (columns.length === 0) {
     console.log('Columns not loaded yet, waiting...');
     return;
@@ -2214,6 +2284,7 @@ const handleOpenAddModal = async () => {
     console.log('Is array?:', Array.isArray(fetchedRecord));
     
     if (fetchedRecord) {
+      // Record exists - populate from database
       console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
       console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
       
@@ -2240,8 +2311,26 @@ const handleOpenAddModal = async () => {
       
       console.log('=== FINAL initialData ===');
       console.log(initialData);
+    } else {
+      // Record doesn't exist - populate from URL params
+      console.log('Record not found, populating from URL params');
+      orderedColumns.forEach(column => {
+        if (currentUrlParams[column.id]) {
+          // Use value from URL parameter (including us_id)
+          initialData[column.id] = currentUrlParams[column.id];
+          console.log(`  - ${column.id} set from URL: ${initialData[column.id]}`);
+        } else if (column.id === 'us_id') {
+          // Generate new us_id if not in URL
+          initialData[column.id] = generateUsId();
+          console.log(`  - ${column.id} generated: ${initialData[column.id]}`);
+        } else {
+          initialData[column.id] = '';
+          console.log(`  - ${column.id} set to empty`);
+        }
+      });
     }
   } else {
+    // No us_id in URL - normal flow
     orderedColumns.forEach(column => {
       if (currentUrlParams[column.id]) {
         initialData[column.id] = currentUrlParams[column.id];
@@ -2262,7 +2351,8 @@ const handleOpenAddModal = async () => {
     setSearchParams(newSearchParams, { replace: true });
   }
 };
-  // Handle input change in add modal
+  
+  
   const handleNewRecordChange = (columnId, value) => {
     setNewRecordData(prev => ({
       ...prev,

@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 
 const dashboardCards = [
+      {
+    id: 4,
+    title: "Custom View",
+    description: "Monitor and Filter process on the basis of there status.",
+    icon: "expenses",
+    iconColor: "#4285B4",
+    route: "/custom-view"
+  },
     {
     id: 8,
     title: "Database Management",
@@ -28,6 +36,7 @@ const dashboardCards = [
     iconColor: "#4285B4",
     route: "/jobstatus/record"
   },
+
   {
     id: 2,
     title: "Lead Management",
@@ -67,14 +76,6 @@ const dashboardCards = [
     icon: "payments",
     iconColor: "#4285B4",
     route: "/paymentstatus"
-  },
-  {
-    id: 4,
-    title: "Expense Tracker",
-    description: "Monitor and categorize business expenses to optimize spending.",
-    icon: "expenses",
-    iconColor: "#4285B4",
-    route: "/expensestatus"
   },
   {
     id: 5,

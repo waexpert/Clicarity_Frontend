@@ -51,10 +51,12 @@ import CustomViewForm from "./pages/CustomForms/CustomViewForm";
 import ViewBuilder from "./pages/Views/ViewBuilder";
 import CreateView from "./pages/Views/CreateView";
 import RLSManagement from "./pages/Admin/RLSManagement";
+import RolesCreator from "./pages/Roles/RolesCreator";
+import RolesAssignment from "./pages/Roles/RolesAssignment";
 
 function App() {
   const location = useLocation();
-  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  // const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   
   const hideHeader =
     ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member","/status-update"].includes(location.pathname) ||
@@ -416,6 +418,23 @@ function App() {
           } 
         />
     
+        <Route 
+          path="/roles/create" 
+          element={
+            <ProtectedRoute>
+              <RolesCreator />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/roles/assign" 
+          element={
+            <ProtectedRoute>
+              <RolesAssignment />
+            </ProtectedRoute>
+          } 
+        />
 
       </Routes>
 

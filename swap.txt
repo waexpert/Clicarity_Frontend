@@ -1,0 +1,27 @@
+# You already created the file and set permissions correctly ✓
+# Now run these commands:
+
+# Format the file as swap
+sudo mkswap /swapfile
+
+# Enable the swap
+sudo swapon /swapfile
+
+# Make it permanent (survive reboots)
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Optimize swap usage (only use when really needed)
+sudo sysctl vm.swappiness=10
+echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+
+# Verify it's working
+free -h
+```
+
+The issue was `sudo mkubuntu@ip...$ swap` - it should be `sudo mkswap` (all one word).
+
+After running these commands, you should see output like:
+```
+              total        used        free      shared  buff/cache   available
+Mem:          968Mi       750Mi       100Mi        10Mi       118Mi       150Mi
+Swap:         2.0Gi         0Bi       2.0Gi

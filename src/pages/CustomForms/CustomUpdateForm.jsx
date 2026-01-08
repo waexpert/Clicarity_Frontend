@@ -321,7 +321,7 @@
 
 
 import  { useEffect, useState } from 'react';
-import '../../css/pages/CustomUpdateForm.css';
+// import '../../css/pages/CustomUpdateForm.css';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { useDispatch, useSelector } from 'react-redux';

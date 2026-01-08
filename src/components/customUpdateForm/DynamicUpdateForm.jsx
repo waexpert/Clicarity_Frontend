@@ -20,6 +20,11 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,table
     }
   };
   
+
+    const handleEnterJob = () => {
+    console.log('Split job clicked for record:', selectedRecord);
+    navigate(`/${currentTable}/record?us_id=${data?.us_id}&status=${'pending'}&show=true`);
+  };
   // Filter data to keep only keys that exist in visibleColumns
   const filteredData = React.useMemo(() => {
     if (!data || !visibleColumns || visibleColumns.length === 0) {
@@ -60,6 +65,25 @@ const DynamicUpdateForm = ({ data, loading, visibleColumns,selectedColumns,table
                >
                  Split This Job
                </Button>
+
+                        {/* <Button
+                  onClick={handleEnterJob}
+                  className="split-job-button"
+                  style={{
+                    backgroundColor: '#4388c1',
+                    color: 'white',
+                    padding: '0.75rem 2rem',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    width: '100%'
+                  }}
+                >
+                  Enter New
+                </Button> */}
       </div>
     </div>
   )

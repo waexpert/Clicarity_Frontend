@@ -85,19 +85,6 @@ export default function RolesAssignment() {
   };
 
 
-  // const fetchTeamMembers = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const route = `${import.meta.env.VITE_APP_BASE_URL}/team/getTeamMembers?schemaName=${schemaName}&ownerId=${ownerId}`;
-  //     const { data } = await axios.get(route);
-  //     setTeamMembers(data.data || []);
-  //   } catch (error) {
-  //     console.error("Error fetching team members:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const fetchAvailableRoles = async () => {
     try {
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/getAllRoles?schemaName=${schemaName}&ownerId=${ownerId}`;
@@ -148,6 +135,9 @@ export default function RolesAssignment() {
       setSubmitting(false);
     }
   };
+
+
+
 
   const handleRemoveRole = async (assignmentId) => {
     if (!confirm('Are you sure you want to remove this role?')) return;

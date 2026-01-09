@@ -145,40 +145,66 @@ export default function RolesCreator() {
     return JSON.stringify(filterConfig, null, 2);
   };
 
-  const handleSave = async () => {
-    // Validate inputs
-    if (!filterName.trim()) {
-      alert('Please enter a filter name');
-      return;
-    }
-    if (!selectedTable) {
-      alert('Please select a table');
-      return;
-    }
-    if (selectedColumns.length === 0) {
-      alert('Please select at least one column');
-      return;
-    }
+const handleSave = async () => {
+  // Validate inputs
+  if (!filterName.trim()) {
+    alert('Please enter a filter name');
+    return;
+  }
+  if (!selectedTable) {
+    alert('Please select a table');
+    return;
+  }
+  if (selectedColumns.length === 0) {
+    alert('Please select at least one column');
+    return;
+  }
 
-    const jsonConfig = generateJSON();
-    console.log('Filter Configuration:', jsonConfig);
-    
-    try {
-      // Replace with your actual save endpoint
-      const route = `${import.meta.env.VITE_APP_BASE_URL}/data/saveFilter`;
-      const response = await axios.post(route, {
-        ownerId: user.id,
-        schemaName: schemaName,
-        filterConfig: JSON.parse(jsonConfig)
-      });
-      
-      alert('Filter configuration saved successfully!');
-      // Optionally reset form or redirect
-    } catch (error) {
-      console.error('Error saving filter:', error);
-      alert('Failed to save filter configuration. Please try again.');
-    }
+  // Generate the role config
+  const roleConfig = {
+    filterName: filterName,
+    table: selectedTable,
+    columns: selectedColumns,
+    conditions: conditions.map((cond, index) => ({
+      column: cond.column,
+      operator: cond.operator,
+      value: cond.value,
+      ...(index < conditions.length - 1 && { logicalOperator: cond.logicalOp })
+    }))
   };
+
+  console.log('Sending role config:', roleConfig);
+  
+  try {
+    const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/createRole`;
+    const response = await axios.post(route, {
+      ownerId: user.id,              // ✅ User's ID
+      schemaName: schemaName,         // ✅ User's schema (from Redux)
+      roleName: filterName,           // ✅ Role name
+      tableName: selectedTable,       // ✅ Table name
+      roleConfig: roleConfig,         // ✅ The config object (not JSON string)
+      createdBy: user.email || user.name || `User ${user.id}`  // ✅ Who created it
+    });
+
+    console.log('Role created:', response.data);
+    alert('Role configuration saved successfully!');
+    
+    // Reset form
+    setFilterName('');
+    setSelectedTable('');
+    setSelectedColumns([]);
+    setTableColumns([]);
+    setConditions([{ id: 1, column: '', operator: '', value: '', logicalOp: 'AND' }]);
+    
+  } catch (error) {
+    console.error('Error saving role:', error);
+    if (error.response?.data?.message) {
+      alert(`Failed to save: ${error.response.data.message}`);
+    } else {
+      alert('Failed to save role configuration. Please try again.');
+    }
+  }
+};
 
   const availableColumns = tableColumns;
 

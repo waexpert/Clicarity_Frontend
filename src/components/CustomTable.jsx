@@ -2965,7 +2965,7 @@ const handleSave = async (originalId) => {
     schemaName,
     tableName,
     recordId: originalId,
-    ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
+    ownerId: owner_id,
     updates
   };
 
@@ -3415,9 +3415,9 @@ const handleSave = async (originalId) => {
                     <TableRow key={record.id || index} className="hover:bg-slate-50"
                       onClick={() => {
                         setEditingRowId(record.id);
-                        if (editEnabled === false) {
+                        // if (editEnabled === false) {
                           setEditingValues(record);
-                        }
+                        // }
                         setCurrentEditingRecord(record);
                       }}>
                       <TableCell className="w-[60px] text-center">

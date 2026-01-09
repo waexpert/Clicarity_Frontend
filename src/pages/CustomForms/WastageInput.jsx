@@ -2139,7 +2139,11 @@ export default function WastageInput() {
     const userData = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
     const [currentBalance, setCurrentBalance] = useState(0);
-    const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process);
+    const currentIdx = processSteps.indexOf(queryData.current_process);
+    const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process).filter((step, index) =>
+                    index > currentIdx &&
+                    processSteps[step] !== "Not Required"
+                );
     const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 
     // Fetch all vendors

@@ -464,7 +464,6 @@ const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
                 const steps = data.setup.process_steps || [];
                 setProcessSteps(steps);
                 setWebhook(data.setup.webhook || '');
-
                 const currentIdx = steps.indexOf(queryData.current_process);
                 console.log('Current process:', queryData.current_process);
                 console.log('Current index:', currentIdx);

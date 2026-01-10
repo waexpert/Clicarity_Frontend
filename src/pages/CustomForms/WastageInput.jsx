@@ -2139,12 +2139,12 @@ export default function WastageInput() {
     const userData = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
     const [currentBalance, setCurrentBalance] = useState(0);
-    const currentIdx = processSteps.indexOf(queryData.current_process);
-    const finalProcessSteps = processSteps.filter(step => step !== queryData.current_process).filter((step, index) =>
-                    index > currentIdx &&
-                    processSteps[step] !== "Not Required"
-                );
+    // Add after existing state declarations (around line 15-25)
+    const [recordData, setRecordData] = useState(null);
+    const [finalProcessSteps, setFinalProcessSteps] = useState([]);
+
     const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
+    console.log(processSteps)
 
     // Fetch all vendors
     const fetchVendors = async () => {
@@ -2211,30 +2211,67 @@ export default function WastageInput() {
         }
     }, [isNextProcessProvided, queryData.next_process, nextProcess]);
 
-    // Auto-set next process based on current process
+    // Auto-set next process based on current process and filtered steps
     useEffect(() => {
-        const index = processSteps.findIndex(p => p === queryData.current_process);
-        setNextProcess(index !== -1 && index < processSteps.length - 1 ? processSteps[index + 1] : '');
-        console.log("Next Process Set To:", nextProcess);
-        console.log("Process Steps", processSteps);
-    }, [setNextProcess, processSteps]);
+        // Only auto-set if next_process is not provided in URL params
+        if (!isNextProcessProvided && finalProcessSteps.length > 0) {
+            // Set to first available step from filtered steps
+            setNextProcess(finalProcessSteps[0] || '');
+            console.log("Next Process Auto-Set To:", finalProcessSteps[0]);
+            console.log("Available Process Steps:", finalProcessSteps);
+        }
+    }, [isNextProcessProvided, finalProcessSteps]);
 
-    // Fetch process steps and vendors
-    useEffect(() => {
-        const fetchData = async () => {
+// Fetch process steps, record data, and vendors
+useEffect(() => {
+    const fetchData = async () => {
+        try {
+            // Fetch process steps setup
             const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
             const { data } = await axios.get(route);
-            setProcessSteps(data.setup.process_steps);
-            console.log("Process Steps", processSteps);
-            
+            const steps = data.setup.process_steps || [];
+            setProcessSteps(steps);
+            console.log("Process Steps from setup:", steps);
+
+            // Fetch the actual record data
+            const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
+            const recordResponse = await axios.post(getRecordRoute, {
+                schemaName: queryData.schemaName,
+                tableName: queryData.tableName,
+                targetColumn: queryData.targetColumn || 'id',
+                targetValue: queryData.recordId
+            });
+
+            const fetchedRecordData = recordResponse.data;
+            setRecordData(fetchedRecordData);
+            console.log("Fetched record data:", fetchedRecordData);
+
+            // Filter process steps based on current process and "Not Required" status
+            const currentIdx = steps.indexOf(queryData.current_process);
+            console.log('Current process:', queryData.current_process);
+            console.log('Current index:', currentIdx);
+
+            const filteredSteps = steps.filter((step, index) =>
+                index > currentIdx &&
+                fetchedRecordData[step] !== "Not Required"
+            );
+
+            console.log('Filtered steps:', filteredSteps);
+            setFinalProcessSteps(filteredSteps);
+
             // Fetch vendors after process steps are loaded
             await fetchVendors();
-        };
 
-        if (owner_id && tableName) {
-            fetchData();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.error("Failed to load process steps or record data");
         }
-    }, [owner_id, tableName]);
+    };
+
+    if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
+        fetchData();
+    }
+}, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
 
     // Update currentBalance when responseData changes
     useEffect(() => {
@@ -2495,9 +2532,14 @@ export default function WastageInput() {
                 <p style={styles.subheading}>
                     Please enter the wastage details below
                 </p>
-                <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2`}>
-                    Current Process {"-> " + queryData.current_process.charAt(0).toUpperCase() + queryData.current_process.slice(1)}
+                <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2 px-4`}>
+                    Current Process {"-> " + queryData.current_process.charAt(0).toUpperCase() + queryData.current_process.slice(1)} : {currentBalance}
                 </Badge>
+
+                    {/* <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2`}>
+                        <strong>Current Balance ({queryData.current_process}):</strong> {currentBalance}
+      
+                </Badge> */}
             </div>
 
             <div style={styles.form}>
@@ -2534,10 +2576,7 @@ export default function WastageInput() {
                         </div>
                     )}
 
-                    {/* Display current balance */}
-                    <div style={styles.infoBox}>
-                        <strong>Current Balance ({queryData.current_process}):</strong> {currentBalance}
-                    </div>
+
 
                     <Label htmlFor="received-number" style={styles.inputLabel}>
                         Enter Received Quantity
@@ -2708,7 +2747,7 @@ const styles = {
     logo: {
         width: '20rem',
         height: 'auto',
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
     },
     headerSection: {
         textAlign: 'center',

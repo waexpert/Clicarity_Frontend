@@ -2527,6 +2527,7 @@ const fetchRecordByUsId = async (usId) => {
       setIsAddModalOpen(false);
       setNewRecordData({});
       handleRefresh();
+      setSearchParams({})
 
     } catch (error) {
       console.error("Error creating record:", error);
@@ -2864,103 +2865,193 @@ const fetchRecordByUsId = async (usId) => {
     }
   };
 
-  // Working Get Request based Update Function
-
-  // const handleSave = async (originalId) => {
-  //   const schemaName = apiParams.schemaName;
-  //   const tableName = apiParams.tableName;
-
-  //   const params = new URLSearchParams({
-  //     schemaName,
-  //     tableName,
-  //     recordId: originalId,
-  //     ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
-  //   });
-
-  //   let colIndex = 1;
-  //   Object.entries(editingValues).forEach(([key, val]) => {
-  //     if (val === undefined) return;
-
-  //     // Handle date fields specifically
-  //     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-  //       // Skip empty/null date fields entirely to avoid database errors
-  //       if (val === null || val === 'null' || val === '' || val === undefined) {
-  //         return; // Don't add this field to the update
-  //       }
-
-  //       // Validate date format if value exists
-  //       const dateValue = new Date(val);
-  //       if (isNaN(dateValue.getTime())) {
-  //         console.warn(`Invalid date format for ${key}:`, val);
-  //         return; // Skip invalid dates
-  //       }
-
-  //       // Use ISO format for dates
-  //       params.append(`col${colIndex}`, key);
-  //       params.append(`val${colIndex}`, dateValue.toISOString().split('T')[0]); // YYYY-MM-DD format
-  //       colIndex++;
-  //     } else {
-  //       // Handle non-date fields
-  //       const sanitizedVal = val === null || val === 'null' ? '' : val;
-  //       params.append(`col${colIndex}`, key);
-  //       params.append(`val${colIndex}`, sanitizedVal);
-  //       colIndex++;
-  //     }
-  //   });
-
-  //   try {
-  //     const result = await axios.get(`${updateRecord}?${params.toString()}`);
-  //     toast.success("Record updated");
-  //     setEditingRowId(null);
-  //     handleRefresh();
-  //   } catch (err) {
-  //     console.error('Update error:', err);
-  //     toast.error("Update failed");
-  //   }
-  // };
-
-
 // Updated handleSave function for multiple column updates using request body
+// const handleSave = async (originalId) => {
+//   const schemaName = apiParams.schemaName;
+//   const tableName = apiParams.tableName;
+
+//   // Build updates object from editingValues
+//   const updates = {};
+
+//   Object.entries(editingValues).forEach(([key, val]) => {
+//     if (val === undefined) return;
+
+//     // Handle date fields specifically
+//     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+//       // Skip empty/null date fields entirely to avoid database errors
+//       if (val === null || val === 'null' || val === '' || val === undefined) {
+//         return; // Don't add this field to the update
+//       }
+
+//       // Validate date format if value exists
+//       const dateValue = new Date(val);
+//       if (isNaN(dateValue.getTime())) {
+//         console.warn(`Invalid date format for ${key}:`, val);
+//         return; // Skip invalid dates
+//       }
+
+//       // Use ISO format for dates
+//       updates[key] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
+//     } else {
+//       // Handle non-date fields (including arrays)
+//       const sanitizedVal = val === null || val === 'null' ? '' : val;
+//       updates[key] = sanitizedVal;
+//     }
+//   });
+
+//   // Check if there are any fields to update
+//   if (Object.keys(updates).length === 0) {
+//     toast.warning("No changes to save");
+//     return;
+//   }
+
+//   // Prepare request body
+//   const requestBody = {
+//     schemaName,
+//     tableName,
+//     recordId: originalId,
+//     ownerId: owner_id,
+//     updates
+//   };
+
+//   // Add optional fields if they exist
+//   if (apiParams.userSchemaName) {
+//     requestBody.userSchemaName = apiParams.userSchemaName;
+//   }
+//   if (apiParams.userTableName) {
+//     requestBody.userTableName = apiParams.userTableName;
+//   }
+//   if (apiParams.vname) {
+//     requestBody.vname = apiParams.vname;
+//   }
+//   if (apiParams.wid) {
+//     requestBody.wid = apiParams.wid;
+//   }
+
+//   console.log('Update request body:', requestBody);
+
+//   try {
+//     // Use POST request for multiple column updates
+//     const result = await axios.post(updateRecord, requestBody, {
+//       headers: {
+//         'Content-Type': 'application/json'
+//       }
+//     });
+    
+//     toast.success("Record updated successfully");
+//     setEditingRowId(null);
+//     handleRefresh();
+    
+//     // Log response for debugging
+//     console.log('Update response:', result.data);
+    
+//     // Show which columns were updated
+//     if (result.data.updatedColumns) {
+//       console.log('Updated columns:', result.data.updatedColumns.join(', '));
+//     }
+//   } catch (err) {
+//     console.error('Update error:', err);
+    
+//     // Provide more specific error messages
+//     if (err.response?.data?.error) {
+//       toast.error(err.response.data.error);
+//     } else if (err.response?.data?.details) {
+//       toast.error(`Update failed: ${err.response.data.details}`);
+//     } else {
+//       toast.error("Update failed");
+//     }
+//   }
+// };
+
 const handleSave = async (originalId) => {
   const schemaName = apiParams.schemaName;
   const tableName = apiParams.tableName;
 
-  // Build updates object from editingValues
   const updates = {};
 
   Object.entries(editingValues).forEach(([key, val]) => {
     if (val === undefined) return;
 
-    // Handle date fields specifically
+    // Get original value for comparison
+    const originalValue = currentEditingRecord[key];
+    
+    // Skip if value hasn't changed
+    if ((val === originalValue) || (key === 'pa_id') || (key === 'us_id') || (key === 'id')) {
+      console.log(`Skipping ${key} - no change`);
+      return;
+    }
+
+
+    console.log(`Field ${key} changed from "${originalValue}" to "${val}"`);
+
+    // Handle date fields
     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-      // Skip empty/null date fields entirely to avoid database errors
-      if (val === null || val === 'null' || val === '' || val === undefined) {
-        return; // Don't add this field to the update
+      if (val === null || val === 'null' || val === '') {
+        updates[key] = null;
+        return;
       }
 
-      // Validate date format if value exists
       const dateValue = new Date(val);
       if (isNaN(dateValue.getTime())) {
         console.warn(`Invalid date format for ${key}:`, val);
-        return; // Skip invalid dates
+        toast.error(`Invalid date format for ${key}`);
+        return;
       }
 
-      // Use ISO format for dates
-      updates[key] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
-    } else {
-      // Handle non-date fields (including arrays)
-      const sanitizedVal = val === null || val === 'null' ? '' : val;
-      updates[key] = sanitizedVal;
+      updates[key] = dateValue.toISOString().split('T')[0];
+      return;
+    }
+
+    // ENHANCED: Preserve original data type
+    const originalType = typeof currentEditingRecord[key];
+    
+    if (val === null || val === 'null' || val === '') {
+      updates[key] = null;
+      return;
+    }
+
+    // Convert back to original type
+    switch (originalType) {
+      case 'number':
+        const numValue = Number(val);
+        if (isNaN(numValue)) {
+          toast.error(`${key} must be a number`);
+          return;
+        }
+        updates[key] = numValue;
+        break;
+        
+      case 'boolean':
+        updates[key] = val === 'true' || val === true;
+        break;
+        
+      case 'object':
+        // Handle arrays or JSON objects
+        if (Array.isArray(currentEditingRecord[key])) {
+          try {
+            updates[key] = typeof val === 'string' ? JSON.parse(val) : val;
+          } catch (e) {
+            console.error('Failed to parse array:', e);
+            updates[key] = val;
+          }
+        } else {
+          updates[key] = val;
+        }
+        break;
+        
+      default:
+        // String or unknown type
+        updates[key] = val;
     }
   });
 
-  // Check if there are any fields to update
   if (Object.keys(updates).length === 0) {
     toast.warning("No changes to save");
     return;
   }
 
-  // Prepare request body
+  console.log('Fields to update:', updates);
+
   const requestBody = {
     schemaName,
     tableName,
@@ -2969,24 +3060,9 @@ const handleSave = async (originalId) => {
     updates
   };
 
-  // Add optional fields if they exist
-  if (apiParams.userSchemaName) {
-    requestBody.userSchemaName = apiParams.userSchemaName;
-  }
-  if (apiParams.userTableName) {
-    requestBody.userTableName = apiParams.userTableName;
-  }
-  if (apiParams.vname) {
-    requestBody.vname = apiParams.vname;
-  }
-  if (apiParams.wid) {
-    requestBody.wid = apiParams.wid;
-  }
-
   console.log('Update request body:', requestBody);
 
   try {
-    // Use POST request for multiple column updates
     const result = await axios.post(updateRecord, requestBody, {
       headers: {
         'Content-Type': 'application/json'
@@ -2995,19 +3071,18 @@ const handleSave = async (originalId) => {
     
     toast.success("Record updated successfully");
     setEditingRowId(null);
+    setEditingValues({});
+    setCurrentEditingRecord(null);
     handleRefresh();
     
-    // Log response for debugging
     console.log('Update response:', result.data);
     
-    // Show which columns were updated
     if (result.data.updatedColumns) {
       console.log('Updated columns:', result.data.updatedColumns.join(', '));
     }
   } catch (err) {
     console.error('Update error:', err);
     
-    // Provide more specific error messages
     if (err.response?.data?.error) {
       toast.error(err.response.data.error);
     } else if (err.response?.data?.details) {
@@ -3017,6 +3092,7 @@ const handleSave = async (originalId) => {
     }
   }
 };
+
 
   // Get unique statuses for filters
   const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);

@@ -29,13 +29,17 @@ const RecordDetails = ({data , loading ,visibleColumns,selectedColumns}) => {
       );
     }
 
-    if (key.includes('date') && value && value !== '') {
-      try {
-        return new Date(value).toLocaleDateString();
-      } catch {
-        return value;
-      }
-    }
+if (key.includes('date') && value && value !== '') {
+  try {
+    return new Date(value).toLocaleString('en-IN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch {
+    return value;
+  }
+}
 
     if (typeof value === 'number') {
       return value.toLocaleString();

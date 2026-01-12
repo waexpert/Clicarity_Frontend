@@ -8,7 +8,8 @@ import {
   UserX,
   DatabaseZap,
   Network,
-  ContactRound
+  ContactRound,
+  ClockArrowUp 
 } from "lucide-react";
 
 const dashboardCards = [
@@ -27,6 +28,14 @@ const dashboardCards = [
     icon: "database",
     iconColor: "#4285B4",
     route: "/database"
+  },
+     {
+    id: 4,
+    title: "Custom Update",
+    description: "Monitor and Filter process on the basis of there status.",
+    icon: "time",
+    iconColor: "#4285B4",
+    route: "/custom-update"
   },
   {
     id: 9,
@@ -129,6 +138,8 @@ export const getIconComponent = (iconName) => {
       return BellRing;
     case "contact":
       return ContactRound
+    case "time":
+      return ClockArrowUp 
     default:
       return DatabaseZap;
   }

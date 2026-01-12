@@ -22,7 +22,7 @@
 //   const [selectedColumns, setSelectedColumns] = useState([]);
 //   const [setupData, setSetupData] = useState({});
 //   const [childRecords, setChildRecords] = useState([]);
-  
+
 //   const userData = useSelector((state) => state.user);
 //   const dispatch = useDispatch();
 //   const schemaName = userData?.schema_name || 'default_schema';
@@ -38,12 +38,12 @@
 //       try {
 //         const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${currentTable}`;
 //         const { data } = await axios.get(route);
-        
+
 //         if (data.exists && data.setup) {
 //           setSetupData(data.setup);
 //           setSelectedColumns(data.setup.filter_form_columns || []);
 //           setProcessTypeMapping(data.setup.process_type_mapping || {});
-          
+
 //           // Ensure processSteps is always an array with valid objects
 //           const steps = data.setup.process_steps || [];
 //           const validSteps = steps.filter(step => step && (step.title || typeof step === 'string'));
@@ -58,7 +58,7 @@
 //         setProcessSteps([]);
 //       }
 //     };
-    
+
 //     if (currentTable && userData?.id) {
 //       fetchSetupData();
 //     }
@@ -110,7 +110,7 @@
 //       }
 
 //       const result = await response.json();
-      
+
 //       // Ensure result is an array
 //       const recordsArray = Array.isArray(result) ? result : [result];
 //       setRecords(recordsArray);
@@ -201,14 +201,14 @@
 //   // Determine the process type for the selected record
 //   const currentProcessType = useMemo(() => {
 //     if (!selectedRecord || !processTypeMapping) return 'Dynamic';
-    
-    
+
+
 //     const processType = processTypeMapping[status];
-    
+
 //     console.log('🔍 Current Status:', status);
 //     console.log('🔍 Process Type Mapping:', processTypeMapping);
 //     console.log('🔍 Determined Process Type:', processType);
-    
+
 //     return processType || 'Dynamic'; // Default to Dynamic if not found
 //   }, [selectedRecord, processTypeMapping]);
 
@@ -326,7 +326,7 @@
 //           <h3 className="heading" style={{ marginBottom: '1rem' }}>
 //             Found {records.length} Record{records.length !== 1 ? 's' : ''}
 //           </h3>
-          
+
 //           <div className="records-grid" style={{ 
 //             display: 'grid', 
 //             gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
@@ -535,16 +535,18 @@ const CustomViewForm = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [columns, setColumns] = useState([]);
   const [visibleColumns, setVisibleColumns] = useState([]);
-  
+
   const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const schemaName = userData?.schema_name || 'default_schema';
   const navigate = useNavigate();
+  const systemTables = ["contact", "team_member", "vendor", "schema_migrations" ,"reminders"]
+  const sTables = new Set(systemTables);
 
   useEffect(() => {
     getAllTables();
   }, []);
-  
+
   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 
   useEffect(() => {
@@ -552,12 +554,12 @@ const CustomViewForm = () => {
       try {
         const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${currentTable}`;
         const { data } = await axios.get(route);
-        
+
         if (data.exists && data.setup) {
           setSetupData(data.setup);
           setSelectedColumns(data.setup.filter_form_columns || []);
           setProcessTypeMapping(data.setup.process_type_mapping || {});
-          
+
           const steps = data.setup.process_steps || [];
           const validSteps = steps.filter(step => step && (step.title || typeof step === 'string'));
           setProcessSteps(validSteps);
@@ -570,7 +572,7 @@ const CustomViewForm = () => {
         setProcessSteps([]);
       }
     };
-    
+
     if (currentTable && userData?.id) {
       fetchSetupData();
     }
@@ -630,7 +632,7 @@ const CustomViewForm = () => {
       if (recordsArray.length > 0) {
         columnNames = Object.keys(recordsArray[0]);
         setColumns(columnNames);
-        
+
         // Set visible columns if not already set or if selectedColumns is empty
         if (selectedColumns.length === 0) {
           setVisibleColumns(columnNames);
@@ -711,7 +713,7 @@ const CustomViewForm = () => {
   };
 
   const status = processName;
-  
+
   const handleSplitJob = () => {
     navigate(`/${currentTable}/record?pa_id=${selectedRecord?.us_id}&status=${status}&show=true`);
   };
@@ -732,8 +734,8 @@ const CustomViewForm = () => {
     }
 
     // Use visibleColumns if available, otherwise use selectedColumns, otherwise show all
-    const columnsToShow = visibleColumns.length > 0 
-      ? visibleColumns 
+    const columnsToShow = visibleColumns.length > 0
+      ? visibleColumns
       : (selectedColumns.length > 0 ? selectedColumns : Object.keys(selectedRecord));
 
     if (columnsToShow.length === 0) {
@@ -754,7 +756,7 @@ const CustomViewForm = () => {
       <div className="form-group-1">
         <div className="top-section">
           <h2 className="heading">Check Process Status</h2>
-          <Button 
+          <Button
             className="filter-section"
             onClick={() => setIsFilterOpen(true)}
             disabled={!selectedRecord || columns.length === 0}
@@ -775,7 +777,10 @@ const CustomViewForm = () => {
             <option value="" disabled className="placeholder-option">
               Select Table
             </option>
-            {tables.map((table, index) => {
+            {tables.filter(table => {
+              const originalTableName = table?.title || table; // Get original table name
+              return !sTables.has(originalTableName); // Check against original name
+            }).map((table, index) => {
               const title = table?.title || table;
               if (!title) return null;
               return (
@@ -856,7 +861,7 @@ const CustomViewForm = () => {
           <h3 className="heading">
             {records.length} Record{records.length !== 1 ? 's' : ''} Found
           </h3>
-          
+
           <div className="records-grid">
             {records.map((record, index) => (
               <Button
@@ -867,11 +872,9 @@ const CustomViewForm = () => {
                 <div>
                   {record.us_id || `Record ${index + 1}`}
                 </div>
-                {record.name && (
+                {/* {record.name && (
                   <div>
-                    {record.name}
-                  </div>
-                )}
+                    {record.name}</div>)} */}
               </Button>
             ))}
           </div>
@@ -889,7 +892,7 @@ const CustomViewForm = () => {
           </button>
 
           {currentProcessType === 'Wastage' ? (
-            <WastageUpdateForm 
+            <WastageUpdateForm
               data={selectedRecord}
               loading={loading}
               visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
@@ -905,9 +908,9 @@ const CustomViewForm = () => {
                 Record Details - {selectedRecord.us_id}
               </h3>
 
-              <RecordDetails 
-                data={filteredData} 
-                loading={loading} 
+              <RecordDetails
+                data={filteredData}
+                loading={loading}
                 selectedColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
                 visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
               />

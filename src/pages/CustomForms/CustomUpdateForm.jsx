@@ -357,6 +357,9 @@ const CustomUpdateForm = () => {
   const dispatch = useDispatch();
   const schemaName = userData?.schema_name || 'default_schema';
 
+  const systemTables = ["contact", "team_member", "vendor", "schema_migrations" ,"reminders"]
+  const sTables = new Set(systemTables);
+
   const handleSearch = async () => {
     if (!searchId.trim()) {
       setError('Please enter an ID');
@@ -555,11 +558,24 @@ const CustomUpdateForm = () => {
             <option value="" disabled className="placeholder-option">
               - Select Table -
             </option>
-            {tables.map((step) => (
+            {/* {tables.map((step) => (
               <option key={step.title} value={step.title} className="option">
                 {step.title.charAt(0).toUpperCase() + step.title.slice(1).replace(/_/g, ' ')}
               </option>
-            ))}
+            ))} */}
+
+            {tables.filter(table => {
+  const originalTableName = table?.title || table; // Get original table name
+  return !sTables.has(originalTableName); // Check against original name
+}).map((table, index) => {
+  const title = table?.title || table;
+  if (!title) return null;
+  return (
+    <option key={title || index} value={title} className="option">
+      {title.charAt(0).toUpperCase() + title.slice(1).replace(/_/g, ' ')}
+    </option>
+  );
+})}
           </select>
           <div className="select-arrow">
             <svg width="12" height="8" viewBox="0 0 12 8" fill="none">

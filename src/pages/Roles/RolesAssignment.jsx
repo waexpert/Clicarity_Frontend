@@ -6,14 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, UserPlus, Trash2, Shield, Users } from 'lucide-react';
+import { Loader2, UserPlus, Trash2, Shield, Users, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 export default function RolesAssignment() {
   const user = useSelector((state) => state.user);
   const schemaName = user?.schema_name;
   const ownerId = user?.id;
-
+  // const ownerId = user?.owner_id || user?.id;
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableRoles, setAvailableRoles] = useState([]);
   const [selectedMember, setSelectedMember] = useState('');
@@ -21,144 +22,237 @@ export default function RolesAssignment() {
   const [assignedRoles, setAssignedRoles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error,setError] = useState()
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('=== INITIAL LOAD ===');
+    console.log('User from Redux:', user);
+    console.log('Schema Name:', schemaName);
+    console.log('Owner ID:', ownerId);
+    
     if (schemaName && ownerId) {
       fetchTeamMembers();
       fetchAvailableRoles();
+    } else {
+      console.warn('❌ Missing schemaName or ownerId');
+      setError('User data not loaded. Please refresh the page.');
     }
   }, [schemaName, ownerId]);
 
   useEffect(() => {
+    console.log('=== MEMBER SELECTION CHANGED ===');
+    console.log('Selected Member:', selectedMember);
+    
     if (selectedMember) {
       fetchMemberRoles(selectedMember);
+    } else {
+      setAssignedRoles([]);
     }
   }, [selectedMember]);
 
-
-    const fetchTeamMembers = async () => {
+  const fetchTeamMembers = async () => {
     try {
       setLoading(true);
       setError('');
       
-      // Check if userData and schema_name exist
-      if (!userData || !userData.schema_name) {
+      if (!schemaName) {
         throw new Error('User schema not found. Please log in again.');
       }
       
-      const schemaName = userData.schema_name;
-      console.log('Fetching data for schema:', schemaName);
+      console.log('📡 Fetching team members for schema:', schemaName);
       
       const apiUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`;
       console.log('API URL:', apiUrl);
-      console.log('schemaName:', schemaName);
       
       const response = await axios.post(apiUrl, {
         schemaName: schemaName,
         tableName: 'team_member'
       });
 
-      console.log('Response:', response);
+      console.log('✅ Team Members Response:', response.data);
       
-      // With Axios, the data is in response.data
       const data = response.data.data;
-      console.log('Fetched team members:', data);
-      setTeamMembers(data);
-      setFilteredMembers(data);
+      
+      if (!data || data.length === 0) {
+        console.warn('⚠️ No team members found');
+        setError('No team members found. Please add team members first.');
+      } else {
+        console.log(`✅ Found ${data.length} team members`);
+      }
+      
+      setTeamMembers(data || []);
     } catch (err) {
+      console.error('❌ Error fetching team members:', err);
       let errorMessage = 'Failed to load team members. ';
+      
       if (err.response) {
+        console.error('Response error:', err.response.data);
         errorMessage += `Server error (${err.response.status}): ${err.response.data?.error || err.response.statusText}`;
       } else if (err.request) {
-        // Request was made but no response received
-        errorMessage += 'Please check if the server is running.';
+        console.error('Request error - no response received');
+        errorMessage += 'No response from server. Please check if the server is running.';
       } else {
-        // Something else happened
+        console.error('Error:', err.message);
         errorMessage += err.message;
       }
       
       setError(errorMessage);
+      setTeamMembers([]);
     } finally {
       setLoading(false);
     }
   };
 
-
   const fetchAvailableRoles = async () => {
     try {
+      console.log('📡 Fetching roles...');
+      console.log('  Schema:', schemaName);
+      console.log('  Owner:', ownerId);
+      
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/getAllRoles?schemaName=${schemaName}&ownerId=${ownerId}`;
+      console.log('  API URL:', route);
+      
       const { data } = await axios.get(route);
+      console.log('✅ Roles Response:', data);
+      
+      if (!data.data || data.data.length === 0) {
+        console.warn('⚠️ No roles found');
+        toast.warning('No roles configured. Please create roles first.');
+      } else {
+        console.log(`✅ Found ${data.data.length} roles:`, data.data.map(r => ({
+          id: r.id,
+          name: r.role_name,
+          table: r.table_name
+        })));
+      }
+      
       setAvailableRoles(data.data || []);
     } catch (error) {
-      console.error("Error fetching roles:", error);
+      console.error('❌ Error fetching roles:', error);
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+        toast.error(error.response.data.message || 'Failed to fetch roles');
+      }
+      setAvailableRoles([]);
     }
   };
 
   const fetchMemberRoles = async (memberId) => {
     try {
-      const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/getMemberRoles?teamMemberId=${memberId}`;
+      console.log('📡 Fetching roles for member:', memberId);
+      console.log('  Schema:', schemaName);
+      
+      if (!schemaName) {
+        console.error('❌ schemaName is missing');
+        toast.error('Schema name is missing');
+        setAssignedRoles([]);
+        return;
+      }
+      
+      const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/getMemberRoles?teamMemberId=${memberId}&schemaName=${schemaName}`;
+      console.log('  API URL:', route);
+      
       const { data } = await axios.get(route);
+      
+      console.log('✅ Member Roles Response:', data);
+      console.log('  Data array:', data.data);
+      console.log('  Count:', data.count);
+      
+      if (data.data && data.data.length > 0) {
+        console.log(`✅ Found ${data.data.length} assigned roles:`);
+        data.data.forEach((role, idx) => {
+          console.log(`  ${idx + 1}. ${role.roleName} (ID: ${role.id}, Setup ID: ${role.roleSetupId})`);
+        });
+      } else {
+        console.log('ℹ️ No roles assigned to this member');
+      }
+      
       setAssignedRoles(data.data || []);
     } catch (error) {
-      console.error("Error fetching member roles:", error);
+      console.error('❌ Error fetching member roles:', error);
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+        toast.error(error.response.data.message || 'Failed to fetch member roles');
+      }
       setAssignedRoles([]);
     }
   };
 
   const handleAssignRole = async () => {
     if (!selectedMember || !selectedRole) {
-      alert('Please select both team member and role');
+      toast.error('Please select both team member and role');
       return;
     }
 
     try {
       setSubmitting(true);
-      const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/assignRole`;
-      const { data } = await axios.post(route, {
+      
+      const payload = {
         teamMemberId: selectedMember,
         roleSetupId: selectedRole,
-        assignedBy: user.email || user.name
-      });
-
-      alert('Role assigned successfully!');
+        schemaName: schemaName,
+        assignedBy: user.email || user.name || 'Unknown'
+      };
+      
+      console.log('📡 Assigning role with payload:', payload);
+      
+      const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/assignRole`;
+      const { data } = await axios.post(route, payload);
+      
+      console.log('✅ Role assigned:', data);
+      toast.success('Role assigned successfully!');
+      
       await fetchMemberRoles(selectedMember);
       setSelectedRole('');
     } catch (error) {
-      console.error("Error assigning role:", error);
-      if (error.response?.status === 409) {
-        alert('This role is already assigned to the team member');
+      console.error('❌ Error assigning role:', error);
+      if (error.response) {
+        console.error('Response error:', error.response.data);
+        
+        if (error.response?.status === 409) {
+          toast.error('This role is already assigned to the team member');
+        } else {
+          toast.error(error.response?.data?.message || 'Failed to assign role');
+        }
       } else {
-        alert('Failed to assign role. Please try again.');
+        toast.error('Failed to assign role. Please try again.');
       }
     } finally {
       setSubmitting(false);
     }
   };
 
-
-
-
   const handleRemoveRole = async (assignmentId) => {
     if (!confirm('Are you sure you want to remove this role?')) return;
 
     try {
+      console.log('📡 Removing role assignment:', assignmentId);
+      
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/removeRole/${assignmentId}`;
       await axios.delete(route);
-      alert('Role removed successfully!');
+      
+      console.log('✅ Role removed');
+      toast.success('Role removed successfully!');
+      
       await fetchMemberRoles(selectedMember);
     } catch (error) {
-      console.error("Error removing role:", error);
-      alert('Failed to remove role. Please try again.');
+      console.error('❌ Error removing role:', error);
+      toast.error('Failed to remove role. Please try again.');
     }
   };
 
   const selectedMemberData = teamMembers.find(m => m.id === selectedMember);
 
   // Filter out already assigned roles
-  const unassignedRoles = availableRoles.filter(
-    role => !assignedRoles.some(assigned => assigned.roleSetupId === role.id)
-  );
+  const unassignedRoles = availableRoles.filter(role => {
+    const isAssigned = assignedRoles.some(assigned => assigned.roleSetupId === role.id);
+    console.log(`Role ${role.role_name} (${role.id}): ${isAssigned ? 'ASSIGNED' : 'AVAILABLE'}`);
+    return !isAssigned;
+  });
+
+  console.log('📊 Available Roles:', availableRoles.length);
+  console.log('📊 Assigned Roles:', assignedRoles.length);
+  console.log('📊 Unassigned Roles:', unassignedRoles.length);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -167,6 +261,24 @@ export default function RolesAssignment() {
           <h1 className="text-4xl font-bold text-slate-900">Team Member Role Assignment</h1>
           <p className="text-slate-600">Manage data access permissions for your team members</p>
         </div>
+
+        {/* Debug Info (Remove in production) */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <p className="text-xs font-mono">
+              Schema: {schemaName || 'N/A'} | Owner: {ownerId || 'N/A'} | 
+              Members: {teamMembers.length} | Roles: {availableRoles.length}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Show error message if any */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel - Selection */}
@@ -184,17 +296,31 @@ export default function RolesAssignment() {
                   <Label htmlFor="team-member-select">Team Member</Label>
                   <Select value={selectedMember} onValueChange={setSelectedMember} disabled={loading}>
                     <SelectTrigger id="team-member-select">
-                      <SelectValue placeholder={loading ? "Loading members..." : "Select member"} />
+                      <SelectValue placeholder={
+                        loading ? "Loading members..." : 
+                        teamMembers.length === 0 ? "No members found" :
+                        "Select member"
+                      } />
                     </SelectTrigger>
                     <SelectContent>
-                      {teamMembers.map(member => (
-                        <SelectItem key={member.id} value={member.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{member.name || `${member.first_name} ${member.last_name}`}</span>
-                            <span className="text-xs text-slate-500">{member.email || member.phone_number}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {teamMembers.length === 0 ? (
+                        <div className="p-2 text-sm text-slate-500">
+                          No team members available
+                        </div>
+                      ) : (
+                        teamMembers.map(member => (
+                          <SelectItem key={member.id} value={member.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {member.name || `${member.first_name || ''} ${member.last_name || ''}`.trim() || 'Unnamed Member'}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {member.email || member.phone_number || 'No contact info'}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -241,7 +367,9 @@ export default function RolesAssignment() {
                       <SelectContent>
                         {unassignedRoles.length === 0 ? (
                           <div className="p-2 text-sm text-slate-500">
-                            No available roles to assign
+                            {availableRoles.length === 0 
+                              ? 'No roles configured in system'
+                              : 'All roles already assigned'}
                           </div>
                         ) : (
                           unassignedRoles.map(role => (
@@ -364,7 +492,12 @@ export default function RolesAssignment() {
                                 )}
                                 {assignment.assignedAt && (
                                   <span>
-                                    {new Date(assignment.assignedAt).toLocaleDateString()}
+                                    {new Date(assignment.assignedAt).toLocaleDateString('en-IN', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                      timeZone: 'Asia/Kolkata'
+                                    })}
                                   </span>
                                 )}
                               </div>

@@ -37,7 +37,7 @@ const dashboardCards = [
     iconColor: "#4285B4",
     route: "/custom-update"
   },
-  {
+  {   
     id: 9,
     title: "Job Status Report",
     description: "Organize and manage all your processes efficentily.",
@@ -66,8 +66,8 @@ const dashboardCards = [
     id: 1,
     title: "Task Management",
     description: "Create, assign and track tasks for efficient workflow management.",
-    icon: "tasks", // Used for conditional rendering of the icon component
-    iconColor: "#4285B4", // You can use your brand color for all or provide different colors
+    icon: "tasks",
+    iconColor: "#4285B4", 
     route: "/taskstatus/record"
   },
     {

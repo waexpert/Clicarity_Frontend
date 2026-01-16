@@ -141,7 +141,8 @@ function App() {
           path="/db/:id"
           element={
             <ProtectedRoute>
-              <SchemaDashboard />
+              {/* <SchemaDashboard /> */}
+              <CustomSchemaDashboard />
             </ProtectedRoute>
           }
         />

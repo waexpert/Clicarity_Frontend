@@ -122,7 +122,7 @@
 //   const location = useLocation();
 //   const [searchParams, setSearchParams] = useSearchParams();
 //   const userData = useSelector((state) => state.user);
-//   const owner_id = userData.id;
+//   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 //   const [isDataReady, setIsDataReady] = useState(false);
 
 //   // Get URL parameters
@@ -131,6 +131,14 @@
 //   const show = searchParams.get('show');
 //   const status = searchParams.get('status');
 //   const process_name = searchParams.get('process_name');
+
+//   // Log URL params for debugging
+//   useEffect(() => {
+//     console.log('URL Params:', { process_name, pa_id, us_id, show, status });
+//     if (process_name) {
+//       console.log(`Balance field to hide: ${process_name}_balance`);
+//     }
+//   }, [process_name, pa_id, us_id, show, status]);
 
 //   // Generate unique us_id using Unix timestamp
 //   const generateUsId = () => {
@@ -204,7 +212,7 @@
 // const fetchRecordByUsId = async (usId) => {
 //   try {
 //     const decodedUsId = decodeURIComponent(usId);
-    
+
 //     const response = await axios.post(
 //       `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordById`,
 //       {
@@ -213,10 +221,10 @@
 //         id: decodedUsId
 //       }
 //     );
-    
+
 //     console.log("Full response:", response);
 //     console.log("response.data:", response.data);
-    
+
 //     // FIX: The data is directly in response.data, not response.data.data
 //     if (response.data) {
 //       console.log('Returning record:', response.data);
@@ -270,15 +278,48 @@
 //     }
 //   };
 
-//   // ENHANCED: Function to get ordered columns for form display
+//   // ENHANCED: Function to get ordered columns for form display with process_name balance filtering
 //   const getOrderedFormColumns = () => {
-//     const filteredColumns = columns.filter(column =>
-//       column.id !== 'id' &&
-//       !column.id.includes('_comment') &&
-//       !column.id.includes('created_at') &&
-//       !column.id.includes('updated_at')
-//       // && !column.id.includes('_date')
-//     );
+//     // ENHANCED: Debug logging for process_name
+//     if (process_name) {
+//       console.log('=== BALANCE FIELD FILTERING ===');
+//       console.log('process_name from URL:', process_name);
+//       console.log('Will hide ALL balance fields when process_name is present');
+//       console.log('All column IDs:', columns.map(c => c.id));
+//       console.log('All column names (display):', columns.map(c => c.name));
+//     }
+
+//     const filteredColumns = columns.filter(column => {
+//       // Standard exclusions
+//       if (column.id === 'id' ||
+//           column.id.includes('_comment') ||
+//           column.id.includes('created_at') ||
+//           column.id.includes('updated_at')) {
+//         return false;
+//       }
+
+//       // ENHANCED: Hide ALL balance fields when process_name exists
+//       if (process_name) {
+//         const columnIdLower = column.id.toLowerCase();
+//         const columnNameLower = column.name.toLowerCase();
+
+//         // Check if this column is ANY balance field
+//         const isBalanceField = columnIdLower.includes('balance') || columnNameLower.includes('balance');
+
+//         if (isBalanceField) {
+//           console.log(`✓ HIDING balance field: ${column.id} (name: ${column.name})`);
+//           return false;
+//         }
+//       }
+
+//       return true;
+//     });
+
+//     // Log filtered columns for debugging
+//     if (process_name) {
+//       console.log('Columns after filtering:', filteredColumns.map(c => ({ id: c.id, name: c.name })));
+//       console.log('=== END BALANCE FIELD FILTERING ===');
+//     }
 
 //     // Sort columns by order number, then alphabetically for columns without order
 //     return filteredColumns
@@ -502,7 +543,7 @@
 //     setPriorityFilter([]);
 //   };
 
-// const handleOpenAddModal = async () => {
+//   const handleOpenAddModal = async () => {
 //   if (columns.length === 0) {
 //     console.log('Columns not loaded yet, waiting...');
 //     return;
@@ -515,21 +556,22 @@
 //   if (currentUrlParams.us_id) {
 //     console.log('Fetching record for us_id:', currentUrlParams.us_id);
 //     const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
-    
+
 //     console.log('=== DEBUG INFO ===');
 //     console.log('fetchedRecord:', fetchedRecord);
 //     console.log('typeof fetchedRecord:', typeof fetchedRecord);
 //     console.log('Is array?:', Array.isArray(fetchedRecord));
-    
+
 //     if (fetchedRecord) {
+//       // Record exists - populate from database
 //       console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
 //       console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
-      
+
 //       orderedColumns.forEach(column => {
 //         console.log(`\nChecking column: ${column.id}`);
 //         console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
 //         console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
-        
+
 //         if (column.id === 'quantity') {
 //           initialData[column.id] = '';
 //           console.log(`  - Set to empty (quantity)`);
@@ -545,11 +587,29 @@
 //           console.log(`  - Set to empty (no match)`);
 //         }
 //       });
-      
+
 //       console.log('=== FINAL initialData ===');
 //       console.log(initialData);
+//     } else {
+//       // Record doesn't exist - populate from URL params
+//       console.log('Record not found, populating from URL params');
+//       orderedColumns.forEach(column => {
+//         if (currentUrlParams[column.id]) {
+//           // Use value from URL parameter (including us_id)
+//           initialData[column.id] = currentUrlParams[column.id];
+//           console.log(`  - ${column.id} set from URL: ${initialData[column.id]}`);
+//         } else if (column.id === 'us_id') {
+//           // Generate new us_id if not in URL
+//           initialData[column.id] = generateUsId();
+//           console.log(`  - ${column.id} generated: ${initialData[column.id]}`);
+//         } else {
+//           initialData[column.id] = '';
+//           console.log(`  - ${column.id} set to empty`);
+//         }
+//       });
 //     }
 //   } else {
+//     // No us_id in URL - normal flow
 //     orderedColumns.forEach(column => {
 //       if (currentUrlParams[column.id]) {
 //         initialData[column.id] = currentUrlParams[column.id];
@@ -570,7 +630,8 @@
 //     setSearchParams(newSearchParams, { replace: true });
 //   }
 // };
-//   // Handle input change in add modal
+
+
 //   const handleNewRecordChange = (columnId, value) => {
 //     setNewRecordData(prev => ({
 //       ...prev,
@@ -578,7 +639,7 @@
 //     }));
 //   };
 
-//   // Handle create new record
+//   // ENHANCED: Handle create new record with process_name balance logic
 //   const handleCreateRecord = async () => {
 //     try {
 //       setIsCreating(true);
@@ -588,6 +649,64 @@
 //         ...newRecordData,
 //         // owner_id: owner_id // Make sure owner_id is included
 //       };
+
+//       // ENHANCED: Add balance calculation when process_name exists
+//       if (process_name) {
+//         // Find the actual balance field column from the columns array
+//         const processNameLower = process_name.trim().toLowerCase();
+//         const balanceColumn = columns.find(col => {
+//           const colIdLower = col.id.toLowerCase();
+//           const colNameLower = col.name.toLowerCase();
+
+//           // Check if this column is the balance field for this process
+//           return colIdLower.includes(processNameLower) && 
+//                  (colIdLower.includes('balance') || colNameLower.includes('balance'));
+//         });
+
+//         if (balanceColumn) {
+//           const balanceFieldName = balanceColumn.id; // Use the actual column ID from database
+
+//           // Find quantity field - check multiple possible names
+//           const quantityColumn = columns.find(col => {
+//             const colIdLower = col.id.toLowerCase();
+//             const colNameLower = col.name.toLowerCase();
+//             return colIdLower.includes('quantity') || colNameLower.includes('quantity');
+//           });
+
+//           const quantityFieldId = quantityColumn ? quantityColumn.id : 'quantity';
+//           const quantity = newRecordData[quantityFieldId];
+
+//           console.log(`Found balance column: ${balanceFieldName} (display name: ${balanceColumn.name})`);
+//           console.log(`Using quantity field: ${quantityFieldId} with value: ${quantity}`);
+
+//           // Validate that quantity exists
+//           if (!quantity || quantity === '') {
+//             toast.error('Quantity is required when process_name is specified');
+//             setIsCreating(false);
+//             return;
+//           }
+
+//           // Optional: Validate quantity is a valid number
+//           const quantityNum = parseFloat(quantity);
+//           if (isNaN(quantityNum)) {
+//             toast.error('Quantity must be a valid number');
+//             setIsCreating(false);
+//             return;
+//           }
+
+//           // Optional: Validate quantity is greater than 0
+//           if (quantityNum <= 0) {
+//             toast.error('Quantity must be greater than 0');
+//             setIsCreating(false);
+//             return;
+//           }
+
+//           // Set balance = quantity using the actual column ID
+//           recordWithOwnerId[balanceFieldName] = quantity;
+//           console.log(`✓ Setting ${balanceFieldName} = ${quantity}`);
+//         } else {
+//           console.warn(`⚠ Balance field for process "${process_name}" not found in columns`);
+//         }      }
 
 //       const dateFields = [
 //         'invoice',
@@ -646,6 +765,12 @@
 
 //       console.log("Cleaned record data:", cleanedRecord);
 
+//       // Log the balance field if process_name exists
+//       if (process_name) {
+//         const balanceFieldName = `${process_name}_balance`;
+//         console.log(`Final record includes ${balanceFieldName}:`, cleanedRecord[balanceFieldName]);
+//       }
+
 //       if (type === "payment") {
 //         console.log("Sending to payment endpoint:", cleanedRecord);
 
@@ -667,6 +792,10 @@
 //           record: cleanedRecord
 //         };
 
+//         if((status && pa_id) || (process_name && pa_id)){
+//           cleanedRecord.us_id = pa_id + " -S- " + cleanedRecord.us_id; 
+//         }
+
 //         console.log("Sending to regular endpoint:", recordData);
 
 //         const response = await axios.post(createRecord, recordData);
@@ -677,6 +806,7 @@
 //       setIsAddModalOpen(false);
 //       setNewRecordData({});
 //       handleRefresh();
+//       setSearchParams({})
 
 //     } catch (error) {
 //       console.error("Error creating record:", error);
@@ -1014,150 +1144,126 @@
 //     }
 //   };
 
-//   // Working Get Request based Update Function
-
-//   // const handleSave = async (originalId) => {
-//   //   const schemaName = apiParams.schemaName;
-//   //   const tableName = apiParams.tableName;
-
-//   //   const params = new URLSearchParams({
-//   //     schemaName,
-//   //     tableName,
-//   //     recordId: originalId,
-//   //     ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
-//   //   });
-
-//   //   let colIndex = 1;
-//   //   Object.entries(editingValues).forEach(([key, val]) => {
-//   //     if (val === undefined) return;
-
-//   //     // Handle date fields specifically
-//   //     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-//   //       // Skip empty/null date fields entirely to avoid database errors
-//   //       if (val === null || val === 'null' || val === '' || val === undefined) {
-//   //         return; // Don't add this field to the update
-//   //       }
-
-//   //       // Validate date format if value exists
-//   //       const dateValue = new Date(val);
-//   //       if (isNaN(dateValue.getTime())) {
-//   //         console.warn(`Invalid date format for ${key}:`, val);
-//   //         return; // Skip invalid dates
-//   //       }
-
-//   //       // Use ISO format for dates
-//   //       params.append(`col${colIndex}`, key);
-//   //       params.append(`val${colIndex}`, dateValue.toISOString().split('T')[0]); // YYYY-MM-DD format
-//   //       colIndex++;
-//   //     } else {
-//   //       // Handle non-date fields
-//   //       const sanitizedVal = val === null || val === 'null' ? '' : val;
-//   //       params.append(`col${colIndex}`, key);
-//   //       params.append(`val${colIndex}`, sanitizedVal);
-//   //       colIndex++;
-//   //     }
-//   //   });
-
-//   //   try {
-//   //     const result = await axios.get(`${updateRecord}?${params.toString()}`);
-//   //     toast.success("Record updated");
-//   //     setEditingRowId(null);
-//   //     handleRefresh();
-//   //   } catch (err) {
-//   //     console.error('Update error:', err);
-//   //     toast.error("Update failed");
-//   //   }
-//   // };
-
-
-// // Updated handleSave function for multiple column updates using request body
 // const handleSave = async (originalId) => {
 //   const schemaName = apiParams.schemaName;
 //   const tableName = apiParams.tableName;
 
-//   // Build updates object from editingValues
 //   const updates = {};
 
 //   Object.entries(editingValues).forEach(([key, val]) => {
 //     if (val === undefined) return;
 
-//     // Handle date fields specifically
+//     // Get original value for comparison
+//     const originalValue = currentEditingRecord[key];
+
+//     // Skip if value hasn't changed
+//     if ((val === originalValue) || (key === 'pa_id') || (key === 'us_id') || (key === 'id')) {
+//       console.log(`Skipping ${key} - no change`);
+//       return;
+//     }
+
+
+//     console.log(`Field ${key} changed from "${originalValue}" to "${val}"`);
+
+//     // Handle date fields
 //     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-//       // Skip empty/null date fields entirely to avoid database errors
-//       if (val === null || val === 'null' || val === '' || val === undefined) {
-//         return; // Don't add this field to the update
+//       if (val === null || val === 'null' || val === '') {
+//         updates[key] = null;
+//         return;
 //       }
 
-//       // Validate date format if value exists
 //       const dateValue = new Date(val);
 //       if (isNaN(dateValue.getTime())) {
 //         console.warn(`Invalid date format for ${key}:`, val);
-//         return; // Skip invalid dates
+//         toast.error(`Invalid date format for ${key}`);
+//         return;
 //       }
 
-//       // Use ISO format for dates
-//       updates[key] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
-//     } else {
-//       // Handle non-date fields (including arrays)
-//       const sanitizedVal = val === null || val === 'null' ? '' : val;
-//       updates[key] = sanitizedVal;
+//       updates[key] = dateValue.toISOString().split('T')[0];
+//       return;
+//     }
+
+//     // ENHANCED: Preserve original data type
+//     const originalType = typeof currentEditingRecord[key];
+
+//     if (val === null || val === 'null' || val === '') {
+//       updates[key] = null;
+//       return;
+//     }
+
+//     // Convert back to original type
+//     switch (originalType) {
+//       case 'number':
+//         const numValue = Number(val);
+//         if (isNaN(numValue)) {
+//           toast.error(`${key} must be a number`);
+//           return;
+//         }
+//         updates[key] = numValue;
+//         break;
+
+//       case 'boolean':
+//         updates[key] = val === 'true' || val === true;
+//         break;
+
+//       case 'object':
+//         // Handle arrays or JSON objects
+//         if (Array.isArray(currentEditingRecord[key])) {
+//           try {
+//             updates[key] = typeof val === 'string' ? JSON.parse(val) : val;
+//           } catch (e) {
+//             console.error('Failed to parse array:', e);
+//             updates[key] = val;
+//           }
+//         } else {
+//           updates[key] = val;
+//         }
+//         break;
+
+//       default:
+//         // String or unknown type
+//         updates[key] = val;
 //     }
 //   });
 
-//   // Check if there are any fields to update
 //   if (Object.keys(updates).length === 0) {
 //     toast.warning("No changes to save");
 //     return;
 //   }
 
-//   // Prepare request body
+//   console.log('Fields to update:', updates);
+
 //   const requestBody = {
 //     schemaName,
 //     tableName,
 //     recordId: originalId,
-//     ownerId: 'bde74e9b-ee21-4687-8040-9878b88593fb',
+//     ownerId: owner_id,
 //     updates
 //   };
-
-//   // Add optional fields if they exist
-//   if (apiParams.userSchemaName) {
-//     requestBody.userSchemaName = apiParams.userSchemaName;
-//   }
-//   if (apiParams.userTableName) {
-//     requestBody.userTableName = apiParams.userTableName;
-//   }
-//   if (apiParams.vname) {
-//     requestBody.vname = apiParams.vname;
-//   }
-//   if (apiParams.wid) {
-//     requestBody.wid = apiParams.wid;
-//   }
 
 //   console.log('Update request body:', requestBody);
 
 //   try {
-//     // Use POST request for multiple column updates
 //     const result = await axios.post(updateRecord, requestBody, {
 //       headers: {
 //         'Content-Type': 'application/json'
 //       }
 //     });
-    
+
 //     toast.success("Record updated successfully");
 //     setEditingRowId(null);
+//     setEditingValues({});
+//     setCurrentEditingRecord(null);
 //     handleRefresh();
-    
-//     // Log response for debugging
+
 //     console.log('Update response:', result.data);
-    
-//     // Show which columns were updated
+
 //     if (result.data.updatedColumns) {
 //       console.log('Updated columns:', result.data.updatedColumns.join(', '));
 //     }
 //   } catch (err) {
 //     console.error('Update error:', err);
-    
-//     // Provide more specific error messages
+
 //     if (err.response?.data?.error) {
 //       toast.error(err.response.data.error);
 //     } else if (err.response?.data?.details) {
@@ -1167,6 +1273,7 @@
 //     }
 //   }
 // };
+
 
 //   // Get unique statuses for filters
 //   const uniqueStatuses = Array.from(new Set(originalRecords.map(record => record.status))).filter(Boolean);
@@ -1182,11 +1289,11 @@
 
 //   return show ? "" : (
 //     <Card className="tableCard shadow-sm border-slate-200 mx-[6rem]"
-    
+
 //     // {
 //     //   "tableCard" + (pa_id ? "shadow-sm border-slate-200 mx-[6rem] hidden" : "shadow-sm border-slate-200 mx-[6rem]")
 //     // }
-      
+
 //       >
 //       <CardHeader className="pb-3">
 //         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1199,6 +1306,17 @@
 //                 <div className="flex gap-2 mt-1">
 //                   <Badge variant="outline" className="text-xs bg-green-50 border-green-200">
 //                     PA ID: {pa_id}
+//                   </Badge>
+//                 </div>
+//               )}
+//               {/* Show process_name if present */}
+//               {process_name && (
+//                 <div className="flex gap-2 mt-1">
+//                   <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200">
+//                     Process: {process_name}
+//                   </Badge>
+//                   <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
+//                     {process_name}_balance
 //                   </Badge>
 //                 </div>
 //               )}
@@ -1258,16 +1376,37 @@
 //                   <DialogTitle>Add New Record</DialogTitle>
 //                   <DialogDescription>
 //                     Fill in the details to create a new record in the database.
+//                     {process_name && (
+//                       <span className="block mt-1 text-blue-600">
+//                         Note: The {process_name}_balance field will be automatically set to match the quantity value.
+//                       </span>
+//                     )}
 //                   </DialogDescription>
 //                 </DialogHeader>
 
 //                 <div className="space-y-6 py-4">
 //                   {/* ENHANCED: Use ordered columns for form display with auto-fill indicators */}
-//                   {orderedFormColumns.map((column, index) => {
+//                   {(() => {
+//                     // Debug: Log which columns will be displayed in the form
+//                     if (process_name) {
+//                       console.log('=== FORM RENDERING ===');
+//                       console.log('process_name:', process_name);
+//                       console.log('orderedFormColumns to display:', orderedFormColumns.map(c => c.id));
+//                       console.log('Checking if balance field is in list:', 
+//                         orderedFormColumns.some(c => c.id === `${process_name}_balance`));
+//                     }
+//                     return orderedFormColumns;
+//                   })().map((column, index) => {
 //                     // Show indicator for dropdown fields, order, and auto-fill
 //                     const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
 //                     const orderNumber = columnOrder[column.id];
 //                     const isAutoFilled = column.id === 'pa_id';
+
+//                     // ENHANCED: Check if this is the quantity field and process_name exists
+//                     const isQuantityForBalance = process_name && (
+//                       column.id.toLowerCase().includes('quantity') || 
+//                       column.name.toLowerCase().includes('quantity')
+//                     );
 
 //                     return (
 //                       <div key={column.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -1294,6 +1433,12 @@
 //                               auto
 //                             </Badge>
 //                           )}
+//                           {/* ENHANCED: Show indicator for quantity when it's used for balance */}
+//                           {/* {isQuantityForBalance && (
+//                             <Badge variant="default" className="text-xs h-4 px-1 bg-blue-500 ml-1">
+//                               →balance
+//                             </Badge>
+//                           )} */}
 //                         </Label>
 //                         <div className="flex-1 min-w-0">
 //                           {renderFormInput(
@@ -1307,6 +1452,12 @@
 //                               {column.id === 'pa_id'
 //                                 ? 'Automatically filled from URL parameter'
 //                                 : 'Automatically generated unique identifier'}
+//                             </p>
+//                           )}
+//                           {/* ENHANCED: Show helper text for quantity when used for balance */}
+//                           {isQuantityForBalance && (
+//                             <p className="text-xs text-blue-600 mt-1">
+//                               This value will be used to set {process_name}_balance
 //                             </p>
 //                           )}
 //                         </div>
@@ -1483,7 +1634,9 @@
 //             <Table>
 //               <TableHeader>
 //                 <TableRow className="bg-slate-50">
+//                      { userData.owner_id === null ? (  
 //                   <TableHead className="w-[60px] text-center">Delete</TableHead>
+//                   ):""}
 //                   {visibleColumns.map(column => (
 //                     <TableHead
 //                       key={column.id}
@@ -1521,11 +1674,13 @@
 //                     <TableRow key={record.id || index} className="hover:bg-slate-50"
 //                       onClick={() => {
 //                         setEditingRowId(record.id);
-//                         if (editEnabled === false) {
+//                         // if (editEnabled === false) {
 //                           setEditingValues(record);
-//                         }
+//                         // }
 //                         setCurrentEditingRecord(record);
 //                       }}>
+
+//                       { userData.owner_id === null ? (  
 //                       <TableCell className="w-[60px] text-center">
 //                         <Button
 //                           variant="ghost"
@@ -1539,7 +1694,7 @@
 //                           <Trash2 className="h-4 w-4" />
 //                         </Button>
 //                       </TableCell>
-
+// ):""}
 //                       {visibleColumns.map(column => (
 //                         <TableCell key={column.id}>
 //                           {editingRowId === record.id && column.id !== 'id' && editEnabled ? (
@@ -1729,6 +1884,8 @@ import { useSelector } from 'react-redux';
 import { showText } from 'pdf-lib';
 import "../css/components/CustomTable.css";
 import ResponsivePagination from './customTable/Pagination';
+import WorkflowCounter from './customTable/WorkFlowCounter';
+import { columnPreferencesService } from '../services/columnPreferencesService';
 
 
 
@@ -1752,6 +1909,7 @@ const CustomTable = ({ type = "normal" }) => {
   const [editEnabled, setEditEnabled] = useState(false);
   const [currentEditingRecord, setCurrentEditingRecord] = useState({});
   const [metaData, setMetaData] = useState({});
+  const [columnPreferencesLoaded, setColumnPreferencesLoaded] = useState(false);
 
   // Add Record Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -1768,6 +1926,14 @@ const CustomTable = ({ type = "normal" }) => {
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [deleteUsIdInput, setDeleteUsIdInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Counter Config State
+  const [counterConfig, setCounterConfig] = useState({
+    counter: 0,
+    prefix: "",
+    isActive: false,
+    recordId: null
+  });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -1791,6 +1957,14 @@ const CustomTable = ({ type = "normal" }) => {
     }
   }, [process_name, pa_id, us_id, show, status]);
 
+  // Handle search query parameter
+  useEffect(() => {
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      setSearchTerm(decodeURIComponent(searchQuery));
+    }
+  }, [searchParams]);
+
   // Generate unique us_id using Unix timestamp
   const generateUsId = () => {
     return Date.now().toString();
@@ -1800,10 +1974,70 @@ const CustomTable = ({ type = "normal" }) => {
   const apiParams = {
     schemaName: userData.schema_name,
     tableName: tableName1
-
-    // schemaName:"public",
-    // tableName:"testing_table"
   }
+
+  // Load column preferences from database
+const loadColumnPreferences = async () => {
+  try {
+    const preferences = await columnPreferencesService.fetch(owner_id, apiParams.tableName);
+    
+    if (preferences && preferences.column_visibility) {
+      console.log('Loaded column preferences:', preferences.column_visibility);
+      return preferences.column_visibility;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error loading column preferences:', error);
+    return null;
+  }
+};
+
+// Apply column preferences to columns
+const applyColumnPreferences = (columns, preferences) => {
+  if (!preferences) return columns;
+  
+  return columns.map(column => {
+    // If preference exists for this column, use it; otherwise default to visible
+    const isVisible = preferences[column.id] !== undefined 
+      ? preferences[column.id] 
+      : true;
+    
+    return {
+      ...column,
+      visible: isVisible
+    };
+  });
+};
+
+// Save column preferences to database
+const saveColumnPreferences = async (columns) => {
+  try {
+    // Create visibility map
+    const visibilityMap = {};
+    columns.forEach(column => {
+      visibilityMap[column.id] = column.visible;
+    });
+    
+    const result = await columnPreferencesService.save(
+      owner_id, 
+      apiParams.tableName, 
+      visibilityMap,
+      userData.schema_name
+    );
+    
+    if (result.success) {
+      console.log('Column preferences saved successfully');
+    }
+  } catch (error) {
+    console.error('Error saving column preferences:', error);
+  }
+};
+
+  // Counter update handler
+  const handleCounterUpdate = (config) => {
+    setCounterConfig(config);
+    console.log('Counter config updated:', config);
+  };
 
   // Add Delete Function
   const handleDeleteClick = (record) => {
@@ -1859,40 +2093,39 @@ const CustomTable = ({ type = "normal" }) => {
   };
 
 
-// Function to fetch record data by us_id
-const fetchRecordByUsId = async (usId) => {
-  try {
-    const decodedUsId = decodeURIComponent(usId);
-    
-    const response = await axios.post(
-      `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordById`,
-      {
-        schemaName: apiParams.schemaName,
-        tableName: apiParams.tableName,
-        id: decodedUsId
+  // Function to fetch record data by us_id
+  const fetchRecordByUsId = async (usId) => {
+    try {
+      const decodedUsId = decodeURIComponent(usId);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordById`,
+        {
+          schemaName: apiParams.schemaName,
+          tableName: apiParams.tableName,
+          id: decodedUsId
+        }
+      );
+
+      console.log("Full response:", response);
+      console.log("response.data:", response.data);
+
+      if (response.data) {
+        console.log('Returning record:', response.data);
+        return response.data;
       }
-    );
-    
-    console.log("Full response:", response);
-    console.log("response.data:", response.data);
-    
-    // FIX: The data is directly in response.data, not response.data.data
-    if (response.data) {
-      console.log('Returning record:', response.data);
-      return response.data;  // Changed from response.data.data
+      return null;
+    } catch (error) {
+      console.error('Error fetching record by us_id:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        toast.error(`Failed to fetch record: ${error.response.data.message || 'Unknown error'}`);
+      } else {
+        toast.error('Failed to fetch record data');
+      }
+      return null;
     }
-    return null;
-  } catch (error) {
-    console.error('Error fetching record by us_id:', error);
-    if (error.response) {
-      console.error('Error response:', error.response.data);
-      toast.error(`Failed to fetch record: ${error.response.data.message || 'Unknown error'}`);
-    } else {
-      toast.error('Failed to fetch record data');
-    }
-    return null;
-  }
-};
+  };
 
   // ENHANCED: Function to fetch dropdown setup with column ordering
   const fetchDropdownSetup = async () => {
@@ -1943,9 +2176,9 @@ const fetchRecordByUsId = async (usId) => {
     const filteredColumns = columns.filter(column => {
       // Standard exclusions
       if (column.id === 'id' ||
-          column.id.includes('_comment') ||
-          column.id.includes('created_at') ||
-          column.id.includes('updated_at')) {
+        column.id.includes('_comment') ||
+        column.id.includes('created_at') ||
+        column.id.includes('updated_at')) {
         return false;
       }
 
@@ -1953,10 +2186,10 @@ const fetchRecordByUsId = async (usId) => {
       if (process_name) {
         const columnIdLower = column.id.toLowerCase();
         const columnNameLower = column.name.toLowerCase();
-        
+
         // Check if this column is ANY balance field
         const isBalanceField = columnIdLower.includes('balance') || columnNameLower.includes('balance');
-        
+
         if (isBalanceField) {
           console.log(`✓ HIDING balance field: ${column.id} (name: ${column.name})`);
           return false;
@@ -1991,105 +2224,206 @@ const fetchRecordByUsId = async (usId) => {
   };
 
   // Fetch data from API
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      console.log("apiParams", apiParams);
-      console.log("type", type);
+  // const fetchData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     console.log("apiParams", apiParams);
+  //     console.log("type", type);
 
-      let fetchedData;
+  //     let fetchedData;
 
-      if (type === "normal") {
-        const response = await axios.post(getAllRecords, apiParams);
-        fetchedData = response.data.data;
-        console.log(response.data.columns)
+  //     if (type === "normal") {
+  //       const response = await axios.post(getAllRecords, apiParams);
+  //       fetchedData = response.data.data;
+  //       console.log(response.data.columns)
 
-        setMetaData(response.data.columns)
-      } else if (type === "payment") {
-        // Use the correct payment endpoint
-        const response = await axios.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
-        );
-        fetchedData = response.data.data || response.data;
-      } else {
-        // Fallback for other types
-        const response = await axios.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
-        );
-        fetchedData = response.data.data;
-      }
+  //       setMetaData(response.data.columns)
+  //     } else if (type === "payment") {
+  //       // Use the correct payment endpoint
+  //       const response = await axios.get(
+  //         `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
+  //       );
+  //       fetchedData = response.data.data || response.data;
+  //     } else {
+  //       // Fallback for other types
+  //       const response = await axios.get(
+  //         `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
+  //       );
+  //       fetchedData = response.data.data;
+  //     }
 
-      console.log("Raw fetched data:", fetchedData);
+  //     console.log("Raw fetched data:", fetchedData);
 
-      // Filter data based on type
-      let filteredData = fetchedData;
+  //     // Filter data based on type
+  //     let filteredData = fetchedData;
 
+  //     if (type === "payment") {
+  //       // Only show records with type = 'original' for payment reminders
+  //       filteredData = fetchedData.filter(item =>
+  //         item.type === 'original' || item.type === 'Original'
+  //       );
+  //       console.log("Filtered payment data (original only):", filteredData);
+  //     }
+
+  //     // Set the filtered data
+  //     setOriginalRecords(filteredData);
+  //     setRecords(filteredData);
+  //     setTotalRecords(filteredData.length);
+  //     setTotalPages(Math.ceil(filteredData.length / pageSize));
+
+  //     // Generate columns from the first available record
+  //     let recordForColumns = null;
+
+  //     if (filteredData.length > 0) {
+  //       if (type === "payment") {
+  //         // For payment type, find the first 'original' record for column structure
+  //         recordForColumns = filteredData.find(item =>
+  //           item.type === 'original' || item.type === 'Original'
+  //         ) || filteredData[0]; // Fallback to first record if no 'original' found
+  //       } else {
+  //         // For normal type, use first record directly
+  //         recordForColumns = filteredData[0];
+  //       }
+  //     }
+
+  //     if (recordForColumns) {
+  //       const dynamicColumns = Object.keys(recordForColumns).map(key => ({
+  //         id: key,
+  //         name: formatColumnName(key),
+  //         accessor: key,
+  //         sortable: true,
+  //         visible: true,
+  //         type: getColumnType(recordForColumns[key], key)
+  //       }));
+  //       setColumns(dynamicColumns);
+  //       console.log("Generated columns:", dynamicColumns);
+  //     } else {
+  //       console.warn("No records found to generate columns from");
+  //       setColumns([]);
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+
+  //     // More detailed error logging
+  //     if (error.response) {
+  //       console.error("Response status:", error.response.status);
+  //       console.error("Response data:", error.response.data);
+  //     }
+
+  //     toast.error("Failed to fetch records");
+
+  //     // Set empty state on error
+  //     setOriginalRecords([]);
+  //     setRecords([]);
+  //     setTotalRecords(0);
+  //     setTotalPages(1);
+  //     setColumns([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Fetch data from API
+const fetchData = async () => {
+  try {
+    setLoading(true);
+    console.log("apiParams", apiParams);
+    console.log("type", type);
+
+    let fetchedData;
+
+    if (type === "normal") {
+      const response = await axios.post(getAllRecords, apiParams);
+      fetchedData = response.data.data;
+      console.log(response.data.columns)
+
+      setMetaData(response.data.columns)
+    } else if (type === "payment") {
+      const response = await axios.get(
+        `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
+      );
+      fetchedData = response.data.data || response.data;
+    } else {
+      const response = await axios.get(
+        `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
+      );
+      fetchedData = response.data.data;
+    }
+
+    console.log("Raw fetched data:", fetchedData);
+
+    let filteredData = fetchedData;
+
+    if (type === "payment") {
+      filteredData = fetchedData.filter(item =>
+        item.type === 'original' || item.type === 'Original'
+      );
+      console.log("Filtered payment data (original only):", filteredData);
+    }
+
+    setOriginalRecords(filteredData);
+    setRecords(filteredData);
+    setTotalRecords(filteredData.length);
+    setTotalPages(Math.ceil(filteredData.length / pageSize));
+
+    let recordForColumns = null;
+
+    if (filteredData.length > 0) {
       if (type === "payment") {
-        // Only show records with type = 'original' for payment reminders
-        filteredData = fetchedData.filter(item =>
+        recordForColumns = filteredData.find(item =>
           item.type === 'original' || item.type === 'Original'
-        );
-        console.log("Filtered payment data (original only):", filteredData);
+        ) || filteredData[0];
+      } else {
+        recordForColumns = filteredData[0];
       }
+    }
 
-      // Set the filtered data
-      setOriginalRecords(filteredData);
-      setRecords(filteredData);
-      setTotalRecords(filteredData.length);
-      setTotalPages(Math.ceil(filteredData.length / pageSize));
-
-      // Generate columns from the first available record
-      let recordForColumns = null;
-
-      if (filteredData.length > 0) {
-        if (type === "payment") {
-          // For payment type, find the first 'original' record for column structure
-          recordForColumns = filteredData.find(item =>
-            item.type === 'original' || item.type === 'Original'
-          ) || filteredData[0]; // Fallback to first record if no 'original' found
-        } else {
-          // For normal type, use first record directly
-          recordForColumns = filteredData[0];
-        }
-      }
-
-      if (recordForColumns) {
-        const dynamicColumns = Object.keys(recordForColumns).map(key => ({
-          id: key,
-          name: formatColumnName(key),
-          accessor: key,
-          sortable: true,
-          visible: true,
-          type: getColumnType(recordForColumns[key], key)
-        }));
+    if (recordForColumns) {
+      const dynamicColumns = Object.keys(recordForColumns).map(key => ({
+        id: key,
+        name: formatColumnName(key),
+        accessor: key,
+        sortable: true,
+        visible: true, // Default to visible
+        type: getColumnType(recordForColumns[key], key)
+      }));
+      
+      // ENHANCED: Load and apply column preferences
+      if (!columnPreferencesLoaded) {
+        const preferences = await loadColumnPreferences();
+        const columnsWithPreferences = applyColumnPreferences(dynamicColumns, preferences);
+        setColumns(columnsWithPreferences);
+        setColumnPreferencesLoaded(true);
+        console.log("Columns with preferences applied:", columnsWithPreferences);
+      } else {
         setColumns(dynamicColumns);
         console.log("Generated columns:", dynamicColumns);
-      } else {
-        console.warn("No records found to generate columns from");
-        setColumns([]);
       }
-
-    } catch (error) {
-      console.error("Error fetching data:", error);
-
-      // More detailed error logging
-      if (error.response) {
-        console.error("Response status:", error.response.status);
-        console.error("Response data:", error.response.data);
-      }
-
-      toast.error("Failed to fetch records");
-
-      // Set empty state on error
-      setOriginalRecords([]);
-      setRecords([]);
-      setTotalRecords(0);
-      setTotalPages(1);
+    } else {
+      console.warn("No records found to generate columns from");
       setColumns([]);
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (error) {
+    console.error("Error fetching data:", error);
+
+    if (error.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+    }
+
+    toast.error("Failed to fetch records");
+
+    setOriginalRecords([]);
+    setRecords([]);
+    setTotalRecords(0);
+    setTotalPages(1);
+    setColumns([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Initialize data and columns on component mount
   useEffect(() => {
@@ -2111,12 +2445,12 @@ const fetchRecordByUsId = async (usId) => {
   }, [searchTerm, statusFilter, priorityFilter, originalRecords]);
 
   useEffect(() => {
-  if (isDataReady) {
-    console.log('Data ready, opening modal with:', newRecordData);
-    setIsAddModalOpen(true);
-    setIsDataReady(false); // Reset for next time
-  }
-}, [isDataReady, newRecordData]);
+    if (isDataReady) {
+      console.log('Data ready, opening modal with:', newRecordData);
+      setIsAddModalOpen(true);
+      setIsDataReady(false); // Reset for next time
+    }
+  }, [isDataReady, newRecordData]);
 
   // Helper function to format column names
   const formatColumnName = (key) => {
@@ -2194,165 +2528,105 @@ const fetchRecordByUsId = async (usId) => {
     setPriorityFilter([]);
   };
 
-// const handleOpenAddModal = async () => {
-//   if (columns.length === 0) {
-//     console.log('Columns not loaded yet, waiting...');
-//     return;
-//   }
-
-//   const currentUrlParams = Object.fromEntries(searchParams.entries());
-//   const initialData = {};
-//   const orderedColumns = getOrderedFormColumns();
-
-//   if (currentUrlParams.us_id) {
-//     console.log('Fetching record for us_id:', currentUrlParams.us_id);
-//     const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
-    
-//     console.log('=== DEBUG INFO ===');
-//     console.log('fetchedRecord:', fetchedRecord);
-//     console.log('typeof fetchedRecord:', typeof fetchedRecord);
-//     console.log('Is array?:', Array.isArray(fetchedRecord));
-    
-//     if (fetchedRecord) {
-//       console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
-//       console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
-      
-//       orderedColumns.forEach(column => {
-//         console.log(`\nChecking column: ${column.id}`);
-//         console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
-//         console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
-        
-//         if (column.id === 'quantity') {
-//           initialData[column.id] = '';
-//           console.log(`  - Set to empty (quantity)`);
-//         } else if (fetchedRecord.hasOwnProperty(column.id)) {
-//           const value = fetchedRecord[column.id];
-//           initialData[column.id] = value === null ? '' : String(value);
-//           console.log(`  - Set to: ${initialData[column.id]}`);
-//         } else if (currentUrlParams[column.id]) {
-//           initialData[column.id] = currentUrlParams[column.id];
-//           console.log(`  - Set from URL param: ${initialData[column.id]}`);
-//         } else {
-//           initialData[column.id] = '';
-//           console.log(`  - Set to empty (no match)`);
-//         }
-//       });
-      
-//       console.log('=== FINAL initialData ===');
-//       console.log(initialData);
-//     }
-//   } else {
-//     orderedColumns.forEach(column => {
-//       if (currentUrlParams[column.id]) {
-//         initialData[column.id] = currentUrlParams[column.id];
-//       } else if (column.id === 'us_id') {
-//         initialData[column.id] = generateUsId();
-//       } else {
-//         initialData[column.id] = '';
-//       }
-//     });
-//   }
-
-//   setNewRecordData(initialData);
-//   setIsDataReady(true);
-
-//   if (currentUrlParams.show === 'true') {
-//     const newSearchParams = new URLSearchParams(searchParams);
-//     newSearchParams.delete('show');
-//     setSearchParams(newSearchParams, { replace: true });
-//   }
-// };
-  // Handle input change in add modal
-  
   const handleOpenAddModal = async () => {
-  if (columns.length === 0) {
-    console.log('Columns not loaded yet, waiting...');
-    return;
-  }
+    if (columns.length === 0) {
+      console.log('Columns not loaded yet, waiting...');
+      return;
+    }
 
-  const currentUrlParams = Object.fromEntries(searchParams.entries());
-  const initialData = {};
-  const orderedColumns = getOrderedFormColumns();
+    const currentUrlParams = Object.fromEntries(searchParams.entries());
+    const initialData = {};
+    const orderedColumns = getOrderedFormColumns();
 
-  if (currentUrlParams.us_id) {
-    console.log('Fetching record for us_id:', currentUrlParams.us_id);
-    const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
-    
-    console.log('=== DEBUG INFO ===');
-    console.log('fetchedRecord:', fetchedRecord);
-    console.log('typeof fetchedRecord:', typeof fetchedRecord);
-    console.log('Is array?:', Array.isArray(fetchedRecord));
-    
-    if (fetchedRecord) {
-      // Record exists - populate from database
-      console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
-      console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
-      
-      orderedColumns.forEach(column => {
-        console.log(`\nChecking column: ${column.id}`);
-        console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
-        console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
-        
-        if (column.id === 'quantity') {
-          initialData[column.id] = '';
-          console.log(`  - Set to empty (quantity)`);
-        } else if (fetchedRecord.hasOwnProperty(column.id)) {
-          const value = fetchedRecord[column.id];
-          initialData[column.id] = value === null ? '' : String(value);
-          console.log(`  - Set to: ${initialData[column.id]}`);
-        } else if (currentUrlParams[column.id]) {
-          initialData[column.id] = currentUrlParams[column.id];
-          console.log(`  - Set from URL param: ${initialData[column.id]}`);
-        } else {
-          initialData[column.id] = '';
-          console.log(`  - Set to empty (no match)`);
-        }
-      });
-      
-      console.log('=== FINAL initialData ===');
-      console.log(initialData);
+    if (currentUrlParams.us_id) {
+      console.log('Fetching record for us_id:', currentUrlParams.us_id);
+      const fetchedRecord = await fetchRecordByUsId(currentUrlParams.us_id);
+
+      console.log('=== DEBUG INFO ===');
+      console.log('fetchedRecord:', fetchedRecord);
+      console.log('typeof fetchedRecord:', typeof fetchedRecord);
+      console.log('Is array?:', Array.isArray(fetchedRecord));
+
+      if (fetchedRecord) {
+        // Record exists - populate from database
+        console.log('fetchedRecord keys:', Object.keys(fetchedRecord));
+        console.log('orderedColumns (first 5):', orderedColumns.slice(0, 5).map(c => c.id));
+
+        orderedColumns.forEach(column => {
+          console.log(`\nChecking column: ${column.id}`);
+          console.log(`  - has property?: ${fetchedRecord.hasOwnProperty(column.id)}`);
+          console.log(`  - value in fetchedRecord: ${fetchedRecord[column.id]}`);
+
+          if (column.id === 'quantity') {
+            initialData[column.id] = '';
+            console.log(`  - Set to empty (quantity)`);
+          } else if (fetchedRecord.hasOwnProperty(column.id)) {
+            const value = fetchedRecord[column.id];
+            initialData[column.id] = value === null ? '' : String(value);
+            console.log(`  - Set to: ${initialData[column.id]}`);
+          } else if (currentUrlParams[column.id]) {
+            initialData[column.id] = currentUrlParams[column.id];
+            console.log(`  - Set from URL param: ${initialData[column.id]}`);
+          } else {
+            initialData[column.id] = '';
+            console.log(`  - Set to empty (no match)`);
+          }
+        });
+
+        console.log('=== FINAL initialData ===');
+        console.log(initialData);
+      } else {
+        // Record doesn't exist - populate from URL params
+        console.log('Record not found, populating from URL params');
+        orderedColumns.forEach(column => {
+          if (currentUrlParams[column.id]) {
+            // Use value from URL parameter (including us_id)
+            initialData[column.id] = currentUrlParams[column.id];
+            console.log(`  - ${column.id} set from URL: ${initialData[column.id]}`);
+          } else if (column.id === 'us_id') {
+            // ENHANCED: Use counter if active, otherwise generate
+            if (counterConfig.isActive) {
+              initialData[column.id] = `${counterConfig.prefix}${counterConfig.counter}`;
+              console.log(`  - ${column.id} set from counter: ${initialData[column.id]}`);
+            } else {
+              initialData[column.id] = generateUsId();
+              console.log(`  - ${column.id} generated: ${initialData[column.id]}`);
+            }
+          } else {
+            initialData[column.id] = '';
+            console.log(`  - ${column.id} set to empty`);
+          }
+        });
+      }
     } else {
-      // Record doesn't exist - populate from URL params
-      console.log('Record not found, populating from URL params');
+      // No us_id in URL - normal flow
       orderedColumns.forEach(column => {
         if (currentUrlParams[column.id]) {
-          // Use value from URL parameter (including us_id)
           initialData[column.id] = currentUrlParams[column.id];
-          console.log(`  - ${column.id} set from URL: ${initialData[column.id]}`);
         } else if (column.id === 'us_id') {
-          // Generate new us_id if not in URL
-          initialData[column.id] = generateUsId();
-          console.log(`  - ${column.id} generated: ${initialData[column.id]}`);
+          // ENHANCED: Use counter if active, otherwise generate
+          if (counterConfig.isActive) {
+            initialData[column.id] = `${counterConfig.prefix}${counterConfig.counter}`;
+          } else {
+            initialData[column.id] = generateUsId();
+          }
         } else {
           initialData[column.id] = '';
-          console.log(`  - ${column.id} set to empty`);
         }
       });
     }
-  } else {
-    // No us_id in URL - normal flow
-    orderedColumns.forEach(column => {
-      if (currentUrlParams[column.id]) {
-        initialData[column.id] = currentUrlParams[column.id];
-      } else if (column.id === 'us_id') {
-        initialData[column.id] = generateUsId();
-      } else {
-        initialData[column.id] = '';
-      }
-    });
-  }
 
-  setNewRecordData(initialData);
-  setIsDataReady(true);
+    setNewRecordData(initialData);
+    setIsDataReady(true);
 
-  if (currentUrlParams.show === 'true') {
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.delete('show');
-    setSearchParams(newSearchParams, { replace: true });
-  }
-};
-  
-  
+    if (currentUrlParams.show === 'true') {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('show');
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  };
+
+
   const handleNewRecordChange = (columnId, value) => {
     setNewRecordData(prev => ({
       ...prev,
@@ -2360,7 +2634,7 @@ const fetchRecordByUsId = async (usId) => {
     }));
   };
 
-  // ENHANCED: Handle create new record with process_name balance logic
+  // ENHANCED: Handle create new record with process_name balance logic and counter increment
   const handleCreateRecord = async () => {
     try {
       setIsCreating(true);
@@ -2368,7 +2642,6 @@ const fetchRecordByUsId = async (usId) => {
       // Add owner_id to the record data
       const recordWithOwnerId = {
         ...newRecordData,
-        // owner_id: owner_id // Make sure owner_id is included
       };
 
       // ENHANCED: Add balance calculation when process_name exists
@@ -2378,28 +2651,28 @@ const fetchRecordByUsId = async (usId) => {
         const balanceColumn = columns.find(col => {
           const colIdLower = col.id.toLowerCase();
           const colNameLower = col.name.toLowerCase();
-          
+
           // Check if this column is the balance field for this process
-          return colIdLower.includes(processNameLower) && 
-                 (colIdLower.includes('balance') || colNameLower.includes('balance'));
+          return colIdLower.includes(processNameLower) &&
+            (colIdLower.includes('balance') || colNameLower.includes('balance'));
         });
-        
+
         if (balanceColumn) {
           const balanceFieldName = balanceColumn.id; // Use the actual column ID from database
-          
+
           // Find quantity field - check multiple possible names
           const quantityColumn = columns.find(col => {
             const colIdLower = col.id.toLowerCase();
             const colNameLower = col.name.toLowerCase();
             return colIdLower.includes('quantity') || colNameLower.includes('quantity');
           });
-          
+
           const quantityFieldId = quantityColumn ? quantityColumn.id : 'quantity';
           const quantity = newRecordData[quantityFieldId];
-          
+
           console.log(`Found balance column: ${balanceFieldName} (display name: ${balanceColumn.name})`);
           console.log(`Using quantity field: ${quantityFieldId} with value: ${quantity}`);
-          
+
           // Validate that quantity exists
           if (!quantity || quantity === '') {
             toast.error('Quantity is required when process_name is specified');
@@ -2427,7 +2700,8 @@ const fetchRecordByUsId = async (usId) => {
           console.log(`✓ Setting ${balanceFieldName} = ${quantity}`);
         } else {
           console.warn(`⚠ Balance field for process "${process_name}" not found in columns`);
-        }      }
+        }
+      }
 
       const dateFields = [
         'invoice',
@@ -2485,7 +2759,7 @@ const fetchRecordByUsId = async (usId) => {
       );
 
       console.log("Cleaned record data:", cleanedRecord);
-      
+
       // Log the balance field if process_name exists
       if (process_name) {
         const balanceFieldName = `${process_name}_balance`;
@@ -2513,14 +2787,43 @@ const fetchRecordByUsId = async (usId) => {
           record: cleanedRecord
         };
 
-        if((status && pa_id) || (process_name && pa_id)){
-          cleanedRecord.us_id = pa_id + " -S- " + cleanedRecord.us_id; 
+        if ((status && pa_id) || (process_name && pa_id)) {
+          cleanedRecord.us_id = pa_id + " -S- " + cleanedRecord.us_id;
         }
 
         console.log("Sending to regular endpoint:", recordData);
 
         const response = await axios.post(createRecord, recordData);
         console.log("Regular record response:", response.data);
+      }
+
+      // ENHANCED: Increment counter if active using /data/updateMultiple
+      if (counterConfig.isActive && counterConfig.recordId) {
+        try {
+          const incrementRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple`;
+          const incrementBody = {
+            schemaName: "public",
+            tableName: "counter_setup",
+            recordId: counterConfig.recordId,
+            ownerId: owner_id,
+            updates: {
+              counter: counterConfig.counter + 1
+            }
+          };
+
+          await axios.post(incrementRoute, incrementBody);
+
+          // Update local counter state
+          setCounterConfig(prev => ({
+            ...prev,
+            counter: prev.counter + 1
+          }));
+
+          console.log('✓ Counter incremented successfully');
+        } catch (counterError) {
+          console.error('Error incrementing counter:', counterError);
+          toast.warning('Record created but counter increment failed');
+        }
       }
 
       toast.success("Record created successfully!");
@@ -2828,14 +3131,45 @@ const fetchRecordByUsId = async (usId) => {
     }
   };
 
-  // Handle column visibility toggle
-  const toggleColumnVisibility = (columnId) => {
-    setColumns(columns.map(column =>
-      column.id === columnId
-        ? { ...column, visible: !column.visible }
-        : column
-    ));
-  };
+// Handle column visibility toggle with persistence
+const toggleColumnVisibility = async (columnId) => {
+  const updatedColumns = columns.map(column =>
+    column.id === columnId
+      ? { ...column, visible: !column.visible }
+      : column
+  );
+  
+  setColumns(updatedColumns);
+  
+  // Save to database
+  const res = await saveColumnPreferences(updatedColumns);
+  console.log(res)
+  toast.success('Column preferences saved');
+};
+
+// Reset column visibility to default (all visible)
+const resetColumnVisibility = async () => {
+  const resetColumns = columns.map(column => ({
+    ...column,
+    visible: true
+  }));
+  
+  setColumns(resetColumns);
+  await saveColumnPreferences(resetColumns);
+  toast.success('Column visibility reset to default');
+};
+
+// Hide all columns at once
+const hideAllColumns = async () => {
+  const hiddenColumns = columns.map(column => ({
+    ...column,
+    visible: false
+  }));
+  
+  setColumns(hiddenColumns);
+  await saveColumnPreferences(hiddenColumns);
+  toast.success('All columns hidden');
+};
 
   // Get status badge color
   const getStatusBadgeColor = (status) => {
@@ -2865,233 +3199,135 @@ const fetchRecordByUsId = async (usId) => {
     }
   };
 
-// Updated handleSave function for multiple column updates using request body
-// const handleSave = async (originalId) => {
-//   const schemaName = apiParams.schemaName;
-//   const tableName = apiParams.tableName;
+  const handleSave = async (originalId) => {
+    const schemaName = apiParams.schemaName;
+    const tableName = apiParams.tableName;
 
-//   // Build updates object from editingValues
-//   const updates = {};
+    const updates = {};
 
-//   Object.entries(editingValues).forEach(([key, val]) => {
-//     if (val === undefined) return;
+    Object.entries(editingValues).forEach(([key, val]) => {
+      if (val === undefined) return;
 
-//     // Handle date fields specifically
-//     if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
-//       // Skip empty/null date fields entirely to avoid database errors
-//       if (val === null || val === 'null' || val === '' || val === undefined) {
-//         return; // Don't add this field to the update
-//       }
+      // Get original value for comparison
+      const originalValue = currentEditingRecord[key];
 
-//       // Validate date format if value exists
-//       const dateValue = new Date(val);
-//       if (isNaN(dateValue.getTime())) {
-//         console.warn(`Invalid date format for ${key}:`, val);
-//         return; // Skip invalid dates
-//       }
-
-//       // Use ISO format for dates
-//       updates[key] = dateValue.toISOString().split('T')[0]; // YYYY-MM-DD format
-//     } else {
-//       // Handle non-date fields (including arrays)
-//       const sanitizedVal = val === null || val === 'null' ? '' : val;
-//       updates[key] = sanitizedVal;
-//     }
-//   });
-
-//   // Check if there are any fields to update
-//   if (Object.keys(updates).length === 0) {
-//     toast.warning("No changes to save");
-//     return;
-//   }
-
-//   // Prepare request body
-//   const requestBody = {
-//     schemaName,
-//     tableName,
-//     recordId: originalId,
-//     ownerId: owner_id,
-//     updates
-//   };
-
-//   // Add optional fields if they exist
-//   if (apiParams.userSchemaName) {
-//     requestBody.userSchemaName = apiParams.userSchemaName;
-//   }
-//   if (apiParams.userTableName) {
-//     requestBody.userTableName = apiParams.userTableName;
-//   }
-//   if (apiParams.vname) {
-//     requestBody.vname = apiParams.vname;
-//   }
-//   if (apiParams.wid) {
-//     requestBody.wid = apiParams.wid;
-//   }
-
-//   console.log('Update request body:', requestBody);
-
-//   try {
-//     // Use POST request for multiple column updates
-//     const result = await axios.post(updateRecord, requestBody, {
-//       headers: {
-//         'Content-Type': 'application/json'
-//       }
-//     });
-    
-//     toast.success("Record updated successfully");
-//     setEditingRowId(null);
-//     handleRefresh();
-    
-//     // Log response for debugging
-//     console.log('Update response:', result.data);
-    
-//     // Show which columns were updated
-//     if (result.data.updatedColumns) {
-//       console.log('Updated columns:', result.data.updatedColumns.join(', '));
-//     }
-//   } catch (err) {
-//     console.error('Update error:', err);
-    
-//     // Provide more specific error messages
-//     if (err.response?.data?.error) {
-//       toast.error(err.response.data.error);
-//     } else if (err.response?.data?.details) {
-//       toast.error(`Update failed: ${err.response.data.details}`);
-//     } else {
-//       toast.error("Update failed");
-//     }
-//   }
-// };
-
-const handleSave = async (originalId) => {
-  const schemaName = apiParams.schemaName;
-  const tableName = apiParams.tableName;
-
-  const updates = {};
-
-  Object.entries(editingValues).forEach(([key, val]) => {
-    if (val === undefined) return;
-
-    // Get original value for comparison
-    const originalValue = currentEditingRecord[key];
-    
-    // Skip if value hasn't changed
-    if ((val === originalValue) || (key === 'pa_id') || (key === 'us_id') || (key === 'id')) {
-      console.log(`Skipping ${key} - no change`);
-      return;
-    }
+      // Skip if value hasn't changed
+      if ((val === originalValue) || (key === 'pa_id') || (key === 'us_id') || (key === 'id')) {
+        console.log(`Skipping ${key} - no change`);
+        return;
+      }
 
 
-    console.log(`Field ${key} changed from "${originalValue}" to "${val}"`);
+      console.log(`Field ${key} changed from "${originalValue}" to "${val}"`);
 
-    // Handle date fields
-    if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+      // Handle date fields
+      if (key.toLowerCase().includes('date') || key.toLowerCase().endsWith('_date')) {
+        if (val === null || val === 'null' || val === '') {
+          updates[key] = null;
+          return;
+        }
+
+        const dateValue = new Date(val);
+        if (isNaN(dateValue.getTime())) {
+          console.warn(`Invalid date format for ${key}:`, val);
+          toast.error(`Invalid date format for ${key}`);
+          return;
+        }
+
+        updates[key] = dateValue.toISOString().split('T')[0];
+        return;
+      }
+
+      // ENHANCED: Preserve original data type
+      const originalType = typeof currentEditingRecord[key];
+
       if (val === null || val === 'null' || val === '') {
         updates[key] = null;
         return;
       }
 
-      const dateValue = new Date(val);
-      if (isNaN(dateValue.getTime())) {
-        console.warn(`Invalid date format for ${key}:`, val);
-        toast.error(`Invalid date format for ${key}`);
-        return;
-      }
+      // Convert back to original type
+      switch (originalType) {
+        case 'number':
+          const numValue = Number(val);
+          if (isNaN(numValue)) {
+            toast.error(`${key} must be a number`);
+            return;
+          }
+          updates[key] = numValue;
+          break;
 
-      updates[key] = dateValue.toISOString().split('T')[0];
-      return;
-    }
+        case 'boolean':
+          updates[key] = val === 'true' || val === true;
+          break;
 
-    // ENHANCED: Preserve original data type
-    const originalType = typeof currentEditingRecord[key];
-    
-    if (val === null || val === 'null' || val === '') {
-      updates[key] = null;
-      return;
-    }
-
-    // Convert back to original type
-    switch (originalType) {
-      case 'number':
-        const numValue = Number(val);
-        if (isNaN(numValue)) {
-          toast.error(`${key} must be a number`);
-          return;
-        }
-        updates[key] = numValue;
-        break;
-        
-      case 'boolean':
-        updates[key] = val === 'true' || val === true;
-        break;
-        
-      case 'object':
-        // Handle arrays or JSON objects
-        if (Array.isArray(currentEditingRecord[key])) {
-          try {
-            updates[key] = typeof val === 'string' ? JSON.parse(val) : val;
-          } catch (e) {
-            console.error('Failed to parse array:', e);
+        case 'object':
+          // Handle arrays or JSON objects
+          if (Array.isArray(currentEditingRecord[key])) {
+            try {
+              updates[key] = typeof val === 'string' ? JSON.parse(val) : val;
+            } catch (e) {
+              console.error('Failed to parse array:', e);
+              updates[key] = val;
+            }
+          } else {
             updates[key] = val;
           }
-        } else {
+          break;
+
+        default:
+          // String or unknown type
           updates[key] = val;
-        }
-        break;
-        
-      default:
-        // String or unknown type
-        updates[key] = val;
-    }
-  });
-
-  if (Object.keys(updates).length === 0) {
-    toast.warning("No changes to save");
-    return;
-  }
-
-  console.log('Fields to update:', updates);
-
-  const requestBody = {
-    schemaName,
-    tableName,
-    recordId: originalId,
-    ownerId: owner_id,
-    updates
-  };
-
-  console.log('Update request body:', requestBody);
-
-  try {
-    const result = await axios.post(updateRecord, requestBody, {
-      headers: {
-        'Content-Type': 'application/json'
       }
     });
-    
-    toast.success("Record updated successfully");
-    setEditingRowId(null);
-    setEditingValues({});
-    setCurrentEditingRecord(null);
-    handleRefresh();
-    
-    console.log('Update response:', result.data);
-    
-    if (result.data.updatedColumns) {
-      console.log('Updated columns:', result.data.updatedColumns.join(', '));
+
+    if (Object.keys(updates).length === 0) {
+      toast.warning("No changes to save");
+      return;
     }
-  } catch (err) {
-    console.error('Update error:', err);
-    
-    if (err.response?.data?.error) {
-      toast.error(err.response.data.error);
-    } else if (err.response?.data?.details) {
-      toast.error(`Update failed: ${err.response.data.details}`);
-    } else {
-      toast.error("Update failed");
+
+    console.log('Fields to update:', updates);
+
+    const requestBody = {
+      schemaName,
+      tableName,
+      recordId: originalId,
+      ownerId: owner_id,
+      updates
+    };
+
+    console.log('Update request body:', requestBody);
+
+    try {
+      const result = await axios.post(updateRecord, requestBody, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      toast.success("Record updated successfully");
+      setEditingRowId(null);
+      setEditingValues({});
+      setCurrentEditingRecord(null);
+      handleRefresh();
+
+      console.log('Update response:', result.data);
+
+      if (result.data.updatedColumns) {
+        console.log('Updated columns:', result.data.updatedColumns.join(', '));
+      }
+    } catch (err) {
+      console.error('Update error:', err);
+
+      if (err.response?.data?.error) {
+        toast.error(err.response.data.error);
+      } else if (err.response?.data?.details) {
+        toast.error(`Update failed: ${err.response.data.details}`);
+      } else {
+        toast.error("Update failed");
+      }
     }
-  }
-};
+  };
 
 
   // Get unique statuses for filters
@@ -3107,58 +3343,70 @@ const handleSave = async (originalId) => {
 
 
   return show ? "" : (
-    <Card className="tableCard shadow-sm border-slate-200 mx-[6rem]"
-    
-    // {
-    //   "tableCard" + (pa_id ? "shadow-sm border-slate-200 mx-[6rem] hidden" : "shadow-sm border-slate-200 mx-[6rem]")
-    // }
-      
-      >
+    <Card className="tableCard shadow-sm border-slate-200 mx-[6rem]">
       <CardHeader className="pb-3">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <CardTitle className="text-2xl font-semibold text-slate-700">All Records</CardTitle>
-            <CardDescription className="mt-1">
-              View and manage all database records
-              {/* Show URL params info */}
-              {pa_id && (
-                <div className="flex gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs bg-green-50 border-green-200">
-                    PA ID: {pa_id}
-                  </Badge>
+        <div className="flex flex-col gap-4">
+          {/* Title and Description Row */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className='w-[95%]'>
+              <div className="flex md:flex-row md:items-center justify-between w-full bg-gray">
+                <CardTitle className="text-2xl font-semibold text-slate-700">All Records</CardTitle>
+                {/* WorkflowCounter - takes up space on the left */}
+                <div className="lg:flex-1 lg:max-w-[500px]">
+                  <WorkflowCounter
+                    tableName={apiParams.tableName}
+                    onCounterUpdate={handleCounterUpdate}
+                  />
                 </div>
-              )}
-              {/* Show process_name if present */}
-              {process_name && (
-                <div className="flex gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200">
-                    Process: {process_name}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
-                    {process_name}_balance
-                  </Badge>
-                </div>
-              )}
-              {/* Show dropdown setup status and column ordering status */}
-              {dropdownSetupExists && (
-                <div className="flex gap-2 mt-1">
-                  <Badge variant="outline" className="text-xs">
-                    Dropdown Configured
-                  </Badge>
-                  {Object.keys(columnOrder).length > 0 && (
-                    <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
-                      <ArrowUpDown className="h-3 w-3 mr-1" />
-                      Custom Order
+
+              </div>
+
+              <CardDescription className="mt-1">
+                View and manage all database records
+                {/* Show URL params info */}
+                {pa_id && (
+                  <div className="flex gap-2 mt-1">
+                    <Badge variant="outline" className="text-xs bg-green-50 border-green-200">
+                      PA ID: {pa_id}
                     </Badge>
-                  )}
-                </div>
-              )}
-            </CardDescription>
+                  </div>
+                )}
+                {/* Show process_name if present */}
+                {process_name && (
+                  <div className="flex gap-2 mt-1">
+                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200">
+                      Process: {process_name}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
+                      {process_name}_balance
+                    </Badge>
+                  </div>
+                )}
+                {/* Show dropdown setup status and column ordering status */}
+                {dropdownSetupExists && (
+                  <div className="flex gap-2 mt-1">
+                    <Badge variant="outline" className="text-xs">
+                      Dropdown Configured
+                    </Badge>
+                    {Object.keys(columnOrder).length > 0 && (
+                      <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200">
+                        <ArrowUpDown className="h-3 w-3 mr-1" />
+                        Custom Order
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </CardDescription>
+            </div>
           </div>
 
+          {/* WorkflowCounter and Search Row */}
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-3">
+
+
+            {/* Search Input - aligned to the right */}
+            <div className="relative lg:w-[300px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 type="text"
@@ -3177,20 +3425,20 @@ const handleSave = async (originalId) => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {/* ENHANCED: Add Record Button with Ordered Modal */}
-<Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-  <DialogTrigger asChild>
-    <Button
-      className="flex items-center gap-2"
-      onClick={handleOpenAddModal}
-    >
-      <Plus className="h-4 w-4" />
-      <span className="hidden sm:inline">Add Record</span>
-    </Button>
-  </DialogTrigger>
-  <DialogContent 
-    className="max-w-3xl max-h-[80vh] overflow-y-auto"
-    onInteractOutside={(e) => e.preventDefault()}  // <-- Add this line
-  >
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={handleOpenAddModal}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Record</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                className="max-w-3xl max-h-[80vh] overflow-y-auto"
+                onInteractOutside={(e) => e.preventDefault()}
+              >
                 <DialogHeader>
                   <DialogTitle>Add New Record</DialogTitle>
                   <DialogDescription>
@@ -3211,7 +3459,7 @@ const handleSave = async (originalId) => {
                       console.log('=== FORM RENDERING ===');
                       console.log('process_name:', process_name);
                       console.log('orderedFormColumns to display:', orderedFormColumns.map(c => c.id));
-                      console.log('Checking if balance field is in list:', 
+                      console.log('Checking if balance field is in list:',
                         orderedFormColumns.some(c => c.id === `${process_name}_balance`));
                     }
                     return orderedFormColumns;
@@ -3220,10 +3468,10 @@ const handleSave = async (originalId) => {
                     const hasDropdown = dropdownSetup[column.id] && Array.isArray(dropdownSetup[column.id]) && dropdownSetup[column.id].length > 0;
                     const orderNumber = columnOrder[column.id];
                     const isAutoFilled = column.id === 'pa_id';
-                    
+
                     // ENHANCED: Check if this is the quantity field and process_name exists
                     const isQuantityForBalance = process_name && (
-                      column.id.toLowerCase().includes('quantity') || 
+                      column.id.toLowerCase().includes('quantity') ||
                       column.name.toLowerCase().includes('quantity')
                     );
 
@@ -3240,7 +3488,6 @@ const handleSave = async (originalId) => {
 
                           {(() => {
                             const columnMetadata = metaData.find(col => col.column_name === column.id);
-                            // console.log("column Meta Data:", columnMetadata);
                             return columnMetadata?.is_nullable === "NO" && (
                               <Badge variant="default" className="text-xs h-4 px-1 text-red-100">
                                 *
@@ -3252,12 +3499,6 @@ const handleSave = async (originalId) => {
                               auto
                             </Badge>
                           )}
-                          {/* ENHANCED: Show indicator for quantity when it's used for balance */}
-                          {/* {isQuantityForBalance && (
-                            <Badge variant="default" className="text-xs h-4 px-1 bg-blue-500 ml-1">
-                              →balance
-                            </Badge>
-                          )} */}
                         </Label>
                         <div className="flex-1 min-w-0">
                           {renderFormInput(
@@ -3383,31 +3624,66 @@ const handleSave = async (originalId) => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  <span className="hidden sm:inline">Columns</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-                {columns.map(column => (
-                  <DropdownMenuItem key={column.id} onSelect={(e) => {
-                    e.preventDefault();
-                    toggleColumnVisibility(column.id);
-                  }}>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={column.visible}
-                        onCheckedChange={() => toggleColumnVisibility(column.id)}
-                      />
-                      <span>{column.name}</span>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="outline" size="sm" className="flex items-center gap-2">
+      <SlidersHorizontal className="h-4 w-4" />
+      <span className="hidden sm:inline">Columns</span>
+    </Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent align="start" className="w-56">
+    <div className="flex items-center justify-between px-2 py-1.5">
+      <DropdownMenuLabel className="p-0">Toggle Columns</DropdownMenuLabel>
+      <div className="flex gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            hideAllColumns();
+          }}
+        >
+          Hide All
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            resetColumnVisibility();
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    </div>
+    <DropdownMenuSeparator />
+    {columns.map(column => (
+      <DropdownMenuItem 
+        key={column.id} 
+        onSelect={(e) => {
+          e.preventDefault();
+          toggleColumnVisibility(column.id);
+        }}
+      >
+        <div className="flex items-center gap-2 w-full">
+          <Checkbox
+            checked={column.visible}
+            onCheckedChange={() => toggleColumnVisibility(column.id)}
+          />
+          <span className="flex-1">{column.name}</span>
+          {!column.visible && (
+            <Badge variant="secondary" className="text-xs">
+              Hidden
+            </Badge>
+          )}
+        </div>
+      </DropdownMenuItem>
+    ))}
+  </DropdownMenuContent>
+</DropdownMenu>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -3453,7 +3729,9 @@ const handleSave = async (originalId) => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead className="w-[60px] text-center">Delete</TableHead>
+                  {userData.owner_id === null ? (
+                    <TableHead className="w-[60px] text-center">Delete</TableHead>
+                  ) : ""}
                   {visibleColumns.map(column => (
                     <TableHead
                       key={column.id}
@@ -3491,25 +3769,25 @@ const handleSave = async (originalId) => {
                     <TableRow key={record.id || index} className="hover:bg-slate-50"
                       onClick={() => {
                         setEditingRowId(record.id);
-                        // if (editEnabled === false) {
-                          setEditingValues(record);
-                        // }
+                        setEditingValues(record);
                         setCurrentEditingRecord(record);
                       }}>
-                      <TableCell className="w-[60px] text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(record);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
 
+                      {userData.owner_id === null ? (
+                        <TableCell className="w-[60px] text-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(record);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      ) : ""}
                       {visibleColumns.map(column => (
                         <TableCell key={column.id}>
                           {editingRowId === record.id && column.id !== 'id' && editEnabled ? (
@@ -3555,62 +3833,62 @@ const handleSave = async (originalId) => {
         />
 
         <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-  <DialogContent className="max-w-md">
-    <DialogHeader>
-      <DialogTitle className=" flex items-center gap-2">
-        <Trash2 className="h-5 w-5" />
-        Confirm Deletion
-      </DialogTitle>
-      <DialogDescription>
-        This action cannot be undone. Please type the <strong>us_id</strong> to confirm deletion.
-      </DialogDescription>
-    </DialogHeader>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className=" flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Confirm Deletion
+              </DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. Please type the <strong>us_id</strong> to confirm deletion.
+              </DialogDescription>
+            </DialogHeader>
 
-    <div className="space-y-4 py-4">
-      {recordToDelete && (
-        <div className="bg-gray-50 p-3 rounded border">
-          <p className="text-sm font-medium">Record to delete:</p>
-          <p className="text-sm text-gray-600">ID: {recordToDelete.id}</p>
-          <p className="text-sm text-gray-600">US_ID: <span className="font-mono bg-yellow-100 px-1 rounded">{recordToDelete.us_id}</span></p>
-        </div>
-      )}
+            <div className="space-y-4 py-4">
+              {recordToDelete && (
+                <div className="bg-gray-50 p-3 rounded border">
+                  <p className="text-sm font-medium">Record to delete:</p>
+                  <p className="text-sm text-gray-600">ID: {recordToDelete.id}</p>
+                  <p className="text-sm text-gray-600">US_ID: <span className="font-mono bg-yellow-100 px-1 rounded">{recordToDelete.us_id}</span></p>
+                </div>
+              )}
 
-      <div>
-        <Label htmlFor="confirm-us-id" className="text-sm font-medium">
-          Enter us_id to confirm:
-        </Label>
-        <Input
-          id="confirm-us-id"
-          type="text"
-          placeholder="Type us_id here"
-          value={deleteUsIdInput}
-          onChange={(e) => setDeleteUsIdInput(e.target.value)}
-          className="mt-1"
-          autoFocus
-        />
-      </div>
-    </div>
+              <div>
+                <Label htmlFor="confirm-us-id" className="text-sm font-medium">
+                  Enter us_id to confirm:
+                </Label>
+                <Input
+                  id="confirm-us-id"
+                  type="text"
+                  placeholder="Type us_id here"
+                  value={deleteUsIdInput}
+                  onChange={(e) => setDeleteUsIdInput(e.target.value)}
+                  className="mt-1"
+                  autoFocus
+                />
+              </div>
+            </div>
 
-    <DialogFooter className="flex flex-col sm:flex-row gap-2">
-      <Button
-        variant="outline"
-        onClick={handleDeleteCancel}
-        disabled={isDeleting}
-        className="w-full sm:w-auto"
-      >
-        Cancel
-      </Button>
-      <Button
-        variant="destructive"
-        onClick={handleDeleteConfirm}
-        disabled={isDeleting || !deleteUsIdInput.trim()}
-        className="w-full sm:w-auto"
-      >
-        {isDeleting ? 'Deleting...' : 'Delete Record'}
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting || !deleteUsIdInput.trim()}
+                className="w-full sm:w-auto"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Record'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

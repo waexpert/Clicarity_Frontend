@@ -49,7 +49,7 @@ export const userSlice = createSlice({
         state.is_verified = action.payload.is_verified;
         state.schema_name = action.payload.schema_name;
         state.owner_id = action.payload.owner_id;
-        state.isAuthenticated = action.payload.isAuthenticated;
+        state.isAuthenticated = true;
       },
       userLogout: () => {
         return {

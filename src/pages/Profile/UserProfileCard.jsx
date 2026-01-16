@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { User, Mail, Phone, Hash, MapPin, Database, Clock } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfileCard = () => {
   const userData = useSelector((state) => state.user);
-
+  const navigate = useNavigate();
   if (!userData) {
     return (
       <Card className="w-80">
@@ -137,6 +139,7 @@ const UserProfileCard = () => {
 
           <Separator className="my-4" />
 
+<div className="flex items-center justify-between">
           {/* Schema */}
           {userData.schema_name && (
             <div className="flex items-center space-x-3">
@@ -151,6 +154,17 @@ const UserProfileCard = () => {
               </div>
             </div>
           )}
+
+          {
+            userData.email ==="contact@clicarity.com" ?
+            (<Button onClick={()=> navigate("/admin")}>
+             Admin
+             </Button>
+            ):
+          ("")
+          }
+</div>
+
         </div>
       </CardContent>
     </Card>

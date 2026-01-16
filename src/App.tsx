@@ -53,6 +53,7 @@ import CreateView from "./pages/Views/CreateView";
 import RLSManagement from "./pages/Admin/RLSManagement";
 import RolesCreator from "./pages/Roles/RolesCreator";
 import RolesAssignment from "./pages/Roles/RolesAssignment";
+import AdminProtectedRoute from "./pages/Helper/AdminProtectedRoute";
 
 function App() {
   const location = useLocation();
@@ -334,15 +335,14 @@ function App() {
           element={<WastageInput/>}
         />
 
-        {/* Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            // <ProtectedRoute>
-            <AdminHome/>
-            // </ProtectedRoute>
-        }
-        />
+<Route
+  path="/admin"
+  element={
+    <AdminProtectedRoute>
+      <AdminHome/>
+    </AdminProtectedRoute>
+  }
+/>
 
         <Route
           path="/admin/rls"

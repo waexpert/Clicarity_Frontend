@@ -513,7 +513,7 @@ import { Button } from '../../components/ui/button';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import RecordDetails from '../../components/customUpdateForm/RecordDetails';
 import WastageUpdateForm from '../../components/customUpdateForm/WastageUpdateForm';
 import Filter from '../../components/customUpdateForm/Filter';
@@ -542,9 +542,11 @@ const CustomViewForm = () => {
   const navigate = useNavigate();
   const systemTables = ["contact", "team_member", "vendor", "schema_migrations" ,"reminders"]
   const sTables = new Set(systemTables);
-
+  const [searchParams] = useSearchParams();
+  const searchTable = searchParams.get('search');
   useEffect(() => {
     getAllTables();
+    setCurrentTable(searchTable)
   }, []);
 
   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;

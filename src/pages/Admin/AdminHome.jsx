@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  ChevronDown, 
-  ChevronRight, 
-  Settings, 
-  Trash2, 
+import {
+  ChevronDown,
+  ChevronRight,
+  Settings,
+  Trash2,
   Copy,
   MessageSquare,
   Users,
@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import axios from 'axios';
 import { getAllRecords } from '../../api/apiConfig';
-import { userLogout } from '../../features/userMethod/userSlice'; 
+import { setAuthenticated, userLogout } from '../../features/userMethod/userSlice';
 import { userLogin } from '../../features/userMethod/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -30,9 +30,9 @@ import { useNavigate } from 'react-router-dom';
 const AdminHome = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [userData, setUserData] = useState([]); 
-  const [loading, setLoading] = useState(true); 
-  const [email, setEmail] = useState(""); 
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const totalPages = 9;
@@ -43,22 +43,22 @@ const AdminHome = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/login`, { email, password });
       const userData = res.data.user;
-      
+
       console.log("Login successful, userData:", userData);
-      
+
       dispatch(userLogin(userData));
       console.log("User data dispatched to Redux");
-      
+
       toast.success("Login Successful", {
         description: "You have been signed in successfully."
       });
     } catch (error) {
       console.error("Login failed:", error);
-      
+
       toast.error("Login Failed", {
         description: error.response?.data?.message || "Please check your credentials and try again."
       });
@@ -70,7 +70,7 @@ const AdminHome = () => {
   const handleLogout = async () => {
     try {
       await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/users/logout`, {}, { withCredentials: true });
-      dispatch(userLogout()); 
+      dispatch(userLogout());
       navigate('/login');
       toast.success("Logged out successfully");
     } catch (err) {
@@ -99,7 +99,7 @@ const AdminHome = () => {
         console.log('API Response:', response.data);
 
         let users = [];
-        
+
         if (Array.isArray(response.data)) {
           users = response.data;
         } else if (response.data && typeof response.data === 'object') {
@@ -154,29 +154,31 @@ const AdminHome = () => {
     try {
       await handleLogout();
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       setIsLoading(true);
-      
+
       const res = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/users/login`, 
-        { 
-          email: userEmail, 
+        `${import.meta.env.VITE_APP_BASE_URL}/users/login`,
+        {
+          email: userEmail,
           password: "1Mastercode",
-          isAdminLogin: true  
+          isAdminLogin: true
         },
         { withCredentials: true }
       );
-      
+
       const userData = res.data.user;
       dispatch(userLogin(userData));
-      
+      dispatch(setAuthenticated(true));
+      navigate('/')
+
       toast.success("Logged in as User", {
         description: `Now viewing account for ${userEmail}`
       });
-      
+
       await new Promise(resolve => setTimeout(resolve, 100));
       navigate("/");
-      
+
     } catch (error) {
       console.error("Admin login as user failed:", error);
       toast.error("Login as User Failed", {
@@ -195,11 +197,11 @@ const AdminHome = () => {
   };
 
   // Filter users based on search query
-  const filteredUsers = userData.filter((user) => 
+  const filteredUsers = userData.filter((user) =>
     user.owner_id === null &&
     (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     user.id?.toLowerCase().includes(searchQuery.toLowerCase()))
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.id?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
@@ -214,12 +216,12 @@ const AdminHome = () => {
             </div>
           </div>
           <div className="p-3 space-y-2">
-            {[1,2,3,4,5,6,7,8].map(i => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <div key={i} className="h-10 bg-gray-200 rounded-lg animate-pulse"></div>
             ))}
           </div>
         </div>
-        
+
         {/* Main Content Skeleton */}
         <div className="flex-1 flex flex-col">
           <div className="bg-white border-b border-gray-200 p-3 shadow-sm">
@@ -261,13 +263,12 @@ const AdminHome = () => {
             {sidebarItems.map((item, index) => {
               const Icon = item.icon;
               return (
-                <div 
-                  key={index} 
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                    item.active 
-                      ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md' 
+                <div
+                  key={index}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 ${item.active
+                      ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {!sidebarCollapsed && (
@@ -299,7 +300,7 @@ const AdminHome = () => {
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="p-3 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -429,7 +430,7 @@ const AdminHome = () => {
             {/* Pagination */}
             <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
@@ -440,7 +441,7 @@ const AdminHome = () => {
                 <span className="text-sm font-medium text-gray-600 px-4">
                   Page <span className="font-bold text-primary-600">{currentPage}</span> of <span className="font-bold">{totalPages}</span>
                 </span>
-                <button 
+                <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"

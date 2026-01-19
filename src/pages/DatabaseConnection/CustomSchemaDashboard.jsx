@@ -54,6 +54,8 @@ const CustomSchemaDashboard = () => {
   const [showCapture,setCapture] = useState(true);
   const [dropDown,setDropDown] = useState([]); 
   const [schemas,setSchemas] = useState([]);
+  const systemTables = ["team_member", "schema_migrations", "reminders"];
+  const sTables = new Set(systemTables);
 
   const componentMap = {
     // 1: <NewDataStore setShowDialog={setShowDialog} />,
@@ -121,7 +123,10 @@ const CustomSchemaDashboard = () => {
     },
   ];
 
-  const filteredSchemas = schemas.filter(schema =>
+  const filteredSchemas = schemas.filter(table => {
+              const originalTableName = table?.title || table;
+              return !sTables.has(originalTableName);
+            }).filter(schema =>
     schema.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

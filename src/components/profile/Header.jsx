@@ -113,7 +113,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import "../css/Header.css";
+import "../../css/Header.css";
 import LogoutButton from './Logout';
 
 // shadcn components
@@ -132,7 +132,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import UserProfileCard from '../pages/Profile/UserProfileCard';
+import UserProfileCard from '../../pages/Profile/UserProfileCard';
 
 const Header = () => {
     const location = useLocation();

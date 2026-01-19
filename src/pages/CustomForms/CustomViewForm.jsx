@@ -507,6 +507,476 @@
 
 
 
+
+
+// import React, { useState, useEffect, useMemo } from 'react';
+// import { Input } from '../../components/ui/input';
+// import { Button } from '../../components/ui/button';
+// import { SlidersHorizontal, X } from 'lucide-react';
+// import { useDispatch, useSelector } from 'react-redux';
+// import axios from 'axios';
+// import { useNavigate, useSearchParams } from 'react-router-dom';
+// import RecordDetails from '../../components/customUpdateForm/RecordDetails';
+// import WastageUpdateForm from '../../components/customUpdateForm/WastageUpdateForm';
+// import Filter from '../../components/customUpdateForm/Filter';
+// import '../../css/pages/CustomViewForm.css';
+
+// const CustomViewForm = () => {
+//   const [currentTable, setCurrentTable] = useState('jobstatus');
+//   const [error, setError] = useState(null);
+//   const [tables, setTables] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [processTypeMapping, setProcessTypeMapping] = useState({});
+//   const [processName, setProcessName] = useState('');
+//   const [processSteps, setProcessSteps] = useState([]);
+//   const [records, setRecords] = useState([]);
+//   const [selectedRecord, setSelectedRecord] = useState(null);
+//   const [selectedColumns, setSelectedColumns] = useState([]);
+//   const [setupData, setSetupData] = useState({});
+//   const [childRecords, setChildRecords] = useState([]);
+//   const [isFilterOpen, setIsFilterOpen] = useState(false);
+//   const [columns, setColumns] = useState([]);
+//   const [visibleColumns, setVisibleColumns] = useState([]);
+
+//   const userData = useSelector((state) => state.user);
+//   const dispatch = useDispatch();
+//   const schemaName = userData?.schema_name || 'default_schema';
+//   const navigate = useNavigate();
+//   const systemTables = ["contact", "team_member", "vendor", "schema_migrations" ,"reminders"]
+//   const sTables = new Set(systemTables);
+//   const [searchParams] = useSearchParams();
+//   const searchTable = searchParams.get('search');
+//   useEffect(() => {
+//     getAllTables();
+//     setCurrentTable(searchTable)
+//   }, []);
+  
+
+
+//   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
+
+//   useEffect(() => {
+//     const fetchSetupData = async () => {
+//       try {
+//         const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${currentTable}`;
+//         const { data } = await axios.get(route);
+
+//         if (data.exists && data.setup) {
+//           setSetupData(data.setup);
+//           setSelectedColumns(data.setup.filter_form_columns || []);
+//           setProcessTypeMapping(data.setup.process_type_mapping || {});
+
+//           const steps = data.setup.process_steps || [];
+//           const validSteps = steps.filter(step => step && (step.title || typeof step === 'string'));
+//           setProcessSteps(validSteps);
+//         } else {
+//           setSelectedColumns([]);
+//           setProcessSteps([]);
+//         }
+//       } catch (err) {
+//         console.error('Error fetching setup:', err);
+//         setProcessSteps([]);
+//       }
+//     };
+
+//     if (currentTable && userData?.id) {
+//       fetchSetupData();
+//     }
+//   }, [userData?.id, currentTable]);
+
+//   const getAllTables = async () => {
+//     try {
+//       const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`;
+//       const { data } = await axios.get(route);
+//       setTables(data.data || []);
+//     } catch (err) {
+//       console.error('Error fetching tables:', err);
+//       setError('Failed to fetch tables');
+//     }
+//   };
+
+//   const handleSearch = async () => {
+//     if (!currentTable) {
+//       setError('Please select a table');
+//       return;
+//     }
+//     if (!processName) {
+//       setError('Please select a process');
+//       return;
+//     }
+
+//     setLoading(true);
+//     setError(null);
+//     setRecords([]);
+//     setSelectedRecord(null);
+
+//     try {
+//       const baseUrl = import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
+//       const response = await fetch(`${baseUrl}/data/getRecordByTargetAll`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           schemaName,
+//           tableName: currentTable,
+//           targetColumn: 'status',
+//           targetValue: processName,
+//         }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+
+//       const result = await response.json();
+//       const recordsArray = Array.isArray(result) ? result : [result];
+//       setRecords(recordsArray);
+
+//       // Extract columns from the first record
+//       let columnNames = [];
+//       if (recordsArray.length > 0) {
+//         columnNames = Object.keys(recordsArray[0]);
+//         setColumns(columnNames);
+
+//         // Set visible columns if not already set or if selectedColumns is empty
+//         if (selectedColumns.length === 0) {
+//           setVisibleColumns(columnNames);
+//           setSelectedColumns(columnNames);
+//         } else {
+//           setVisibleColumns(selectedColumns);
+//         }
+//       }
+
+//     } catch (err) {
+//       setError(err.message || 'Failed to fetch records');
+//       console.error('Search error:', err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const fetchChildRecords = async (parentUsId) => {
+//     try {
+//       const baseUrl = import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
+//       const childResponse = await fetch(`${baseUrl}/data/getRecordByTargetAll`, {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           schemaName,
+//           tableName: currentTable,
+//           targetColumn: 'pa_id',
+//           targetValue: parentUsId,
+//         }),
+//       });
+
+//       if (childResponse.ok) {
+//         const childResult = await childResponse.json();
+//         const children = Array.isArray(childResult) ? childResult : [childResult];
+//         setChildRecords(children);
+//       }
+//     } catch (childErr) {
+//       console.warn('Could not fetch child records:', childErr);
+//       setChildRecords([]);
+//     }
+//   };
+
+//   const handleTableSelect = (e) => {
+//     const selectedTable = e.target.value;
+//     setCurrentTable(selectedTable);
+//     setProcessName('');
+//     setRecords([]);
+//     setSelectedRecord(null);
+//     setChildRecords([]);
+//   };
+
+//   const handleSelectProcess = (e) => {
+//     const selectedProcess = e.target.value;
+//     setProcessName(selectedProcess);
+//     setRecords([]);
+//     setSelectedRecord(null);
+//     setChildRecords([]);
+//   };
+
+//   const handleRecordClick = async (record) => {
+//     setSelectedRecord(record);
+//     if (record.us_id) {
+//       await fetchChildRecords(record.us_id);
+//     }
+//   };
+
+//   const handleCloseDetails = () => {
+//     setSelectedRecord(null);
+//     setChildRecords([]);
+//   };
+
+//   const handleApplyFilter = (filteredColumns) => {
+//     console.log('Filter applied with columns:', filteredColumns);
+//     setVisibleColumns(filteredColumns);
+//     setSelectedColumns(filteredColumns);
+//   };
+
+//   const status = processName;
+
+//   const handleSplitJob = () => {
+//     navigate(`/${currentTable}/record?pa_id=${selectedRecord?.us_id}&status=${status}&show=true`);
+//   };
+
+//   const handleEnterJob = () => {
+//     navigate(`/${currentTable}/record?us_id=${selectedRecord?.us_id}&status=${'pending'}&show=true`);
+//   };
+
+//   const currentProcessType = useMemo(() => {
+//     if (!selectedRecord || !processTypeMapping) return 'Dynamic';
+//     const processType = processTypeMapping[status];
+//     return processType || 'Dynamic';
+//   }, [selectedRecord, processTypeMapping, status]);
+
+//   const filteredData = useMemo(() => {
+//     if (!selectedRecord) {
+//       return selectedRecord;
+//     }
+
+//     // Use visibleColumns if available, otherwise use selectedColumns, otherwise show all
+//     const columnsToShow = visibleColumns.length > 0
+//       ? visibleColumns
+//       : (selectedColumns.length > 0 ? selectedColumns : Object.keys(selectedRecord));
+
+//     if (columnsToShow.length === 0) {
+//       return selectedRecord;
+//     }
+
+//     return Object.keys(selectedRecord)
+//       .filter(key => columnsToShow.includes(key))
+//       .reduce((obj, key) => {
+//         obj[key] = selectedRecord[key];
+//         return obj;
+//       }, {});
+//   }, [selectedRecord, selectedColumns, visibleColumns]);
+
+//   return (
+//     <div className="container">
+//       {/* Compact Search Section */}
+//       <div className="form-group-1">
+//         <div className="top-section">
+//           <h2 className="heading">Check Process Status</h2>
+//           <Button
+//             className="filter-section"
+//             onClick={() => setIsFilterOpen(true)}
+//             disabled={!selectedRecord || columns.length === 0}
+//           >
+//             <p>Filter</p>
+//             <SlidersHorizontal className='icon-md' />
+//           </Button>
+//         </div>
+
+//         {/* Table Selection */}
+//         <div className="select-wrapper">
+//           <select
+//             id="table-select"
+//             value={currentTable}
+//             onChange={handleTableSelect}
+//             className={`select ${error && !currentTable ? 'select-error' : ''}`}
+//           >
+//             <option value="" disabled className="placeholder-option">
+//               Select Table
+//             </option>
+//             {tables.filter(table => {
+//               const originalTableName = table?.title || table; // Get original table name
+//               return !sTables.has(originalTableName); // Check against original name
+//             }).map((table, index) => {
+//               const title = table?.title || table;
+//               if (!title) return null;
+//               return (
+//                 <option key={title || index} value={title} className="option">
+//                   {title.charAt(0).toUpperCase() + title.slice(1).replace(/_/g, ' ')}
+//                 </option>
+//               );
+//             })}
+//           </select>
+//           <div className="select-arrow">
+//             <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+//               <path
+//                 d="M1 1.5L6 6.5L11 1.5"
+//                 stroke="currentColor"
+//                 strokeWidth="2"
+//                 strokeLinecap="round"
+//                 strokeLinejoin="round"
+//               />
+//             </svg>
+//           </div>
+//         </div>
+
+//         {/* Process Selection */}
+//         <div className="select-wrapper">
+//           <select
+//             id="process-name"
+//             value={processName}
+//             onChange={handleSelectProcess}
+//             className={`select ${error && !processName ? 'select-error' : ''}`}
+//             disabled={!currentTable}
+//           >
+//             <option value="" disabled className="placeholder-option">
+//               Select Process
+//             </option>
+//             {processSteps.map((step, index) => {
+//               const title = step?.title || step;
+//               if (!title) return null;
+//               return (
+//                 <option key={title || index} value={title} className="option">
+//                   {title.charAt(0).toUpperCase() + title.slice(1).replace(/_/g, ' ')}
+//                 </option>
+//               );
+//             })}
+//           </select>
+//           <div className="select-arrow">
+//             <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+//               <path
+//                 d="M1 1.5L6 6.5L11 1.5"
+//                 stroke="currentColor"
+//                 strokeWidth="2"
+//                 strokeLinecap="round"
+//                 strokeLinejoin="round"
+//               />
+//             </svg>
+//           </div>
+//         </div>
+
+//         {/* Search Button */}
+//         <Button
+//           className={`button ${loading ? 'loading' : ''}`}
+//           onClick={handleSearch}
+//           aria-label="Search for process status"
+//           disabled={loading || !currentTable || !processName}
+//         >
+//           {loading ? 'Searching...' : 'Search'}
+//         </Button>
+
+//         {error && (
+//           <div className="error-message">
+//             {error}
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Compact Records Display Section */}
+//       {records.length > 0 && (
+//         <div className="records-section">
+//           <h3 className="heading">
+//             {records.length} Record{records.length !== 1 ? 's' : ''} Found
+//           </h3>
+
+//           <div className="records-grid">
+//             {records.map((record, index) => (
+//               <Button
+//                 key={record.us_id || index}
+//                 onClick={() => handleRecordClick(record)}
+//                 className={`record-button ${selectedRecord?.us_id === record.us_id ? 'active' : ''}`}
+//               >
+//                 <div>
+//                   {record.us_id || `Record ${index + 1}`}
+//                 </div>
+//                 {/* {record.name && (
+//                   <div>
+//                     {record.name}</div>)} */}
+//               </Button>
+//             ))}
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Compact Selected Record Details Card */}
+//       {selectedRecord && (
+//         <div className="record-details-card">
+//           <button
+//             onClick={handleCloseDetails}
+//             aria-label="Close details"
+//           >
+//             <X size={20} />
+//           </button>
+
+//           {currentProcessType === 'Wastage' ? (
+//             <WastageUpdateForm
+//               data={selectedRecord}
+//               loading={loading}
+//               visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+//               setupData={setupData}
+//               tableName={currentTable}
+//               schemaName={schemaName}
+//               childRecords={childRecords}
+//               selectedColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+//             />
+//           ) : (
+//             <>
+//               <h3 className="heading">
+//                 Record Details - {selectedRecord.us_id}
+//               </h3>
+
+//               <RecordDetails
+//                 data={filteredData}
+//                 loading={loading}
+//                 selectedColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+//                 visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+//               />
+
+//               <div>
+//                 <Button
+//                   onClick={() => {
+//                     navigate(`/status-update?schemaName=${schemaName}&current_process=${selectedRecord?.status}&tableName=${currentTable}&recordId=${selectedRecord?.id}`);
+//                   }}
+//                   className="button"
+//                 >
+//                   Update Status
+//                 </Button>
+
+//                 <Button
+//                   onClick={handleSplitJob}
+//                   className="button"
+//                 >
+//                   Split Job
+//                 </Button>
+
+//                 {/* <Button
+//                   onClick={handleEnterJob}
+//                   className="button"
+//                 >
+//                   Enter New
+//                 </Button> */}
+//               </div>
+//             </>
+//           )}
+//         </div>
+//       )}
+
+//       {/* No Records Message */}
+//       {!loading && records.length === 0 && processName && (
+//         <div className="no-records-message">
+//           No records found for the selected process.
+//         </div>
+//       )}
+
+//       {/* Filter Component */}
+//       <Filter
+//         isOpen={isFilterOpen}
+//         onClose={() => setIsFilterOpen(false)}
+//         columns={columns}
+//         visibleColumns={visibleColumns}
+//         onApplyFilter={handleApplyFilter}
+//         tableName={currentTable}
+//         setSelectedColumns={setSelectedColumns}
+//         selectedColumns={selectedColumns}
+//       />
+//     </div>
+//   );
+// };
+
+// export default CustomViewForm;
+
+
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -520,6 +990,7 @@ import Filter from '../../components/customUpdateForm/Filter';
 import '../../css/pages/CustomViewForm.css';
 
 const CustomViewForm = () => {
+  // ✅ FIX 1: Initialize with empty string, not null
   const [currentTable, setCurrentTable] = useState('jobstatus');
   const [error, setError] = useState(null);
   const [tables, setTables] = useState([]);
@@ -540,14 +1011,18 @@ const CustomViewForm = () => {
   const dispatch = useDispatch();
   const schemaName = userData?.schema_name || 'default_schema';
   const navigate = useNavigate();
-  const systemTables = ["contact", "team_member", "vendor", "schema_migrations" ,"reminders"]
+  const systemTables = ["contact", "team_member", "vendor", "schema_migrations", "reminders"];
   const sTables = new Set(systemTables);
   const [searchParams] = useSearchParams();
   const searchTable = searchParams.get('search');
+
+  // ✅ FIX 2: Add proper dependencies and null check
   useEffect(() => {
     getAllTables();
-    setCurrentTable(searchTable)
-  }, []);
+    if (searchTable) {
+      setCurrentTable(searchTable);
+    }
+  }, [searchTable]);
 
   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
 
@@ -578,7 +1053,7 @@ const CustomViewForm = () => {
     if (currentTable && userData?.id) {
       fetchSetupData();
     }
-  }, [userData?.id, currentTable]);
+  }, [userData?.id, currentTable, owner_id]);
 
   const getAllTables = async () => {
     try {
@@ -772,7 +1247,7 @@ const CustomViewForm = () => {
         <div className="select-wrapper">
           <select
             id="table-select"
-            value={currentTable}
+            value={currentTable || ''}  
             onChange={handleTableSelect}
             className={`select ${error && !currentTable ? 'select-error' : ''}`}
           >
@@ -780,13 +1255,14 @@ const CustomViewForm = () => {
               Select Table
             </option>
             {tables.filter(table => {
-              const originalTableName = table?.title || table; // Get original table name
-              return !sTables.has(originalTableName); // Check against original name
+              const originalTableName = table?.title || table;
+              return !sTables.has(originalTableName);
             }).map((table, index) => {
               const title = table?.title || table;
               if (!title) return null;
+              // ✅ FIX 4: Use guaranteed unique key
               return (
-                <option key={title || index} value={title} className="option">
+                <option key={`table-${title}-${index}`} value={title} className="option">
                   {title.charAt(0).toUpperCase() + title.slice(1).replace(/_/g, ' ')}
                 </option>
               );
@@ -809,7 +1285,7 @@ const CustomViewForm = () => {
         <div className="select-wrapper">
           <select
             id="process-name"
-            value={processName}
+            value={processName || ''} 
             onChange={handleSelectProcess}
             className={`select ${error && !processName ? 'select-error' : ''}`}
             disabled={!currentTable}
@@ -820,8 +1296,9 @@ const CustomViewForm = () => {
             {processSteps.map((step, index) => {
               const title = step?.title || step;
               if (!title) return null;
+              // ✅ FIX 6: Use guaranteed unique key
               return (
-                <option key={title || index} value={title} className="option">
+                <option key={`process-${title}-${index}`} value={title} className="option">
                   {title.charAt(0).toUpperCase() + title.slice(1).replace(/_/g, ' ')}
                 </option>
               );
@@ -867,16 +1344,13 @@ const CustomViewForm = () => {
           <div className="records-grid">
             {records.map((record, index) => (
               <Button
-                key={record.us_id || index}
+                key={record.us_id || `record-${index}`} 
                 onClick={() => handleRecordClick(record)}
                 className={`record-button ${selectedRecord?.us_id === record.us_id ? 'active' : ''}`}
               >
                 <div>
                   {record.us_id || `Record ${index + 1}`}
                 </div>
-                {/* {record.name && (
-                  <div>
-                    {record.name}</div>)} */}
               </Button>
             ))}
           </div>
@@ -933,13 +1407,6 @@ const CustomViewForm = () => {
                 >
                   Split Job
                 </Button>
-
-                {/* <Button
-                  onClick={handleEnterJob}
-                  className="button"
-                >
-                  Enter New
-                </Button> */}
               </div>
             </>
           )}

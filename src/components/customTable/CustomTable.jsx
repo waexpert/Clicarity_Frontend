@@ -1875,17 +1875,17 @@ import {
   X,
   ArrowUpDown
 } from 'lucide-react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig';
 import { toast } from 'sonner';
 
 // Api Calls Route
-import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../api/apiConfig';
+import { getAllRecords, updateRecord, createRecord, getAllPayments } from '../../api/apiConfig';
 import { useSelector } from 'react-redux';
 import { showText } from 'pdf-lib';
-import "../css/components/CustomTable.css";
-import ResponsivePagination from './customTable/Pagination';
-import WorkflowCounter from './customTable/WorkFlowCounter';
-import { columnPreferencesService } from '../services/columnPreferencesService';
+import "../../css/components/CustomTable.css";
+import ResponsivePagination from './Pagination';
+import WorkflowCounter from './WorkFlowCounter';
+import { columnPreferencesService } from '../../services/columnPreferencesService';
 
 
 
@@ -1973,7 +1973,9 @@ const CustomTable = ({ type = "normal" }) => {
   const { tableName1 } = useParams();
   const apiParams = {
     schemaName: userData.schema_name,
-    tableName: tableName1
+    tableName: tableName1,
+    userId: userData.id,
+    userEmail : userData.email
   }
 
   // Load column preferences from database

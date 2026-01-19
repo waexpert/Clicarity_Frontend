@@ -14,7 +14,7 @@ export default function RolesAssignment() {
   const user = useSelector((state) => state.user);
   const schemaName = user?.schema_name;
   const ownerId = user?.id;
-  // const ownerId = user?.owner_id || user?.id;
+  
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableRoles, setAvailableRoles] = useState([]);
   const [selectedMember, setSelectedMember] = useState('');
@@ -23,6 +23,9 @@ export default function RolesAssignment() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // FIXED: Calculate selectedMemberData before using it in useEffect
+  const selectedMemberData = teamMembers.find(m => m.id === selectedMember);
 
   useEffect(() => {
     console.log('=== INITIAL LOAD ===');
@@ -39,16 +42,18 @@ export default function RolesAssignment() {
     }
   }, [schemaName, ownerId]);
 
+  // FIXED: Added selectedMemberData to dependency array and proper null check
   useEffect(() => {
     console.log('=== MEMBER SELECTION CHANGED ===');
     console.log('Selected Member:', selectedMember);
+    console.log('Selected Member Data:', selectedMemberData);
     
-    if (selectedMember) {
-      fetchMemberRoles(selectedMember);
+    if (selectedMemberData?.us_id) {
+      fetchMemberRoles(selectedMemberData.us_id);
     } else {
       setAssignedRoles([]);
     }
-  }, [selectedMember]);
+  }, [selectedMember, selectedMemberData?.us_id]); // FIXED: Added proper dependencies
 
   const fetchTeamMembers = async () => {
     try {
@@ -184,16 +189,23 @@ export default function RolesAssignment() {
       return;
     }
 
+    // FIXED: Added null check for selectedMemberData
+    if (!selectedMemberData?.us_id) {
+      toast.error('Selected member data is invalid');
+      return;
+    }
+
     try {
       setSubmitting(true);
       
       const payload = {
-        teamMemberId: selectedMember,
+        teamMemberId: selectedMemberData.us_id,
         roleSetupId: selectedRole,
         schemaName: schemaName,
         assignedBy: user.email || user.name || 'Unknown'
       };
       
+      console.log("Selected Member:", selectedMember);
       console.log('📡 Assigning role with payload:', payload);
       
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/assignRole`;
@@ -202,7 +214,7 @@ export default function RolesAssignment() {
       console.log('✅ Role assigned:', data);
       toast.success('Role assigned successfully!');
       
-      await fetchMemberRoles(selectedMember);
+      await fetchMemberRoles(selectedMemberData.us_id);
       setSelectedRole('');
     } catch (error) {
       console.error('❌ Error assigning role:', error);
@@ -234,14 +246,15 @@ export default function RolesAssignment() {
       console.log('✅ Role removed');
       toast.success('Role removed successfully!');
       
-      await fetchMemberRoles(selectedMember);
+      // FIXED: Added null check
+      if (selectedMemberData?.us_id) {
+        await fetchMemberRoles(selectedMemberData.us_id);
+      }
     } catch (error) {
       console.error('❌ Error removing role:', error);
       toast.error('Failed to remove role. Please try again.');
     }
   };
-
-  const selectedMemberData = teamMembers.find(m => m.id === selectedMember);
 
   // Filter out already assigned roles
   const unassignedRoles = availableRoles.filter(role => {

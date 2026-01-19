@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import './variables/color.css'
 import { Routes, Route } from "react-router-dom";
 import { useSelector } from "react-redux"; // Added missing import
-import Header from "./components/Header";
+import Header from "./components/profile/Header";
 import Register from "./pages/Auth/Register";
 import Login from "./pages/Auth/Login";
 import Home from "./pages/Home";
@@ -22,7 +22,7 @@ import TaskManagementTable from "./pages/TaskStatus/TaskManagementTable";
 import Job from "./pages/JobStatus/Job"
 import CaptureWebhook from "./pages/JobStatus/CaptureWebhook";
 import StructureJobStatus from "./pages/JobStatus/StructureJobStatus";
-import CustomTable from "./components/CustomTable";
+import CustomTable from "./components/customTable/CustomTable";
 import Testing from "./pages/Testing";
 import SheetComment from "./pages/CustomForms/SheetComment";
 import PostgresComment from "./pages/CustomForms/PostgresComment";
@@ -54,7 +54,8 @@ import RLSManagement from "./pages/Admin/RLSManagement";
 import RolesCreator from "./pages/Roles/RolesCreator";
 import RolesAssignment from "./pages/Roles/RolesAssignment";
 import AdminProtectedRoute from "./pages/Helper/AdminProtectedRoute";
-
+import './utils/axiosConfig';
+import GlobalLoading from "./components/GlobalLoading";
 function App() {
   const location = useLocation();
   // const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
@@ -69,6 +70,7 @@ function App() {
         <title>Clicarity - Professional Workflow Solutions</title>
         <meta name="description" content="Your description here" />
       </Helmet>
+      <GlobalLoading/>
       {!hideHeader && <Header />}
       <Routes>
         {/* Public Routes */}

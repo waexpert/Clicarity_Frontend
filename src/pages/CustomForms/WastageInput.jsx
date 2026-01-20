@@ -31,7 +31,7 @@
 //     const [error, setError] = useState('');
 //     const queryData = useQueryObject();
 //     const [responseData, setResponseData] = useState(null); 
-//     const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
+//     const basemultiupdate = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
 
 //     const in_pro = queryData.in_pro === 'true';
 //     const tableName = queryData.tableName;
@@ -632,7 +632,7 @@
 //     const queryData = useQueryObject();
 //     const [nextProcess, setNextProcess] = useState(queryData.next_process || '');
 //     const [responseData, setResponseData] = useState(null);
-//     const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
+//     const basemultiupdate = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
 
 //     const tableName = queryData.tableName;
 //     const isNextProcessProvided = !!queryData.next_process;
@@ -1309,7 +1309,7 @@
 //     const [nextProcess, setNextProcess] = useState(queryData.next_process || '');
 //     const [responseData, setResponseData] = useState(null);
 //     const [comment, setComment] = useState('');
-//     const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
+//     const basemultiupdate = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
 
 //     // vendor 
 //     const [selectedVendor, setSelectedVendor] = useState('');
@@ -2126,7 +2126,7 @@ export default function WastageInput() {
     const [nextProcess, setNextProcess] = useState(queryData.next_process || '');
     const [responseData, setResponseData] = useState(null);
     const [comment, setComment] = useState('');
-    const basemultiupdate = `https://click.wa.expert/api/data/updateMultiple?`;
+    const basemultiupdate = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
 
     // Vendor state
     const [selectedVendor, setSelectedVendor] = useState('');

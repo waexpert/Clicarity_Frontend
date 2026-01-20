@@ -41,7 +41,7 @@
 //       };
 
 //       await axios.post(
-//         `https://click.wa.expert/api/data/updateComment`, 
+//         `${import.meta.env.VITE_APP_BASE_URL}/data/updateComment`, 
 //         payload
 //       );
 
@@ -188,7 +188,7 @@ export default function PostgresComment() {
       };
 
       await axios.post(
-        `https://click.wa.expert/api/data/updateComment`, 
+        `${import.meta.env.VITE_APP_BASE_URL}/data/updateComment`, 
         payload
       );
 

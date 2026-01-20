@@ -90,7 +90,7 @@ export default function SheetTransfer() {
       };
 
       await axios.post(
-        `https://click.wa.expert/api/data/updateSheetTransfer`, // Updated endpoint
+        `${import.meta.env.VITE_APP_BASE_URL}/data/updateSheetTransfer`, // Updated endpoint
         payload
       );
 

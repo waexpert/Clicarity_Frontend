@@ -2226,107 +2226,6 @@ const saveColumnPreferences = async (columns) => {
   };
 
   // Fetch data from API
-  // const fetchData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     console.log("apiParams", apiParams);
-  //     console.log("type", type);
-
-  //     let fetchedData;
-
-  //     if (type === "normal") {
-  //       const response = await axios.post(getAllRecords, apiParams);
-  //       fetchedData = response.data.data;
-  //       console.log(response.data.columns)
-
-  //       setMetaData(response.data.columns)
-  //     } else if (type === "payment") {
-  //       // Use the correct payment endpoint
-  //       const response = await axios.get(
-  //         `${import.meta.env.VITE_APP_BASE_URL}/payment-reminders/list?owner_id=${owner_id}`
-  //       );
-  //       fetchedData = response.data.data || response.data;
-  //     } else {
-  //       // Fallback for other types
-  //       const response = await axios.get(
-  //         `${import.meta.env.VITE_APP_BASE_URL}/data/getAllPayments?owner_id=${owner_id}`
-  //       );
-  //       fetchedData = response.data.data;
-  //     }
-
-  //     console.log("Raw fetched data:", fetchedData);
-
-  //     // Filter data based on type
-  //     let filteredData = fetchedData;
-
-  //     if (type === "payment") {
-  //       // Only show records with type = 'original' for payment reminders
-  //       filteredData = fetchedData.filter(item =>
-  //         item.type === 'original' || item.type === 'Original'
-  //       );
-  //       console.log("Filtered payment data (original only):", filteredData);
-  //     }
-
-  //     // Set the filtered data
-  //     setOriginalRecords(filteredData);
-  //     setRecords(filteredData);
-  //     setTotalRecords(filteredData.length);
-  //     setTotalPages(Math.ceil(filteredData.length / pageSize));
-
-  //     // Generate columns from the first available record
-  //     let recordForColumns = null;
-
-  //     if (filteredData.length > 0) {
-  //       if (type === "payment") {
-  //         // For payment type, find the first 'original' record for column structure
-  //         recordForColumns = filteredData.find(item =>
-  //           item.type === 'original' || item.type === 'Original'
-  //         ) || filteredData[0]; // Fallback to first record if no 'original' found
-  //       } else {
-  //         // For normal type, use first record directly
-  //         recordForColumns = filteredData[0];
-  //       }
-  //     }
-
-  //     if (recordForColumns) {
-  //       const dynamicColumns = Object.keys(recordForColumns).map(key => ({
-  //         id: key,
-  //         name: formatColumnName(key),
-  //         accessor: key,
-  //         sortable: true,
-  //         visible: true,
-  //         type: getColumnType(recordForColumns[key], key)
-  //       }));
-  //       setColumns(dynamicColumns);
-  //       console.log("Generated columns:", dynamicColumns);
-  //     } else {
-  //       console.warn("No records found to generate columns from");
-  //       setColumns([]);
-  //     }
-
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-
-  //     // More detailed error logging
-  //     if (error.response) {
-  //       console.error("Response status:", error.response.status);
-  //       console.error("Response data:", error.response.data);
-  //     }
-
-  //     toast.error("Failed to fetch records");
-
-  //     // Set empty state on error
-  //     setOriginalRecords([]);
-  //     setRecords([]);
-  //     setTotalRecords(0);
-  //     setTotalPages(1);
-  //     setColumns([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Fetch data from API
 const fetchData = async () => {
   try {
     setLoading(true);
@@ -2365,6 +2264,7 @@ const fetchData = async () => {
     }
 
     setOriginalRecords(filteredData);
+    console.log(originalRecords)
     setRecords(filteredData);
     setTotalRecords(filteredData.length);
     setTotalPages(Math.ceil(filteredData.length / pageSize));
@@ -3897,3 +3797,5 @@ const hideAllColumns = async () => {
 };
 
 export default CustomTable;
+
+

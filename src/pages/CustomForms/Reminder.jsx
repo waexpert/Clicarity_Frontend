@@ -658,7 +658,7 @@ export default function Reminder() {
 
             // Make POST request to the new endpoint
             const response = await axios.post(
-                'https://click.wa.expert/api/reminder/add',
+                '${import.meta.env.VITE_APP_BASE_URL}/reminder/add',
                 payload,
                 {
                     headers: {

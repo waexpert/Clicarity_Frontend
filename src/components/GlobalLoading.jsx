@@ -19,7 +19,7 @@ const GlobalLoading = () => {
 
   return (
     <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="flex flex-col items-center justify-center gap-4">
+      <div className="flex flex-col items-center justify-center">
         <img 
           src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png" 
           alt="Loading..." 
@@ -28,7 +28,7 @@ const GlobalLoading = () => {
             animation: 'blink 1.5s ease-in-out infinite'
           }}
         />
-        <p className="text-lg font-semibold text-gray-700 text-center">Loading ...</p>
+        <p className="text-lg font-semibold text-[#4285B4] text-center">is loading your preferences...</p>
       </div>
       <style>{`
         @keyframes blink {

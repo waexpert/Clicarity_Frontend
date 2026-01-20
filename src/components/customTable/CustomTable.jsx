@@ -1885,7 +1885,7 @@ import { showText } from 'pdf-lib';
 import "../../css/components/CustomTable.css";
 import ResponsivePagination from './Pagination';
 import WorkflowCounter from './WorkFlowCounter';
-import { columnPreferencesService } from '../../services/columnPreferencesService';
+import { columnPreferencesService } from '../services/columnPreferencesService';
 
 
 

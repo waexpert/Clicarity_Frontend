@@ -550,7 +550,7 @@
 //     getAllTables();
 //     setCurrentTable(searchTable)
 //   }, []);
-  
+
 
 
 //   const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
@@ -977,7 +977,7 @@
 
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy } from 'react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { SlidersHorizontal, X } from 'lucide-react';
@@ -985,7 +985,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import RecordDetails from '../../components/customUpdateForm/RecordDetails';
-import WastageUpdateForm from '../../components/customUpdateForm/WastageUpdateForm';
+const WastageUpdateForm = lazy(() => import('../../components/customUpdateForm/WastageUpdateForm'));
 import Filter from '../../components/customUpdateForm/Filter';
 import '../../css/pages/CustomViewForm.css';
 
@@ -1083,7 +1083,7 @@ const CustomViewForm = () => {
 
     try {
       const baseUrl = import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
-      const response = await fetch(`${baseUrl}/data/getRecordByTargetAll`, {
+      const response = await fetch(`${baseUrl}/data/getRecordByCondition`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1091,8 +1091,9 @@ const CustomViewForm = () => {
         body: JSON.stringify({
           schemaName,
           tableName: currentTable,
-          targetColumn: 'status',
-          targetValue: processName,
+          // targetColumn: 'status',
+          // targetValue: processName,
+          targetWithCondition: `status = ${processName} AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
         }),
       });
 
@@ -1101,8 +1102,24 @@ const CustomViewForm = () => {
       }
 
       const result = await response.json();
+
+      const wastageResponse = await fetch(`${baseUrl}/data/getRecordByCondition`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          schemaName,
+          tableName: currentTable,
+          targetWithCondition: `${processName}_balance > 0 AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
+        }),
+      });
+
+      const wastageData = await wastageResponse.json();
+      console.log(wastageData)
+      const wastageArray = Array.isArray(wastageData) ? wastageData : [wastageData];
       const recordsArray = Array.isArray(result) ? result : [result];
-      setRecords(recordsArray);
+      setRecords(recordsArray.concat(wastageArray));
 
       // Extract columns from the first record
       let columnNames = [];
@@ -1247,7 +1264,7 @@ const CustomViewForm = () => {
         <div className="select-wrapper">
           <select
             id="table-select"
-            value={currentTable || ''}  
+            value={currentTable || ''}
             onChange={handleTableSelect}
             className={`select ${error && !currentTable ? 'select-error' : ''}`}
           >
@@ -1285,7 +1302,7 @@ const CustomViewForm = () => {
         <div className="select-wrapper">
           <select
             id="process-name"
-            value={processName || ''} 
+            value={processName || ''}
             onChange={handleSelectProcess}
             className={`select ${error && !processName ? 'select-error' : ''}`}
             disabled={!currentTable}
@@ -1343,10 +1360,21 @@ const CustomViewForm = () => {
 
           <div className="records-grid">
             {records.map((record, index) => (
+              // <Button
+              //   key={record.us_id || `record-${index}`}
+              //   onClick={() => handleRecordClick(record)}
+              //   className={`record-button ${selectedRecord?.us_id === record.us_id ? 'active' : ''}`}
+              // >
+              //   <div>
+              //     {record.us_id || `Record ${index + 1}`}
+              //   </div>
+              // </Button>
+
               <Button
-                key={record.us_id || `record-${index}`} 
+                key={record.us_id || `record-${index}`}
                 onClick={() => handleRecordClick(record)}
                 className={`record-button ${selectedRecord?.us_id === record.us_id ? 'active' : ''}`}
+                style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
               >
                 <div>
                   {record.us_id || `Record ${index + 1}`}
@@ -1358,7 +1386,7 @@ const CustomViewForm = () => {
       )}
 
       {/* Compact Selected Record Details Card */}
-      {selectedRecord && (
+      {/* {selectedRecord && (
         <div className="record-details-card">
           <button
             onClick={handleCloseDetails}
@@ -1410,6 +1438,57 @@ const CustomViewForm = () => {
               </div>
             </>
           )}
+        </div>
+      )} */}
+
+      {/* AFTER - Separate rendering for Wastage */}
+      {selectedRecord && currentProcessType === 'Wastage' ? (
+        <div className="form-group-2">
+          <WastageUpdateForm
+            data={selectedRecord}
+            loading={loading}
+            visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+            setupData={setupData}
+            tableName={currentTable}
+            schemaName={schemaName}
+            childRecords={childRecords}
+            selectedColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+          />
+        </div>
+      ) : selectedRecord && (
+        <div className="record-details-card">
+          <button onClick={handleCloseDetails}>
+            <X size={20} />
+          </button>
+
+          <h3 className="heading">
+            Record Details - {selectedRecord.us_id}
+          </h3>
+
+          <RecordDetails
+            data={filteredData}
+            loading={loading}
+            selectedColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+            visibleColumns={visibleColumns.length > 0 ? visibleColumns : selectedColumns}
+          />
+
+          <div>
+            <Button
+              onClick={() => {
+                navigate(`/status-update?schemaName=${schemaName}&current_process=${selectedRecord?.status}&tableName=${currentTable}&recordId=${selectedRecord?.id}`);
+              }}
+              className="button"
+            >
+              Update Status
+            </Button>
+
+            <Button
+              onClick={handleSplitJob}
+              className="button"
+            >
+              Split Job
+            </Button>
+          </div>
         </div>
       )}
 

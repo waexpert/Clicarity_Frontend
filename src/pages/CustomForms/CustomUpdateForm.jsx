@@ -6,6 +6,7 @@ import axios from 'axios';
 import { setDynamicData } from '../../features/dataMethod/tableStructureSlice';
 import { SlidersHorizontal } from 'lucide-react';
 import '../../css/element/icon.css';
+import '../../css/pages/CustomViewForm.css';
 
 // Lazy load heavy components
 const DynamicUpdateForm = lazy(() => import('../../components/customUpdateForm/DynamicUpdateForm'));
@@ -416,3 +417,5 @@ const CustomUpdateForm = () => {
 };
 
 export default CustomUpdateForm;
+
+

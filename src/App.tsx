@@ -561,8 +561,8 @@ function App() {
         <meta name="description" content="Streamline your workflow with Clicarity's comprehensive task, job, and payment management solutions" />
       </Helmet>
       
-      <GlobalLoading />
-      
+      {/* <GlobalLoading /> */}
+      {location.pathname !== '/custom-update' && <GlobalLoading />}
       {!shouldHideHeader && <Header />}
       
       <Suspense fallback={<PageLoader />}>

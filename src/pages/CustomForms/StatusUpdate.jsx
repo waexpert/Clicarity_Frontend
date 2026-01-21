@@ -1,4 +1,349 @@
-// import { useEffect, useState } from 'react';
+// // import { useEffect, useState } from 'react';
+// // import { Send } from 'lucide-react';
+// // import { Label } from '@/components/ui/label';
+// // import { useLocation, useNavigate } from 'react-router-dom';
+// // import axios from 'axios';
+// // import { toast } from 'sonner';
+// // import { useSelector } from 'react-redux';
+// // import '../../css/pages/StatusUpdate.css';
+
+// // function useQueryObject() {
+// //     const location = useLocation();
+// //     const searchParams = new URLSearchParams(location.search);
+// //     const queryObj = {};
+
+// //     for (const [key, value] of searchParams.entries()) {
+// //         queryObj[key] = value;
+// //     }
+
+// //     return queryObj;
+// // }
+
+// // export default function StatusUpdate() {
+// //     const navigate = useNavigate();
+// //     const [nextProcess, setNextProcess] = useState('');
+// //     const [submitted, setSubmitted] = useState(false);
+// //     const [isSubmitting, setIsSubmitting] = useState(false);
+// //     const [isLoading, setIsLoading] = useState(true);
+// //     const [error, setError] = useState('');
+// //     const queryData = useQueryObject();
+
+// //     const user = useSelector((state) => state.user);
+// //     const tableName = queryData.tableName;
+// //     const [processSteps, setProcessSteps] = useState([]);
+// //     const currentProcess = queryData.current_process || '';
+// //     const [webhook, setWebhook] = useState('');
+// //     const [comment, setComment] = useState('');
+// //     const [finalProcessSteps, setFinalProcessSteps] = useState([]);
+
+// //     const handleInputChange = (e) => {
+// //         setComment(e.target.value);
+// //         if (error) setError("");
+// //     };
+
+// //     // Fetch process steps
+// //     useEffect(() => {
+// //         const fetchData = async () => {
+// //             try {
+// //                 setIsLoading(true);
+// //                 const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+
+// //                 const { data } = await axios.get(route);
+// //                 const steps = data.setup.process_steps || [];
+// //                 setProcessSteps(steps);
+// //                 setWebhook(data.setup.webhook || '');
+
+// //                 const currentIdx = steps.indexOf(currentProcess);
+
+// //                 const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
+// //                 const recordResponse = await axios.post(getRecordRoute, {
+// //                     schemaName: queryData.schemaName,
+// //                     tableName: queryData.tableName,
+// //                     targetColumn: queryData.targetColumn || 'id',
+// //                     targetValue: queryData.recordId
+// //                 });
+
+// //                 const recordData = recordResponse.data;
+
+// //                 const filteredSteps = steps.filter((step, index) =>
+// //                     index > currentIdx &&
+// //                     recordData[step] !== "Not Required"
+// //                 );
+
+// //                 setFinalProcessSteps(filteredSteps);
+
+// //             } catch (error) {
+// //                 console.error('Error fetching process steps:', error);
+// //                 toast.error("Failed to load process steps");
+// //             } finally {
+// //                 setIsLoading(false);
+// //             }
+// //         };
+
+// //         if (user.id && tableName) {
+// //             fetchData();
+// //         }
+// //     }, [user.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, currentProcess]);
+
+// //     // Set next process from URL if provided
+// //     useEffect(() => {
+// //         if (queryData.next_process && nextProcess === '') {
+// //             setNextProcess(queryData.next_process);
+// //         }
+// //     }, [queryData.next_process, nextProcess]);
+
+// //     // Cleanup redirect timeout on unmount
+// //     useEffect(() => {
+// //         if (submitted) {
+// //             const timer = setTimeout(() => {
+// //                 navigate(-1);
+// //             }, 2000);
+
+// //             return () => clearTimeout(timer);
+// //         }
+// //     }, [submitted, navigate]);
+
+// //     const handleSubmit = async () => {
+// //         if (!nextProcess) {
+// //             setError("Please select a process");
+// //             return;
+// //         }
+
+// //         if (!queryData.schemaName || !queryData.tableName || !queryData.recordId) {
+// //             setError("Missing required query parameters");
+// //             return;
+// //         }
+
+// //         const columnToUpdate = queryData.columnName || queryData.column || 'status';
+
+// //         try {
+// //             setIsSubmitting(true);
+// //             setError("");
+// //             const webhookElements = webhook ? webhook.split('/') : [];
+// //             const wid = webhook ? webhookElements[webhookElements.length - 1] : null;
+
+// //             const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?` +
+// //                 `schemaName=${queryData.schemaName.toLowerCase()}` +
+// //                 `&tableName=${queryData.tableName.toLowerCase()}` +
+// //                 `&recordId=${queryData.recordId}` +
+// //                 `&col1=${columnToUpdate.toLowerCase()}` +
+// //                 `&val1=${nextProcess.toLowerCase()}` +
+// //                 `&col2=${currentProcess.toLowerCase()}_date` +
+// //                 `&val2=${new Date().toISOString()}` +
+// //                 (wid ? `&wid=${wid}` : '') +
+// //                 `&col3=${currentProcess}_comment` +
+// //                 `&val3=${encodeURIComponent(comment)}`;
+
+// //             await axios.get(updateUrl);
+
+// //             setSubmitted(true);
+// //             toast.success("Status updated successfully!");
+
+// //         } catch (err) {
+// //             console.error('Submit Error:', err);
+// //             setError("Failed to submit. Please try again.");
+// //             toast.error("Failed to update status");
+// //         } finally {
+// //             setIsSubmitting(false);
+// //         }
+// //     };
+
+// //     const handleNextProcessChange = (e) => {
+// //         setNextProcess(e.target.value);
+// //         if (error) setError("");
+// //     };
+
+// //     const handleKeyDown = (e) => {
+// //         if (e.key === 'Enter' && !e.shiftKey) {
+// //             e.preventDefault();
+// //             handleSubmit();
+// //         }
+// //     };
+
+// //     if (submitted) {
+// //         return (
+// //             <div className="status-update-container">
+// //                 <img
+// //                     src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
+// //                     alt="logo"
+// //                     className="logo"
+// //                 />
+
+// //                 <div className="success-container">
+// //                     <div className="success-icon">✓</div>
+// //                     <h2 className="success-heading">Success!</h2>
+// //                     <p className="success-message">
+// //                         Your status has been updated successfully.
+// //                     </p>
+// //                     <p className="redirect-message">
+// //                         Redirecting back...
+// //                     </p>
+// //                 </div>
+// //             </div>
+// //         );
+// //     }
+
+// //     return (
+// //         <div className="status-update-container">
+// //             <img
+// //                 src="https://clicarity.s3.eu-north-1.amazonaws.com/logo.png"
+// //                 alt="logo"
+// //                 className="logo"
+// //             />
+
+// //             <div className="header-section">
+// //                 <p className="subheading">
+// //                     Select the next process
+// //                 </p>
+// //             </div>
+
+// //             {isLoading ? (
+// //                 <div className="loading-container">
+// //                     <div className="spinner"></div>
+// //                     <p>Loading process steps...</p>
+// //                 </div>
+// //             ) : (
+// //                 <div className="form">
+// //                     <div className="input-group">
+// //                         <Label htmlFor="next-process" className="input-label">
+// //                             Next Process
+// //                         </Label>
+
+// //                         <div className="select-wrapper">
+// //                             <select
+// //                                 id="next-process"
+// //                                 value={nextProcess}
+// //                                 onChange={handleNextProcessChange}
+// //                                 onKeyDown={handleKeyDown}
+// //                                 className={`select ${error && !nextProcess ? 'select-error' : ''}`}
+// //                                 disabled={isSubmitting}
+// //                             >
+// //                                 <option value="" disabled className="placeholder-option">
+// //                                     -- Select Next Process --
+// //                                 </option>
+// //                                 {finalProcessSteps.map((step) => (
+// //                                     <option key={step} value={step} className="option">
+// //                                         {step.charAt(0).toUpperCase() + step.slice(1).replace(/_/g, ' ')}
+// //                                     </option>
+// //                                 ))}
+// //                             </select>
+// //                             <div className="select-arrow">
+// //                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+// //                                     <path
+// //                                         d="M1 1.5L6 6.5L11 1.5"
+// //                                         stroke="currentColor"
+// //                                         strokeWidth="2"
+// //                                         strokeLinecap="round"
+// //                                         strokeLinejoin="round"
+// //                                     />
+// //                                 </svg>
+// //                             </div>
+// //                         </div>
+
+// //                         <div style={styles.textareaContainer}>
+// //                             <textarea
+// //                                 id="comment"
+// //                                 value={comment}
+// //                                 onChange={handleInputChange}
+// //                                 onKeyDown={handleKeyDown}
+// //                                 placeholder="Type your comment or notes here..."
+// //                                 style={{
+// //                                     ...styles.textarea,
+// //                                     ...(error ? styles.textareaError : {})
+// //                                 }}
+// //                                 rows={4}
+// //                                 disabled={isSubmitting}
+// //                             />
+// //                             <div style={styles.characterCount}>
+// //                                 {comment.length} characters
+// //                             </div>
+// //                         </div>
+
+// //                         {error && (
+// //                             <div className="error-message">
+// //                                 {error}
+// //                             </div>
+// //                         )}
+// //                     </div>
+
+// //                     <button
+// //                         onClick={handleSubmit}
+// //                         className={`submit-button ${nextProcess ? 'active' : ''} ${isSubmitting ? 'disabled' : ''}`}
+// //                         disabled={isSubmitting || !nextProcess}
+// //                     >
+// //                         <div className="button-content">
+// //                             {isSubmitting ? (
+// //                                 <>
+// //                                     <div className="spinner"></div>
+// //                                     Submitting...
+// //                                 </>
+// //                             ) : (
+// //                                 <>
+// //                                     <Send size={16} />
+// //                                     Update Status
+// //                                 </>
+// //                             )}
+// //                         </div>
+// //                     </button>
+// //                 </div>
+// //             )}
+// //         </div>
+// //     );
+// // }
+
+// // const styles = {
+// //     textareaContainer: {
+// //         position: 'relative',
+// //         width: '100%',
+// //         marginTop: '16px',
+// //     },
+// //     textarea: {
+// //         width: '100%',
+// //         padding: '16px',
+// //         paddingRight: '120px', // Space for character count
+// //         fontSize: '16px',
+// //         borderRadius: '12px',
+// //         border: '2px solid #e2e8f0',
+// //         transition: 'all 0.3s ease',
+// //         outline: 'none',
+// //         resize: 'vertical',
+// //         minHeight: '120px',
+// //         fontFamily: 'inherit',
+// //         lineHeight: '1.5',
+// //         backgroundColor: '#fafafa',
+// //         boxSizing: 'border-box',
+// //     },
+// //     textareaError: {
+// //         borderColor: '#e53e3e',
+// //         backgroundColor: '#fed7d7',
+// //     },
+// //     characterCount: {
+// //         position: 'absolute',
+// //         bottom: '12px',
+// //         right: '16px',
+// //         fontSize: '12px',
+// //         color: '#a0aec0',
+// //         backgroundColor: 'rgba(255, 255, 255, 0.95)',
+// //         padding: '4px 8px',
+// //         borderRadius: '4px',
+// //         pointerEvents: 'none',
+// //         userSelect: 'none',
+// //     },
+// // };
+
+
+
+
+
+
+
+
+
+
+
+
+// // Vendor Enabled form
+// import { useEffect, useState, useCallback, useMemo } from 'react';
 // import { Send } from 'lucide-react';
 // import { Label } from '@/components/ui/label';
 // import { useLocation, useNavigate } from 'react-router-dom';
@@ -7,103 +352,175 @@
 // import { useSelector } from 'react-redux';
 // import '../../css/pages/StatusUpdate.css';
 
+// // Constants
+// const BASE_URL = import.meta.env.VITE_APP_BASE_URL;
+// const IN_HOUSE_VENDOR = { id: Date.now(), name: "In House" };
+
+// // Custom hook for query parameters
 // function useQueryObject() {
 //     const location = useLocation();
-//     const searchParams = new URLSearchParams(location.search);
-//     const queryObj = {};
-
-//     for (const [key, value] of searchParams.entries()) {
-//         queryObj[key] = value;
-//     }
-
-//     return queryObj;
+//     return useMemo(() => {
+//         const searchParams = new URLSearchParams(location.search);
+//         const queryObj = {};
+//         for (const [key, value] of searchParams.entries()) {
+//             queryObj[key] = value;
+//         }
+//         return queryObj;
+//     }, [location.search]);
 // }
 
 // export default function StatusUpdate() {
 //     const navigate = useNavigate();
-//     const [nextProcess, setNextProcess] = useState('');
+//     const queryData = useQueryObject();
+//     const userData = useSelector((state) => state.user);
+
+//     // State management
+//     const [nextProcess, setNextProcess] = useState(queryData.next_process || '');
+//     const [selectedVendor, setSelectedVendor] = useState('');
 //     const [submitted, setSubmitted] = useState(false);
 //     const [isSubmitting, setIsSubmitting] = useState(false);
-//     const [isLoading, setIsLoading] = useState(true);
 //     const [error, setError] = useState('');
-//     const queryData = useQueryObject();
-
-//     const user = useSelector((state) => state.user);
-//     const tableName = queryData.tableName;
-//     const [processSteps, setProcessSteps] = useState([]);
-//     const currentProcess = queryData.current_process || '';
-//     const [webhook, setWebhook] = useState('');
 //     const [comment, setComment] = useState('');
 //     const [finalProcessSteps, setFinalProcessSteps] = useState([]);
+//     const [allVendors, setAllVendors] = useState([]);
+//     const [webhook, setWebhook] = useState('');
 
-//     const handleInputChange = (e) => {
-//         setComment(e.target.value);
-//         if (error) setError("");
-//     };
+//     // Computed values
+//     const tableName = queryData.tableName;
+//     const currentProcess = queryData.current_process || '';
+//     const owner_id = userData?.owner_id ?? userData?.id;
 
-//     // Fetch process steps
+//     // Memoized filtered vendors based on selected process
+//     const filteredVendors = useMemo(() => {
+//         if (!nextProcess || allVendors.length === 0) return [];
+
+//         return allVendors.filter(vendor => {
+//             if (vendor.name === "In House") return true;
+            
+//             const vendorProcessName = vendor.process_name?.toLowerCase() || '';
+//             const selectedProcessName = nextProcess.toLowerCase();
+            
+//             return vendorProcessName === selectedProcessName;
+//         });
+//     }, [nextProcess, allVendors]);
+
+//     // API Service Functions
+//     const fetchAllData = useCallback(async (tableName) => {
+//         const { data } = await axios.post(`${BASE_URL}/data/getAllData`, {
+//             schemaName: userData.schema_name,
+//             tableName,
+//             userId: userData.id,
+//             userEmail: userData.email
+//         });
+//         return data.data || [];
+//     }, [userData.schema_name, userData.id, userData.email]);
+
+//     const fetchSetupData = useCallback(async () => {
+//         const { data } = await axios.get(
+//             `${BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`
+//         );
+//         return data;
+//     }, [owner_id, tableName]);
+
+//     const fetchRecordByTarget = useCallback(async () => {
+//         const { data } = await axios.post(`${BASE_URL}/data/getRecordByTarget`, {
+//             schemaName: queryData.schemaName,
+//             tableName: queryData.tableName,
+//             targetColumn: queryData.targetColumn || 'id',
+//             targetValue: queryData.recordId
+//         });
+//         return data;
+//     }, [queryData.schemaName, queryData.tableName, queryData.targetColumn, queryData.recordId]);
+
+//     // Fetch all required data in parallel
 //     useEffect(() => {
-//         const fetchData = async () => {
+//         if (!userData.id || !tableName) return;
+
+//         const controller = new AbortController();
+
+//         const initializeData = async () => {
 //             try {
-//                 setIsLoading(true);
-//                 const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${user.id}&product_name=${tableName}`;
+//                 // Parallel API calls for better performance
+//                 const [setupData, vendorsData, recordData] = await Promise.allSettled([
+//                     fetchSetupData(),
+//                     fetchAllData("vendor"),
+//                     fetchRecordByTarget()
+//                 ]);
 
-//                 const { data } = await axios.get(route);
-//                 const steps = data.setup.process_steps || [];
-//                 setProcessSteps(steps);
-//                 setWebhook(data.setup.webhook || '');
+//                 // Handle setup data
+//                 if (setupData.status === 'fulfilled') {
+//                     const setup = setupData.value;
+//                     const steps = setup.setup?.process_steps || [];
+//                     setWebhook(setup.setup?.webhook || '');
 
-//                 const currentIdx = steps.indexOf(currentProcess);
+//                     // Find next valid process
+//                     const currentIdx = steps.indexOf(currentProcess);
+//                     const record = recordData.status === 'fulfilled' ? recordData.value : {};
 
-//                 const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
-//                 const recordResponse = await axios.post(getRecordRoute, {
-//                     schemaName: queryData.schemaName,
-//                     tableName: queryData.tableName,
-//                     targetColumn: queryData.targetColumn || 'id',
-//                     targetValue: queryData.recordId
-//                 });
+//                     let nextValidProcess = null;
+//                     for (let i = currentIdx + 1; i < steps.length; i++) {
+//                         const step = steps[i];
+//                         if (record[step] !== "Not Required") {
+//                             nextValidProcess = step;
+//                             break;
+//                         }
+//                     }
 
-//                 const recordData = recordResponse.data;
+//                     setFinalProcessSteps(nextValidProcess ? [nextValidProcess] : []);
+//                 } else {
+//                     toast.error("Failed to load process steps");
+//                 }
 
-//                 const filteredSteps = steps.filter((step, index) =>
-//                     index > currentIdx &&
-//                     recordData[step] !== "Not Required"
-//                 );
-
-//                 setFinalProcessSteps(filteredSteps);
+//                 // Handle vendors data
+//                 if (vendorsData.status === 'fulfilled') {
+//                     const vendors = vendorsData.value;
+//                     setAllVendors([IN_HOUSE_VENDOR, ...vendors]);
+//                 } else {
+//                     toast.error("Failed to load vendors");
+//                 }
 
 //             } catch (error) {
-//                 console.error('Error fetching process steps:', error);
-//                 toast.error("Failed to load process steps");
-//             } finally {
-//                 setIsLoading(false);
+//                 console.error('Initialization error:', error);
+//                 toast.error("Failed to load data");
 //             }
 //         };
 
-//         if (user.id && tableName) {
-//             fetchData();
+//         initializeData();
+
+//         return () => controller.abort();
+//     }, [
+//         userData.id,
+//         tableName,
+//         currentProcess,
+//         fetchSetupData,
+//         fetchAllData,
+//         fetchRecordByTarget
+//     ]);
+
+//     // Event Handlers with useCallback
+//     const handleInputChange = useCallback((e) => {
+//         setComment(e.target.value);
+//         if (error) setError("");
+//     }, [error]);
+
+//     const handleNextProcessChange = useCallback((e) => {
+//         setNextProcess(e.target.value);
+//         setSelectedVendor(''); // Reset vendor when process changes
+//         if (error) setError("");
+//     }, [error]);
+
+//     const handleVendorChange = useCallback((e) => {
+//         setSelectedVendor(e.target.value);
+//     }, []);
+
+//     const handleKeyDown = useCallback((e) => {
+//         if (e.key === 'Enter') {
+//             e.preventDefault();
+//             handleSubmit();
 //         }
-//     }, [user.id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, currentProcess]);
+//     }, [nextProcess, selectedVendor, comment]); // Dependencies needed for handleSubmit
 
-//     // Set next process from URL if provided
-//     useEffect(() => {
-//         if (queryData.next_process && nextProcess === '') {
-//             setNextProcess(queryData.next_process);
-//         }
-//     }, [queryData.next_process, nextProcess]);
-
-//     // Cleanup redirect timeout on unmount
-//     useEffect(() => {
-//         if (submitted) {
-//             const timer = setTimeout(() => {
-//                 navigate(-1);
-//             }, 2000);
-
-//             return () => clearTimeout(timer);
-//         }
-//     }, [submitted, navigate]);
-
-//     const handleSubmit = async () => {
+//     const handleSubmit = useCallback(async () => {
 //         if (!nextProcess) {
 //             setError("Please select a process");
 //             return;
@@ -114,25 +531,36 @@
 //             return;
 //         }
 
-//         const columnToUpdate = queryData.columnName || queryData.column || 'status';
-
 //         try {
 //             setIsSubmitting(true);
 //             setError("");
-//             const webhookElements = webhook ? webhook.split('/') : [];
-//             const wid = webhook ? webhookElements[webhookElements.length - 1] : null;
 
-//             const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?` +
-//                 `schemaName=${queryData.schemaName.toLowerCase()}` +
-//                 `&tableName=${queryData.tableName.toLowerCase()}` +
-//                 `&recordId=${queryData.recordId}` +
-//                 `&col1=${columnToUpdate.toLowerCase()}` +
-//                 `&val1=${nextProcess.toLowerCase()}` +
-//                 `&col2=${currentProcess.toLowerCase()}_date` +
-//                 `&val2=${new Date().toISOString()}` +
-//                 (wid ? `&wid=${wid}` : '') +
-//                 `&col3=${currentProcess}_comment` +
-//                 `&val3=${encodeURIComponent(comment)}`;
+//             const columnToUpdate = queryData.columnName || queryData.column || 'status';
+//             const webhookId = webhook ? webhook.split('/').pop() : null;
+
+//             // Build update parameters
+//             const params = new URLSearchParams({
+//                 schemaName: queryData.schemaName.toLowerCase(),
+//                 tableName: queryData.tableName.toLowerCase(),
+//                 recordId: queryData.recordId,
+//                 col1: columnToUpdate.toLowerCase(),
+//                 val1: nextProcess.toLowerCase(),
+//                 col2: `${currentProcess.toLowerCase()}_date`,
+//                 val2: new Date().toISOString(),
+//             });
+
+//             // Add current process vendor and comment
+//             params.append('col3', `${currentProcess.toLowerCase()}_vendor`);
+//             params.append('val3', selectedVendor || '');
+//             params.append('col4', `${currentProcess.toLowerCase()}_comment`);
+//             params.append('val4', comment || '');
+
+//             // Add webhook if available
+//             if (webhookId) {
+//                 params.append('wid', webhookId);
+//             }
+
+//             const updateUrl = `${BASE_URL}/data/updateMultiple?${params.toString()}`;
 
 //             await axios.get(updateUrl);
 
@@ -146,20 +574,28 @@
 //         } finally {
 //             setIsSubmitting(false);
 //         }
-//     };
+//     }, [
+//         nextProcess,
+//         selectedVendor,
+//         comment,
+//         webhook,
+//         currentProcess,
+//         queryData.schemaName,
+//         queryData.tableName,
+//         queryData.recordId,
+//         queryData.columnName,
+//         queryData.column
+//     ]);
 
-//     const handleNextProcessChange = (e) => {
-//         setNextProcess(e.target.value);
-//         if (error) setError("");
-//     };
-
-//     const handleKeyDown = (e) => {
-//         if (e.key === 'Enter' && !e.shiftKey) {
-//             e.preventDefault();
-//             handleSubmit();
+//     // Success screen with auto-redirect
+//     useEffect(() => {
+//         if (submitted) {
+//             const timer = setTimeout(() => navigate(-1), 2000);
+//             return () => clearTimeout(timer);
 //         }
-//     };
+//     }, [submitted, navigate]);
 
+//     // Render success state
 //     if (submitted) {
 //         return (
 //             <div className="status-update-container">
@@ -168,21 +604,19 @@
 //                     alt="logo"
 //                     className="logo"
 //                 />
-
 //                 <div className="success-container">
 //                     <div className="success-icon">✓</div>
 //                     <h2 className="success-heading">Success!</h2>
 //                     <p className="success-message">
 //                         Your status has been updated successfully.
 //                     </p>
-//                     <p className="redirect-message">
-//                         Redirecting back...
-//                     </p>
+//                     <p className="redirect-message">Redirecting back...</p>
 //                 </div>
 //             </div>
 //         );
 //     }
 
+//     // Main form render
 //     return (
 //         <div className="status-update-container">
 //             <img
@@ -192,115 +626,151 @@
 //             />
 
 //             <div className="header-section">
-//                 <p className="subheading">
-//                     Select the next process
-//                 </p>
+//                 <p className="subheading">Select the next process</p>
 //             </div>
 
-//             {isLoading ? (
-//                 <div className="loading-container">
-//                     <div className="spinner"></div>
-//                     <p>Loading process steps...</p>
-//                 </div>
-//             ) : (
-//                 <div className="form">
-//                     <div className="input-group">
-//                         <Label htmlFor="next-process" className="input-label">
-//                             Next Process
-//                         </Label>
-
-//                         <div className="select-wrapper">
-//                             <select
-//                                 id="next-process"
-//                                 value={nextProcess}
-//                                 onChange={handleNextProcessChange}
-//                                 onKeyDown={handleKeyDown}
-//                                 className={`select ${error && !nextProcess ? 'select-error' : ''}`}
-//                                 disabled={isSubmitting}
-//                             >
-//                                 <option value="" disabled className="placeholder-option">
-//                                     -- Select Next Process --
+//             <div className="form">
+//                 <div className="input-group">
+//                     {/* Next Process Dropdown */}
+//                     <Label htmlFor="next-process" className="input-label">
+//                         Next Process
+//                     </Label>
+//                     <div className="select-wrapper">
+//                         <select
+//                             id="next-process"
+//                             value={nextProcess}
+//                             onChange={handleNextProcessChange}
+//                             onKeyDown={handleKeyDown}
+//                             className={`select ${error && !nextProcess ? 'select-error' : ''}`}
+//                             disabled={isSubmitting}
+//                         >
+//                             <option value="" disabled className="placeholder-option">
+//                                 -- Select Next Process --
+//                             </option>
+//                             {finalProcessSteps.map((step) => (
+//                                 <option key={step} value={step} className="option">
+//                                     {step.charAt(0).toUpperCase() + step.slice(1).replace(/_/g, ' ')}
 //                                 </option>
-//                                 {finalProcessSteps.map((step) => (
-//                                     <option key={step} value={step} className="option">
-//                                         {step.charAt(0).toUpperCase() + step.slice(1).replace(/_/g, ' ')}
-//                                     </option>
-//                                 ))}
-//                             </select>
-//                             <div className="select-arrow">
-//                                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-//                                     <path
-//                                         d="M1 1.5L6 6.5L11 1.5"
-//                                         stroke="currentColor"
-//                                         strokeWidth="2"
-//                                         strokeLinecap="round"
-//                                         strokeLinejoin="round"
-//                                     />
-//                                 </svg>
-//                             </div>
-//                         </div>
-
-//                         <div style={styles.textareaContainer}>
-//                             <textarea
-//                                 id="comment"
-//                                 value={comment}
-//                                 onChange={handleInputChange}
-//                                 onKeyDown={handleKeyDown}
-//                                 placeholder="Type your comment or notes here..."
-//                                 style={{
-//                                     ...styles.textarea,
-//                                     ...(error ? styles.textareaError : {})
-//                                 }}
-//                                 rows={4}
-//                                 disabled={isSubmitting}
-//                             />
-//                             <div style={styles.characterCount}>
-//                                 {comment.length} characters
-//                             </div>
-//                         </div>
-
-//                         {error && (
-//                             <div className="error-message">
-//                                 {error}
-//                             </div>
-//                         )}
+//                             ))}
+//                         </select>
+//                         <SelectArrow />
 //                     </div>
 
-//                     <button
-//                         onClick={handleSubmit}
-//                         className={`submit-button ${nextProcess ? 'active' : ''} ${isSubmitting ? 'disabled' : ''}`}
-//                         disabled={isSubmitting || !nextProcess}
-//                     >
-//                         <div className="button-content">
-//                             {isSubmitting ? (
-//                                 <>
-//                                     <div className="spinner"></div>
-//                                     Submitting...
-//                                 </>
-//                             ) : (
-//                                 <>
-//                                     <Send size={16} />
-//                                     Update Status
-//                                 </>
-//                             )}
+//                     {/* Vendor Dropdown - Conditionally rendered */}
+//                     {nextProcess && filteredVendors.length > 0 && (
+//                         <>
+//                             <Label htmlFor="vendor" className="input-label" style={{ marginTop: '16px' }}>
+//                                 Select Vendor
+//                             </Label>
+//                             <div className="select-wrapper">
+//                                 <select
+//                                     id="vendor"
+//                                     value={selectedVendor}
+//                                     onChange={handleVendorChange}
+//                                     onKeyDown={handleKeyDown}
+//                                     className="select"
+//                                     disabled={isSubmitting}
+//                                 >
+//                                     <option value="" className="placeholder-option">
+//                                         -- Select Vendor --
+//                                     </option>
+//                                     {filteredVendors.map((vendor) => (
+//                                         <option
+//                                             key={vendor.id}
+//                                             value={vendor.name || vendor.vendor_name || vendor.id}
+//                                             className="option"
+//                                         >
+//                                             {vendor.name || vendor.vendor_name || `Vendor ${vendor.id}`}
+//                                         </option>
+//                                     ))}
+//                                 </select>
+//                                 <SelectArrow />
+//                             </div>
+//                         </>
+//                     )}
+
+//                     {/* No vendors warning */}
+//                     {nextProcess && filteredVendors.length === 0 && allVendors.length > 0 && (
+//                         <div className="warning-message">
+//                             No vendors available for the selected process "{nextProcess}"
 //                         </div>
-//                     </button>
+//                     )}
+
+//                     {/* Comment Textarea */}
+//                     <Label htmlFor="comment" className="input-label" style={{ marginTop: '16px' }}>
+//                         Comment (Optional)
+//                     </Label>
+//                     <div style={styles.textareaContainer}>
+//                         <textarea
+//                             id="comment"
+//                             value={comment}
+//                             onChange={handleInputChange}
+//                             placeholder="Type your comment or notes here..."
+//                             style={{
+//                                 ...styles.textarea,
+//                                 ...(error ? styles.textareaError : {})
+//                             }}
+//                             rows={4}
+//                             disabled={isSubmitting}
+//                         />
+//                         <div style={styles.characterCount}>
+//                             {comment.length} characters
+//                         </div>
+//                     </div>
+
+//                     {/* Error Message */}
+//                     {error && <div className="error-message">{error}</div>}
 //                 </div>
-//             )}
+
+//                 {/* Submit Button */}
+//                 <button
+//                     onClick={handleSubmit}
+//                     className={`submit-button ${nextProcess ? 'active' : ''} ${isSubmitting ? 'disabled' : ''}`}
+//                     disabled={isSubmitting || !nextProcess}
+//                 >
+//                     <div className="button-content">
+//                         {isSubmitting ? (
+//                             <>
+//                                 <div className="spinner"></div>
+//                                 Submitting...
+//                             </>
+//                         ) : (
+//                             <>
+//                                 <Send size={16} />
+//                                 Update Status
+//                             </>
+//                         )}
+//                     </div>
+//                 </button>
+//             </div>
 //         </div>
 //     );
 // }
 
+// // Extracted component to reduce inline JSX
+// const SelectArrow = () => (
+//     <div className="select-arrow">
+//         <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+//             <path
+//                 d="M1 1.5L6 6.5L11 1.5"
+//                 stroke="currentColor"
+//                 strokeWidth="2"
+//                 strokeLinecap="round"
+//                 strokeLinejoin="round"
+//             />
+//         </svg>
+//     </div>
+// );
+
+// // Styles
 // const styles = {
 //     textareaContainer: {
 //         position: 'relative',
 //         width: '100%',
-//         marginTop: '16px',
 //     },
 //     textarea: {
 //         width: '100%',
 //         padding: '16px',
-//         paddingRight: '120px', // Space for character count
 //         fontSize: '16px',
 //         borderRadius: '12px',
 //         border: '2px solid #e2e8f0',
@@ -319,30 +789,17 @@
 //     },
 //     characterCount: {
 //         position: 'absolute',
-//         bottom: '12px',
-//         right: '16px',
+//         bottom: '8px',
+//         right: '12px',
 //         fontSize: '12px',
 //         color: '#a0aec0',
-//         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-//         padding: '4px 8px',
+//         backgroundColor: 'rgba(255, 255, 255, 0.9)',
+//         padding: '2px 6px',
 //         borderRadius: '4px',
-//         pointerEvents: 'none',
-//         userSelect: 'none',
 //     },
 // };
 
 
-
-
-
-
-
-
-
-
-
-
-// Vendor Enabled form
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Send } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -453,20 +910,32 @@ export default function StatusUpdate() {
                     const steps = setup.setup?.process_steps || [];
                     setWebhook(setup.setup?.webhook || '');
 
-                    // Find next valid process
                     const currentIdx = steps.indexOf(currentProcess);
                     const record = recordData.status === 'fulfilled' ? recordData.value : {};
 
-                    let nextValidProcess = null;
-                    for (let i = currentIdx + 1; i < steps.length; i++) {
-                        const step = steps[i];
-                        if (record[step] !== "Not Required") {
-                            nextValidProcess = step;
-                            break;
+                    // Role-based filtering logic
+                    if (userData.owner_id === null) {
+                        // If owner_id is null, show all process steps greater than current step
+                        const availableSteps = [];
+                        for (let i = currentIdx + 1; i < steps.length; i++) {
+                            const step = steps[i];
+                            if (record[step] !== "Not Required") {
+                                availableSteps.push(step);
+                            }
                         }
+                        setFinalProcessSteps(availableSteps);
+                    } else {
+                        // If owner_id is not null, apply role-based filtering (show only next valid process)
+                        let nextValidProcess = null;
+                        for (let i = currentIdx + 1; i < steps.length; i++) {
+                            const step = steps[i];
+                            if (record[step] !== "Not Required") {
+                                nextValidProcess = step;
+                                break;
+                            }
+                        }
+                        setFinalProcessSteps(nextValidProcess ? [nextValidProcess] : []);
                     }
-
-                    setFinalProcessSteps(nextValidProcess ? [nextValidProcess] : []);
                 } else {
                     toast.error("Failed to load process steps");
                 }
@@ -490,6 +959,7 @@ export default function StatusUpdate() {
         return () => controller.abort();
     }, [
         userData.id,
+        userData.owner_id,
         tableName,
         currentProcess,
         fetchSetupData,

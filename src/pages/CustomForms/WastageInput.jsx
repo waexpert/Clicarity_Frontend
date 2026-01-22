@@ -2115,8 +2115,14 @@ function useQueryObject() {
     return queryObj;
 }
 
+// Constants
+const BASE_URL = import.meta.env.VITE_APP_BASE_URL;
+const IN_HOUSE_VENDOR = { id: Date.now(), name: "In House" };
+
 export default function WastageInput() {
     const navigate = useNavigate();
+
+    // State Mangement
     const [wastageValue, setWastageValue] = useState('');
     const [receivedValue, setReceivedValue] = useState('');
     const [submitted, setSubmitted] = useState(false);

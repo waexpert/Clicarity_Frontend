@@ -1066,83 +1066,161 @@ const CustomViewForm = () => {
     }
   };
 
+  // Working Wastage fitering but broken status based filtering 
+  // const handleSearch = async () => {
+  //   if (!currentTable) {
+  //     setError('Please select a table');
+  //     return;
+  //   }
+  //   if (!processName) {
+  //     setError('Please select a process');
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   setError(null);
+  //   setRecords([]);
+  //   setSelectedRecord(null);
+
+  //   try {
+  //     const baseUrl = import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
+  //     const response = await fetch(`${baseUrl}/data/getRecordByCondition`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         schemaName,
+  //         tableName: currentTable,
+  //         // targetColumn: 'status',
+  //         // targetValue: processName,
+  //         targetWithCondition: `status = ${processName} AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
+  //       }),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     const result = await response.json();
+
+  //     const wastageResponse = await fetch(`${baseUrl}/data/getRecordByCondition`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         schemaName,
+  //         tableName: currentTable,
+  //         targetWithCondition: `${processName}_balance > 0 AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
+  //       }),
+  //     });
+
+  //     const wastageData = await wastageResponse.json();
+  //     console.log(wastageData)
+  //     const wastageArray = Array.isArray(wastageData) ? wastageData : [wastageData];
+  //     const recordsArray = Array.isArray(result) ? result : [result];
+  //     setRecords(recordsArray.concat(wastageArray));
+
+  //     // Extract columns from the first record
+  //     let columnNames = [];
+  //     if (recordsArray.length > 0) {
+  //       columnNames = Object.keys(recordsArray[0]);
+  //       setColumns(columnNames);
+
+  //       // Set visible columns if not already set or if selectedColumns is empty
+  //       if (selectedColumns.length === 0) {
+  //         setVisibleColumns(columnNames);
+  //         setSelectedColumns(columnNames);
+  //       } else {
+  //         setVisibleColumns(selectedColumns);
+  //       }
+  //     }
+
+  //   } catch (err) {
+  //     setError(err.message || 'Failed to fetch records');
+  //     console.error('Search error:', err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const handleSearch = async () => {
-    if (!currentTable) {
-      setError('Please select a table');
-      return;
+  if (!currentTable) {
+    setError('Please select a table');
+    return;
+  }
+
+  if (!processName) {
+    setError('Please select a process');
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+  setRecords([]);
+  setSelectedRecord(null);
+
+  try {
+    const baseUrl =
+      import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
+
+    // ✅ FINAL SQL CONDITION (IMPORTANT PART)
+    const condition = `
+      (
+        status = '${processName}'
+        OR ${processName}_balance > 0
+      )
+      AND NOT (
+        us_id ~ '^[0-9]+$'
+        AND LENGTH(us_id::text) >= 10
+      )
+    `;
+
+    console.log('SQL CONDITION:', condition);
+
+    const response = await fetch(`${baseUrl}/data/getRecordByCondition`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        schemaName,
+        tableName: currentTable,
+        targetWithCondition: condition,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    if (!processName) {
-      setError('Please select a process');
-      return;
-    }
 
-    setLoading(true);
-    setError(null);
-    setRecords([]);
-    setSelectedRecord(null);
+    const result = await response.json();
+    const recordsArray = Array.isArray(result) ? result : [result];
 
-    try {
-      const baseUrl = import.meta.env.VITE_APP_BASE_URL || 'https://click.wa.expert/api';
-      const response = await fetch(`${baseUrl}/data/getRecordByCondition`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          schemaName,
-          tableName: currentTable,
-          // targetColumn: 'status',
-          // targetValue: processName,
-          targetWithCondition: `status = ${processName} AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
-        }),
-      });
+    setRecords(recordsArray);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // ✅ Extract columns safely
+    if (recordsArray.length > 0) {
+      const columnNames = Object.keys(recordsArray[0]);
+      setColumns(columnNames);
+
+      if (selectedColumns.length === 0) {
+        setSelectedColumns(columnNames);
+        setVisibleColumns(columnNames);
+      } else {
+        setVisibleColumns(selectedColumns);
       }
-
-      const result = await response.json();
-
-      const wastageResponse = await fetch(`${baseUrl}/data/getRecordByCondition`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          schemaName,
-          tableName: currentTable,
-          targetWithCondition: `${processName}_balance > 0 AND NOT (us_id ~ '^[0-9]+$' AND LENGTH(us_id::text) >= 10)`,
-        }),
-      });
-
-      const wastageData = await wastageResponse.json();
-      console.log(wastageData)
-      const wastageArray = Array.isArray(wastageData) ? wastageData : [wastageData];
-      const recordsArray = Array.isArray(result) ? result : [result];
-      setRecords(recordsArray.concat(wastageArray));
-
-      // Extract columns from the first record
-      let columnNames = [];
-      if (recordsArray.length > 0) {
-        columnNames = Object.keys(recordsArray[0]);
-        setColumns(columnNames);
-
-        // Set visible columns if not already set or if selectedColumns is empty
-        if (selectedColumns.length === 0) {
-          setVisibleColumns(columnNames);
-          setSelectedColumns(columnNames);
-        } else {
-          setVisibleColumns(selectedColumns);
-        }
-      }
-
-    } catch (err) {
-      setError(err.message || 'Failed to fetch records');
-      console.error('Search error:', err);
-    } finally {
-      setLoading(false);
     }
-  };
+
+  } catch (err) {
+    console.error('Search error:', err);
+    setError(err.message || 'Failed to fetch records');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchChildRecords = async (parentUsId) => {
     try {

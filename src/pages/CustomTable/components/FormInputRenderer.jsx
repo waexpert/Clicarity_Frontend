@@ -75,23 +75,23 @@ const FormInputRenderer = ({
         />
       );
 
-    case COLUMN_TYPES.SELECT_STATUS:
-      return (
-        <Select 
-          value={value || ''} 
-          onValueChange={(val) => onChange(id, val)}
-          disabled={disabled}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={STATUS_OPTIONS.PENDING}>Pending</SelectItem>
-            <SelectItem value={STATUS_OPTIONS.IN_PROGRESS}>In Progress</SelectItem>
-            <SelectItem value={STATUS_OPTIONS.COMPLETED}>Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      );
+    // case COLUMN_TYPES.SELECT_STATUS:
+    //   return (
+    //     <Select 
+    //       value={value || ''} 
+    //       onValueChange={(val) => onChange(id, val)}
+    //       disabled={disabled}
+    //     >
+    //       <SelectTrigger>
+    //         <SelectValue placeholder="Select status" />
+    //       </SelectTrigger>
+    //       <SelectContent>
+    //         <SelectItem value={STATUS_OPTIONS.PENDING}>Pending</SelectItem>
+    //         <SelectItem value={STATUS_OPTIONS.IN_PROGRESS}>In Progress</SelectItem>
+    //         <SelectItem value={STATUS_OPTIONS.COMPLETED}>Completed</SelectItem>
+    //       </SelectContent>
+    //     </Select>
+    //   );
 
     case COLUMN_TYPES.SELECT_PRIORITY:
       return (

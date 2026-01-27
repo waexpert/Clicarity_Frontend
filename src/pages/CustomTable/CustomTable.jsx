@@ -517,6 +517,20 @@ useEffect(() => {
         mode="create"
       />
 
+{/* <RecordFormModal
+  isOpen={isFormOpen}
+  onClose={closeForm}
+  onSubmit={handleCreateRecord}
+  formData={formData}
+  onFieldChange={handleFieldChange}
+  columns={columns}
+  metaData={metaData}
+  dropdownSetup={dropdownSetup}
+  columnOrder={columnOrder}
+  processName={urlParams.process_name}
+  isSubmitting={isSubmitting}
+  mode="create"
+/> */}
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         isOpen={deleteDialogOpen}

@@ -174,7 +174,12 @@ const Login = () => {
     // Add a small delay to ensure Redux state is updated
     setTimeout(() => {
       console.log("About to navigate to /verify-mfa");
+
+      if(userData.mfa_secret === null){
+        navigate("/generate-secret",{replace:true});
+      }else{
       navigate("/verify-mfa", { replace: true });
+      }
     }, 10);
     
   } catch (error) {

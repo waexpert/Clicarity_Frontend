@@ -198,7 +198,7 @@ const AdminHome = () => {
 
   // Filter users based on search query
   const filteredUsers = userData.filter((user) =>
-    user.owner_id === null &&
+    // user.owner_id === null &&
     (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.id?.toLowerCase().includes(searchQuery.toLowerCase()))

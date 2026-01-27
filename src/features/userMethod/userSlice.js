@@ -35,6 +35,7 @@ export const userSlice = createSlice({
         state.isAuthenticated = action.payload.isAuthenticated;
         state.schema_name = action.payload.schema_name;
         state.owner_id = action.payload.owner_id;
+        state.mfa_secret = action.payload.mfa_secret;
         console.log("after update", state);
       },
       userLogin: (state, action) => {
@@ -49,6 +50,7 @@ export const userSlice = createSlice({
         state.is_verified = action.payload.is_verified;
         state.schema_name = action.payload.schema_name;
         state.owner_id = action.payload.owner_id;
+        state.mfa_secret = action.payload.mfa_secret;
         state.isAuthenticated = action.payload.isAuthenticated;
       },
       userLogout: () => {
@@ -70,12 +72,14 @@ export const userSlice = createSlice({
       setAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload;
     },
-        setSchemaName: (state, action) => {
+      setSchemaName: (state, action) => {
     state.schema_name = action.payload;
+  }, setMFA :(state,action) =>{
+    state.mfa_secret = action.payload;
   }
     },
   });
   
 
-export const { userRegistration, userLogin, userLogout,setSchemaName,setAuthenticated } = userSlice.actions;
+export const { userRegistration, userLogin, userLogout,setSchemaName,setAuthenticated ,setMFA} = userSlice.actions;
 export default userSlice.reducer;

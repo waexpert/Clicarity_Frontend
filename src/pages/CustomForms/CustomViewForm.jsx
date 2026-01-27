@@ -404,7 +404,7 @@ const CustomViewForm = () => {
 
       {/* ✅ FIXED: Separate rendering for Wastage vs Dynamic with lowercase comparison */}
       {selectedRecord && currentProcessType === 'wastage' ? (
-        <div className="record-details-card">
+        <div className="">
           <button onClick={handleCloseDetails} aria-label="Close details">
             <X size={20} />
           </button>
@@ -421,7 +421,7 @@ const CustomViewForm = () => {
           />
         </div>
       ) : selectedRecord ? (
-        <div className="record-details-card">
+        <div className="">
           <button onClick={handleCloseDetails} aria-label="Close details">
             <X size={20} />
           </button>

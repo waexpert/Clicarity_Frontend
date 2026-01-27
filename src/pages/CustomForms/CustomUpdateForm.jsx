@@ -73,6 +73,8 @@ const CustomUpdateForm = () => {
       tableName: currentTable,
       targetColumn,
       targetValue,
+      userId: userData.id,
+      userEmail: userData.email
     });
     return data;
   }, [schemaName, currentTable]);
@@ -156,38 +158,55 @@ const CustomUpdateForm = () => {
     getAllTables();
   }, [schemaName, dispatch]);
 
-  // Debounced suggestion search
-  useEffect(() => {
-    if (!searchId.trim()) {
-      setSuggestion([]);
-      setShowSuggestions(false);
-      return;
-    }
+// Debounced suggestion search
+useEffect(() => {
+  if (!searchId.trim()) {
+    setSuggestion([]);
+    setShowSuggestions(false);
+    return;
+  }
 
-    const controller = new AbortController();
-    
-    const timeout = setTimeout(async () => {
-      try {
-        const { data } = await axios.get(
-          `${BASE_URL}/additional/search?schemaName=${schemaName}&tableName=${currentTable}&query=${searchId}`,
-          { signal: controller.signal }
-        );
-        
-        const rows = data?.data?.rows || [];
-        setSuggestion(rows);
-        setShowSuggestions(rows.length > 0);
-      } catch (err) {
-        if (err.name !== 'CanceledError') {
-          console.error('Suggestion fetch error:', err);
-        }
+  const controller = new AbortController();
+
+  const timeout = setTimeout(async () => {
+    try {   
+      console.log('🔍 [FRONTEND] Making search request:', {
+        schemaName,
+        tableName: currentTable,
+        query: searchId
+      });
+
+      // ✅ CORRECT POST syntax
+      const { data } = await axios.post(
+        `${BASE_URL}/additional/search`,
+        {
+          schemaName: schemaName,
+          tableName: currentTable,
+          query: searchId,
+          userId:userData.id,
+          userEmail:userData.email
+        },
+        { signal: controller.signal } 
+      );
+
+      console.log('✅ [FRONTEND] Response:', data);
+      
+      const rows = data?.data || [];
+      setSuggestion(rows);
+      setShowSuggestions(rows.length > 0);
+    } catch (err) {
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error('❌ [FRONTEND] Error:', err);
+        console.error('❌ [FRONTEND] Response:', err.response?.data);
       }
-    }, DEBOUNCE_DELAY);
+    }
+  }, DEBOUNCE_DELAY);
 
-    return () => {
-      clearTimeout(timeout);
-      controller.abort();
-    };
-  }, [searchId, currentTable, schemaName]);
+  return () => {
+    clearTimeout(timeout);
+    controller.abort();
+  };
+}, [searchId, currentTable, schemaName]);
 
   // Fetch setup data when table changes
   useEffect(() => {
@@ -212,6 +231,8 @@ const CustomUpdateForm = () => {
       }
     };
 
+
+    
     if (currentTable && owner_id) {
       fetchSetupData();
     }

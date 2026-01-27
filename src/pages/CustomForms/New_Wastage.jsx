@@ -38,6 +38,7 @@ export default function WastageInput() {
     const [responseData, setResponseData] = useState(null);
     const [comment, setComment] = useState('');
     const basemultiupdate = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple?`;
+    const [isTeamMember,setIsTeamMember] = useState(false)
 
     // Vendor state
     const [selectedVendor, setSelectedVendor] = useState('');
@@ -88,6 +89,10 @@ export default function WastageInput() {
 
     // Filter vendors based on selected process
     useEffect(() => {
+
+        if(userData.owner_id !== null){
+            setIsTeamMember(true)
+        }
         if (nextProcess && allVendors.length > 0) {
             const filtered = allVendors.filter(vendor => {
                 // Always include "In House"
@@ -134,58 +139,6 @@ export default function WastageInput() {
     }, [isNextProcessProvided, finalProcessSteps]);
 
 // Fetch process steps, record data, and vendors
-// useEffect(() => {
-//     const fetchData = async () => {
-//         try {
-//             // Fetch process steps setup
-//             const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
-//             const { data } = await axios.get(route);
-//             const steps = data.setup.process_steps || [];
-//             setProcessSteps(steps);
-//             console.log("Process Steps from setup:", steps);
-
-//             // Fetch the actual record data
-//             const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
-//             const recordResponse = await axios.post(getRecordRoute, {
-//                 schemaName: queryData.schemaName,
-//                 tableName: queryData.tableName,
-//                 targetColumn: queryData.targetColumn || 'id',
-//                 targetValue: queryData.recordId
-//             });
-
-//             const fetchedRecordData = recordResponse.data;
-//             setRecordData(fetchedRecordData);
-//             console.log("Fetched record data:", fetchedRecordData);
-
-//             // Filter process steps based on current process and "Not Required" status
-//             const currentIdx = steps.indexOf(queryData.current_process);
-//             console.log('Current process:', queryData.current_process);
-//             console.log('Current index:', currentIdx);
-
-//             const filteredSteps = steps.filter((step, index) =>
-//                 index > currentIdx &&
-//                 fetchedRecordData[step] !== "Not Required"
-//             );
-
-//             console.log('Filtered steps:', filteredSteps);
-//             setFinalProcessSteps(filteredSteps);
-
-//             // Fetch vendors after process steps are loaded
-//             await fetchVendors();
-
-//         } catch (error) {
-//             console.error('Error fetching data:', error);
-//             toast.error("Failed to load process steps or record data");
-//         }
-//     };
-
-//     if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
-//         fetchData();
-//     }
-// }, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
-
-
-// Fetch process steps, record data, and vendors
 useEffect(() => {
     const fetchData = async () => {
         try {
@@ -209,46 +162,18 @@ useEffect(() => {
             setRecordData(fetchedRecordData);
             console.log("Fetched record data:", fetchedRecordData);
 
-            // Filter process steps based on current process, "Not Required" status, AND balance > 0
+            // Filter process steps based on current process and "Not Required" status
             const currentIdx = steps.indexOf(queryData.current_process);
             console.log('Current process:', queryData.current_process);
             console.log('Current index:', currentIdx);
 
-            // Role-based filtering logic (same as StatusUpdate.jsx)
-            if (userData.owner_id === null) {
-                // Admin user: show all processes after current where NOT "Not Required" AND balance > 0
-                const availableSteps = [];
-                for (let i = currentIdx + 1; i < steps.length; i++) {
-                    const step = steps[i];
-                    const balanceColumn = `${step}_balance`;
-                    const balance = fetchedRecordData[balanceColumn];
-                    
-                    // Include if: NOT "Not Required" AND balance > 0
-                    if (fetchedRecordData[step] !== "Not Required" && 
-                        balance && Number(balance) > 0) {
-                        availableSteps.push(step);
-                    }
-                }
-                setFinalProcessSteps(availableSteps);
-                console.log('Admin - Available steps (not required AND balance > 0):', availableSteps);
-            } else {
-                // Regular user: show only next valid process where NOT "Not Required" AND balance > 0
-                let nextValidProcess = null;
-                for (let i = currentIdx + 1; i < steps.length; i++) {
-                    const step = steps[i];
-                    const balanceColumn = `${step}_balance`;
-                    const balance = fetchedRecordData[balanceColumn];
-                    
-                    // Find first process that is: NOT "Not Required" AND balance > 0
-                    if (fetchedRecordData[step] !== "Not Required" && 
-                        balance && Number(balance) > 0) {
-                        nextValidProcess = step;
-                        break;
-                    }
-                }
-                setFinalProcessSteps(nextValidProcess ? [nextValidProcess] : []);
-                console.log('Regular user - Next valid process (not required AND balance > 0):', nextValidProcess);
-            }
+            const filteredSteps = steps.filter((step, index) =>
+                index > currentIdx &&
+                fetchedRecordData[step] !== "Not Required"
+            );
+
+            console.log('Filtered steps:', filteredSteps);
+            setFinalProcessSteps(filteredSteps);
 
             // Fetch vendors after process steps are loaded
             await fetchVendors();
@@ -262,7 +187,8 @@ useEffect(() => {
     if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
         fetchData();
     }
-}, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process, userData.owner_id]);
+}, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
+
     // Update currentBalance when responseData changes
     useEffect(() => {
         if (responseData && queryData.current_process) {
@@ -549,7 +475,7 @@ useEffect(() => {
                                     ...(error && !nextProcess ? styles.inputError : {}),
                                     marginBottom: '12px'
                                 }}
-                                disabled={isSubmitting}
+                                disabled={isTeamMember||isSubmitting}
                             >
                                 <option value="">-- Select Next Process --</option>
                                 {finalProcessSteps.map((step) => (

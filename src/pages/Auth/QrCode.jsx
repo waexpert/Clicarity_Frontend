@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '../../components/ui/button';
+import { setMFA } from '../../features/userMethod/userSlice';
 
 
 
@@ -14,6 +15,7 @@ const QRSetup = () => {
   const user = useSelector((state) => state.user);
   const user_id = user.id;
   const user_email = user.email;
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchQRCode = async () => {
@@ -23,7 +25,9 @@ const QRSetup = () => {
             { user_id ,user_email},
             { withCredentials: true }
           );
+
           setQrCodeBase64(res.data.qr); // 🔥 fixed line
+          dispatch(setMFA(qrCodeBase64));
         } catch (err) {
           console.error('Failed to fetch QR Code:', err);
         }

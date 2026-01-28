@@ -514,6 +514,8 @@ useEffect(() => {
         columnOrder={columnOrder}
         processName={urlParams.process_name}
         isSubmitting={isSubmitting}
+        counterConfig={counterConfig}
+        setCounterConfig={setCounterConfig}
         mode="create"
       />
 

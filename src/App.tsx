@@ -472,8 +472,9 @@ import AdminProtectedRoute from "./pages/Helper/AdminProtectedRoute";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Home from "./pages/Home";
-
+import Pro from "./pages/Profile/Profile"
 // Lazy-loaded components for code splitting
+
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
 const VerifyMFA = lazy(() => import("./pages/Auth/VerifyMFA"));
 const DbConnection = lazy(() => import("./pages/DbConnection"));
@@ -525,7 +526,8 @@ const HIDDEN_HEADER_PATHS = [
   "/admin",
   "/wastage",
   "/assign-team-member",
-  "/status-update"
+  "/status-update",
+  "/pro"
 ];
 
 // Loading fallback component
@@ -938,6 +940,13 @@ function App() {
                 <Home />
               </ProtectedRoute>
             } 
+          />
+
+          <Route
+          path="/pro"
+          element={
+            <Pro/>
+          }
           />
         </Routes>
       </Suspense>

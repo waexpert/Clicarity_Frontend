@@ -127,7 +127,7 @@ const allFields = Object.keys(data || {});
   
   return (
   
-    <div className="record-details-container">
+    <div className="">
       <Card className="record-details-card">
         <CardHeader className="record-details-header">
           <CardTitle className="record-details-title">Details</CardTitle>

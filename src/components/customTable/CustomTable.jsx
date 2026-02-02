@@ -1910,6 +1910,8 @@ const CustomTable = ({ type = "normal" }) => {
   const [currentEditingRecord, setCurrentEditingRecord] = useState({});
   const [metaData, setMetaData] = useState({});
   const [columnPreferencesLoaded, setColumnPreferencesLoaded] = useState(false);
+  const splitTables = ["box","fold","cover"];
+
 
   // Add Record Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

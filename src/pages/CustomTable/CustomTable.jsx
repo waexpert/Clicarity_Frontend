@@ -990,6 +990,48 @@ const CustomTable = ({ type = 'normal' }) => {
     clearFilters,
     hasActiveFilters
   } = useTableFilters(originalRecords);
+    /**
+   * Handle sort
+   */
+const handleSort = useCallback((columnId) => {
+  if (sortColumn === columnId) {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  } else {
+    setSortColumn(columnId);
+    setSortDirection('asc');
+  }
+}, [sortColumn]);
+
+// Derive sorted records AFTER filtering, BEFORE pagination
+const sortedRecords = useMemo(() => {
+  if (!sortColumn) return filteredRecords;
+
+  return [...filteredRecords].sort((a, b) => {
+    const valueA = a[sortColumn];
+    const valueB = b[sortColumn];
+
+    // ISO Date handling
+    if (valueA && valueB && typeof valueA === 'string') {
+      const timeA = Date.parse(valueA);
+      const timeB = Date.parse(valueB);
+      if (!isNaN(timeA) && !isNaN(timeB)) {
+        return sortDirection === 'asc' ? timeA - timeB : timeB - timeA;
+      }
+    }
+
+    // String sorting
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      return sortDirection === 'asc'
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
+    }
+
+    // Number sorting
+    return sortDirection === 'asc'
+      ? (valueA ?? 0) - (valueB ?? 0)
+      : (valueB ?? 0) - (valueA ?? 0);
+  });
+}, [filteredRecords, sortColumn, sortDirection]); 
 
   const {
     currentPage,
@@ -999,7 +1041,7 @@ const CustomTable = ({ type = 'normal' }) => {
     currentRecords,
     setCurrentPage,
     resetPagination
-  } = usePagination(filteredRecords);
+  } = usePagination(sortedRecords);
 
   const {
     formData,
@@ -1354,34 +1396,8 @@ const CustomTable = ({ type = 'normal' }) => {
     resetPagination();
   }, [setSearchTerm, resetPagination]);
 
-  /**
-   * Handle sort
-   */
-  const handleSort = useCallback((columnId) => {
-    if (sortColumn === columnId) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(columnId);
-      setSortDirection('asc');
-    }
 
-    const sortedRecords = [...filteredRecords].sort((a, b) => {
-      const valueA = a[columnId] || '';
-      const valueB = b[columnId] || '';
 
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return sortDirection === 'asc'
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      } else {
-        return sortDirection === 'asc'
-          ? valueA - valueB
-          : valueB - valueA;
-      }
-    });
-
-    setAllRecords(sortedRecords);
-  }, [sortColumn, sortDirection, filteredRecords, setAllRecords]);
 
   /**
    * Export to CSV

@@ -1020,9 +1020,9 @@ export default function StatusUpdate() {
             });
 
             // Add current process vendor and comment
-            params.append('col3', `${currentProcess.toLowerCase()}_vendor`);
+            params.append('col3', `${nextProcess.toLowerCase()}_vendor`);
             params.append('val3', selectedVendor || '');
-            params.append('col4', `${currentProcess.toLowerCase()}_comment`);
+            params.append('col4', `${nextProcess.toLowerCase()}_comment`);
             params.append('val4', comment || '');
 
             // Add webhook if available

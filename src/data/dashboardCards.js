@@ -9,7 +9,8 @@ import {
   DatabaseZap,
   Network,
   ContactRound,
-  ClockArrowUp 
+  ClockArrowUp ,
+  Form
 } from "lucide-react";
 
 const dashboardCards = [
@@ -56,19 +57,27 @@ const dashboardCards = [
   },
     {
     id: 11,
-    title: "Support Ticket",
+    title: "Forms Management",
     description: "Efficiently track, manage, and resolve support tickets with organized access.",
-    icon: "contact",
+    icon: "form",
     iconColor: "#4285B4",
-    route: "/"
+    route: "/forms/manager"
   },
-  {
+  // {
+  //   id: 1,
+  //   title: "Task Management",
+  //   description: "Create, assign and track tasks for efficient workflow management.",
+  //   icon: "tasks",
+  //   iconColor: "#4285B4", 
+  //   route: "/taskstatus/record"
+  // },
+    {
     id: 1,
-    title: "Task Management",
+    title: "Roles Management",
     description: "Create, assign and track tasks for efficient workflow management.",
     icon: "tasks",
     iconColor: "#4285B4", 
-    route: "/taskstatus/record"
+    route: "/roles/manager"
   },
     {
     id: 10,
@@ -78,22 +87,22 @@ const dashboardCards = [
     iconColor: "#4285B4",
     route: "/reminder"
   },
-  {
-    id: 3,
-    title: "Payment Reminder",
-    description: "Stay on top of your finances with timely payment notifications.",
-    icon: "payments",
-    iconColor: "#4285B4",
-    route: "/paymentstatus"
-  },
-  {
-    id: 5,
-    title: "Birthday Reminder",
-    description: "Never miss important dates for clients and team members.",
-    icon: "birthdays",
-    iconColor: "#4285B4",
-    route: "/birthdaystatus"
-  },
+  // {
+  //   id: 3,
+  //   title: "Payment Reminder",
+  //   description: "Stay on top of your finances with timely payment notifications.",
+  //   icon: "payments",
+  //   iconColor: "#4285B4",
+  //   route: "/paymentstatus"
+  // },
+  // {
+  //   id: 5,
+  //   title: "Birthday Reminder",
+  //   description: "Never miss important dates for clients and team members.",
+  //   icon: "birthdays",
+  //   iconColor: "#4285B4",
+  //   route: "/birthdaystatus"
+  // },
   // {
   //   id: 6,
   //   title: "Lookup Match",
@@ -137,9 +146,11 @@ export const getIconComponent = (iconName) => {
     case "bell-ring":
       return BellRing;
     case "contact":
-      return ContactRound
+      return ContactRound;
     case "time":
-      return ClockArrowUp 
+      return ClockArrowUp; 
+    case "form":
+      return Form; 
     default:
       return DatabaseZap;
   }

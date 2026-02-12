@@ -4,7 +4,27 @@ import CryptoJS from 'crypto-js';
 const SECRET_KEY = import.meta.env.VITE_CRYPTO_SECRET_KEY;
 
 /**
+ * Converts standard Base64 to URL-safe Base64
+ * Replaces: + → -, / → _, removes trailing =
+ */
+const toUrlSafe = (base64) => {
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+
+/**
+ * Converts URL-safe Base64 back to standard Base64
+ * Reverses: - → +, _ → /, re-adds padding =
+ */
+const fromUrlSafe = (urlSafe) => {
+  let base64 = urlSafe.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = 4 - (base64.length % 4);
+  if (padding !== 4) base64 += '='.repeat(padding);
+  return base64;
+};
+
+/**
  * useCrypto - Custom hook for AES encryption/decryption
+ * Outputs URL-safe strings (no +, /, or = characters)
  * 
  * Usage:
  *   const { encrypt, decrypt } = useCrypto();
@@ -24,7 +44,7 @@ const useCrypto = () => {
 
     try {
       const encrypted = CryptoJS.AES.encrypt(String(text), SECRET_KEY).toString();
-      return encrypted;
+      return toUrlSafe(encrypted); // convert to URL-safe before returning
     } catch (error) {
       console.error('[useCrypto] Encryption failed:', error);
       throw error;
@@ -42,7 +62,8 @@ const useCrypto = () => {
     }
 
     try {
-      const bytes = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY);
+      const standardBase64 = fromUrlSafe(encryptedText); // convert back before decrypting
+      const bytes = CryptoJS.AES.decrypt(standardBase64, SECRET_KEY);
       const decrypted = bytes.toString(CryptoJS.enc.Utf8);
 
       if (!decrypted) {

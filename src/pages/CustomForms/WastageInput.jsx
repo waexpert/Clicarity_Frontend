@@ -636,7 +636,7 @@
 
 //     const tableName = queryData.tableName;
 //     const isNextProcessProvided = !!queryData.next_process;
-    
+
 //     const user = useSelector((state) => state.user);
 //     const [processSteps, setProcessSteps] = useState([]);
 //     const [currentBalance, setCurrentBalance] = useState(0);
@@ -705,7 +705,7 @@
 //             const timer = setTimeout(() => {
 //                 navigate(-1);
 //             }, 2000);
-            
+
 //             return () => clearTimeout(timer); // Cleanup
 //         }
 //     }, [submitted, navigate]);
@@ -1233,7 +1233,7 @@
 //         0% { transform: rotate(0deg); }
 //         100% { transform: rotate(360deg); }
 //       }
-      
+
 //       @keyframes bounceIn {
 //         0% { 
 //           transform: scale(0.3);
@@ -1250,13 +1250,13 @@
 //           opacity: 1;
 //         }
 //       }
-      
+
 //       input:focus, select:focus {
 //         border-color: #4388c1 !important;
 //         background-color: #ffffff !important;
 //         box-shadow: 0 0 0 3px rgba(67, 136, 193, 0.1) !important;
 //       }
-      
+
 //       button:not(:disabled):hover {
 //         transform: translateY(-2px) !important;
 //         box-shadow: 0 6px 20px rgba(67, 136, 193, 0.4) !important;
@@ -1332,14 +1332,14 @@
 //         );
 
 //         const vendors = response.data.data || [];
-        
+
 //         // Add "In House" option at the beginning
 //         vendors.unshift({
 //             "id": Date.now(),
 //             "name": "In House"
 //             // No need to set process_name - we handle it in the filter
 //         });
-        
+
 //         console.log('Fetched vendors:', vendors);
 //         setAllVendors(vendors);
 //     } catch (error) {
@@ -1358,7 +1358,7 @@
 //             if (vendor.name === "In House") {
 //                 return true;
 //             }
-            
+
 //             const vendorProcessName = vendor.process_name?.toLowerCase() || '';
 //             const selectedProcessName = nextProcess.toLowerCase();
 
@@ -1381,7 +1381,7 @@
 
 //     const tableName = queryData.tableName;
 //     const isNextProcessProvided = !!queryData.next_process;
-    
+
 //     const userData = useSelector((state) => state.user);
 //     const [processSteps, setProcessSteps] = useState([]);
 //     const [currentBalance, setCurrentBalance] = useState(0);
@@ -1455,7 +1455,7 @@
 //             const timer = setTimeout(() => {
 //                 navigate(-1);
 //             }, 2000);
-            
+
 //             return () => clearTimeout(timer); // Cleanup
 //         }
 //     }, [submitted, navigate]);
@@ -2057,7 +2057,7 @@
 //         0% { transform: rotate(0deg); }
 //         100% { transform: rotate(360deg); }
 //       }
-      
+
 //       @keyframes bounceIn {
 //         0% { 
 //           transform: scale(0.3);
@@ -2074,13 +2074,13 @@
 //           opacity: 1;
 //         }
 //       }
-      
+
 //       input:focus, select:focus, textarea:focus {
 //         border-color: #4388c1 !important;
 //         background-color: #ffffff !important;
 //         box-shadow: 0 0 0 3px rgba(67, 136, 193, 0.1) !important;
 //       }
-      
+
 //       button:not(:disabled):hover {
 //         transform: translateY(-2px) !important;
 //         box-shadow: 0 6px 20px rgba(67, 136, 193, 0.4) !important;
@@ -2102,6 +2102,7 @@ import { getRecordById, createRecord } from '../../api/apiConfig';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 import { Badge } from '@/components/ui/badge';
+import useCrypto from '../Setup/hooks/useCrypto';
 
 function useQueryObject() {
     const location = useLocation();
@@ -2121,7 +2122,7 @@ const IN_HOUSE_VENDOR = { id: Date.now(), name: "In House" };
 
 export default function WastageInput() {
     const navigate = useNavigate();
-
+    const { encrypt, decrypt } = useCrypto();
     // State Mangement
     const [wastageValue, setWastageValue] = useState('');
     const [receivedValue, setReceivedValue] = useState('');
@@ -2141,13 +2142,14 @@ export default function WastageInput() {
 
     const tableName = queryData.tableName;
     const isNextProcessProvided = !!queryData.next_process;
-    
+
     const userData = useSelector((state) => state.user);
     const [processSteps, setProcessSteps] = useState([]);
     const [currentBalance, setCurrentBalance] = useState(0);
     // Add after existing state declarations (around line 15-25)
     const [recordData, setRecordData] = useState(null);
     const [finalProcessSteps, setFinalProcessSteps] = useState([]);
+    const [webhook, setWebhook] = useState('');
 
     const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
     console.log(processSteps)
@@ -2166,13 +2168,13 @@ export default function WastageInput() {
             );
 
             const vendors = response.data.data || [];
-            
+
             // Add "In House" option at the beginning
             vendors.unshift({
                 "id": Date.now(),
                 "name": "In House"
             });
-            
+
             console.log('Fetched vendors:', vendors);
             setAllVendors(vendors);
         } catch (error) {
@@ -2189,7 +2191,7 @@ export default function WastageInput() {
                 if (vendor.name === "In House") {
                     return true;
                 }
-                
+
                 const vendorProcessName = vendor.process_name?.toLowerCase() || '';
                 const selectedProcessName = nextProcess.toLowerCase();
 
@@ -2228,56 +2230,58 @@ export default function WastageInput() {
         }
     }, [isNextProcessProvided, finalProcessSteps]);
 
-// Fetch process steps, record data, and vendors
-useEffect(() => {
-    const fetchData = async () => {
-        try {
-            // Fetch process steps setup
-            const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
-            const { data } = await axios.get(route);
-            const steps = data.setup.process_steps || [];
-            setProcessSteps(steps);
-            console.log("Process Steps from setup:", steps);
+    // Fetch process steps, record data, and vendors
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch process steps setup
+                const route = `${import.meta.env.VITE_APP_BASE_URL}/reference/setup/check?owner_id=${owner_id}&product_name=${tableName}`;
+                const { data } = await axios.get(route);
+                console.log("Setup"+data);
+                const steps = data.setup.process_steps || [];
+                setProcessSteps(steps);
+                setWebhook(data?.setup.webhook);
+                console.log("Process Steps from setup:", steps);
 
-            // Fetch the actual record data
-            const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
-            const recordResponse = await axios.post(getRecordRoute, {
-                schemaName: queryData.schemaName,
-                tableName: queryData.tableName,
-                targetColumn: queryData.targetColumn || 'id',
-                targetValue: queryData.recordId
-            });
+                // Fetch the actual record data
+                const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
+                const recordResponse = await axios.post(getRecordRoute, {
+                    schemaName: queryData.schemaName,
+                    tableName: queryData.tableName,
+                    targetColumn: queryData.targetColumn || 'id',
+                    targetValue: queryData.recordId
+                });
 
-            const fetchedRecordData = recordResponse.data;
-            setRecordData(fetchedRecordData);
-            console.log("Fetched record data:", fetchedRecordData);
+                const fetchedRecordData = recordResponse.data;
+                setRecordData(fetchedRecordData);
+                console.log("Fetched record data:", fetchedRecordData);
 
-            // Filter process steps based on current process and "Not Required" status
-            const currentIdx = steps.indexOf(queryData.current_process);
-            console.log('Current process:', queryData.current_process);
-            console.log('Current index:', currentIdx);
+                // Filter process steps based on current process and "Not Required" status
+                const currentIdx = steps.indexOf(queryData.current_process);
+                console.log('Current process:', queryData.current_process);
+                console.log('Current index:', currentIdx);
 
-            const filteredSteps = steps.filter((step, index) =>
-                index > currentIdx &&
-                fetchedRecordData[step] !== "Not Required"
-            );
+                const filteredSteps = steps.filter((step, index) =>
+                    index > currentIdx &&
+                    fetchedRecordData[step] !== "Not Required"
+                );
 
-            console.log('Filtered steps:', filteredSteps);
-            setFinalProcessSteps(filteredSteps);
+                console.log('Filtered steps:', filteredSteps);
+                setFinalProcessSteps(filteredSteps);
 
-            // Fetch vendors after process steps are loaded
-            await fetchVendors();
+                // Fetch vendors after process steps are loaded
+                await fetchVendors();
 
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            toast.error("Failed to load process steps or record data");
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                toast.error("Failed to load process steps or record data");
+            }
+        };
+
+        if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
+            fetchData();
         }
-    };
-
-    if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
-        fetchData();
-    }
-}, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
+    }, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
 
     // Update currentBalance when responseData changes
     useEffect(() => {
@@ -2317,7 +2321,7 @@ useEffect(() => {
             const timer = setTimeout(() => {
                 navigate(-1);
             }, 2000);
-            
+
             return () => clearTimeout(timer);
         }
     }, [submitted, navigate]);
@@ -2404,6 +2408,13 @@ useEffect(() => {
                 updateUrl += `&col${colIndex}=${nextProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
             }
 
+            // Add webhook if available
+            console.log(webhook)
+            if (webhook) {
+                const webhookId = encrypt(webhook); // encrypt fresh here, webhook is guaranteed to have value
+                updateUrl += `&wid=${webhookId}`; // send as standalone param, not as col/val pair
+                console.log(webhookId);
+            }
             // Add comment if provided
             if (comment) {
                 colIndex++;
@@ -2458,12 +2469,12 @@ useEffect(() => {
             setReceivedValue("");
             setComment("");
             setSelectedVendor("");
-            
+
             // Only reset nextProcess if it wasn't from params
             if (!isNextProcessProvided) {
                 setNextProcess("");
             }
-            
+
             toast.success("Wastage submitted and new record created successfully!");
 
         } catch (err) {
@@ -2542,7 +2553,7 @@ useEffect(() => {
                     Current Process {"-> " + queryData.current_process.charAt(0).toUpperCase() + queryData.current_process.slice(1)} : {currentBalance}
                 </Badge>
 
-                    {/* <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2`}>
+                {/* <Badge className={`status-badge bg-blue-100 text-blue-700 mt-2`}>
                         <strong>Current Balance ({queryData.current_process}):</strong> {currentBalance}
       
                 </Badge> */}

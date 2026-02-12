@@ -209,7 +209,7 @@ const handleSave = async () => {
   const availableColumns = tableColumns;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br  p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-slate-900">Data Access Filter Configuration</h1>

@@ -14,10 +14,10 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import '../../css/components/Filter.css';
-import { se } from 'date-fns/locale/se';
+
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import { set } from 'date-fns/set';
+
 
 const Filter = ({
     isOpen,
@@ -36,7 +36,7 @@ const Filter = ({
 
     console.log(selectedColumns);
     const userData = useSelector((state) => state.user);
-const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
+    const owner_id = userData.owner_id === null ? userData.id : userData.owner_id;
     const user = useSelector((state) => state.user);
 
 

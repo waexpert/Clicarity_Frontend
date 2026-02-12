@@ -62,7 +62,7 @@
 // function App() {
 //   const location = useLocation();
 //   // const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
-  
+
 //   const hideHeader =
 //     ["/login", "/register", "/sheet", "/postgres", "/upload", "/reminder", "/admin", "/wastage","/assign-team-member","/status-update"].includes(location.pathname) ||
 //     (location.pathname === "/jobstatus/record" && location.search.includes("pa_id="));
@@ -256,7 +256,7 @@
 //             </ProtectedRoute>
 //           } 
 //         />
-         
+
 //         <Route
 //           path="/database"
 //           element={
@@ -330,7 +330,7 @@
 //           </ProtectedRoute> 
 //         }
 //         />
-        
+
 //         <Route 
 //           path="/spread" 
 //           element={<SpreadsheetDemo />} 
@@ -384,7 +384,7 @@
 //            <ProtectedRoute>
 //      <CustomViewForm/>
 //            </ProtectedRoute>
-     
+
 //          }
 //          />
 
@@ -394,7 +394,7 @@
 //             <ProtectedRoute>
 //               <StatusUpdate/>
 //             </ProtectedRoute>
-             
+
 //           } 
 //         />
 
@@ -423,7 +423,7 @@
 //             </ProtectedRoute>
 //           } 
 //         />
-    
+
 //         <Route 
 //           path="/roles/create" 
 //           element={
@@ -445,7 +445,7 @@
 //       </Routes>
 
 
-      
+
 //     </>
 //   );
 // }
@@ -473,6 +473,10 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Home from "./pages/Home";
 import Pro from "./pages/Profile/Profile"
+import FormViewer from "./pages/FormBuilder/FormViewer";
+import FormBuilder from "./pages/Testing";
+import FormsManagement from "./pages/FormBuilder/FormManager";
+import RolesViewer from "./pages/Roles/RolesViewer";
 // Lazy-loaded components for code splitting
 
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
@@ -532,11 +536,11 @@ const HIDDEN_HEADER_PATHS = [
 
 // Loading fallback component
 const PageLoader = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    minHeight: '100vh' 
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100vh'
   }}>
     <GlobalLoading />
   </div>
@@ -563,11 +567,11 @@ function App() {
         <title>Clicarity - Professional Workflow Solutions</title>
         <meta name="description" content="Streamline your workflow with Clicarity's comprehensive task, job, and payment management solutions" />
       </Helmet>
-      
+
       {/* <GlobalLoading /> */}
       {location.pathname !== '/custom-update' && <GlobalLoading />}
       {!shouldHideHeader && <Header />}
-      
+
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
@@ -715,13 +719,13 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/db/:id/job_status" 
+          <Route
+            path="/db/:id/job_status"
             element={
               <ProtectedRoute>
                 <StructureJobStatus />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Lead Status Routes */}
@@ -733,13 +737,13 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/db/:id/lead_status" 
+          <Route
+            path="/db/:id/lead_status"
             element={
               <ProtectedRoute>
                 <StructureLeadStatus />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Payment Status Routes */}
@@ -751,50 +755,50 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/db/:id/payment_status" 
+          <Route
+            path="/db/:id/payment_status"
             element={
               <ProtectedRoute>
                 <StructurePaymentStatus />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Custom Forms Routes */}
-          <Route 
-            path="/sheet" 
+          <Route
+            path="/sheet"
             element={
               <ProtectedRoute>
                 <SheetComment />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/postgres" 
+          <Route
+            path="/postgres"
             element={
               <ProtectedRoute>
                 <PostgresComment />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/upload" 
+          <Route
+            path="/upload"
             element={
               <ProtectedRoute>
                 <UploadFile />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/reminder" 
+          <Route
+            path="/reminder"
             element={
               <ProtectedRoute>
                 <Reminder />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/wastage" 
+          <Route
+            path="/wastage"
             element={
               <ProtectedRoute>
                 <WastageInput />
@@ -805,17 +809,17 @@ function App() {
             path="/assign-team-member"
             element={
               <ProtectedRoute>
-                <AssignTeamMember /> 
-              </ProtectedRoute> 
+                <AssignTeamMember />
+              </ProtectedRoute>
             }
           />
-          <Route 
-            path="/custom-update" 
+          <Route
+            path="/custom-update"
             element={
               <ProtectedRoute>
                 <CustomUpdateForm />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route
             path="/custom-view"
@@ -825,67 +829,76 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route 
-            path="/status-update" 
+          <Route
+            path="/status-update"
             element={
               <ProtectedRoute>
                 <StatusUpdate />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Setup & Service Routes */}
-          <Route 
-            path="/db/setup/:tableName" 
+          <Route
+            path="/db/setup/:tableName"
             element={
               <ProtectedRoute>
                 <DropDownSetup />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/sheetTransfer/:us_id" 
+          <Route
+            path="/sheetTransfer/:us_id"
             element={
               <ProtectedRoute>
                 <SheetTransfer />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Views Routes */}
-          <Route 
-            path="/views/view-builder" 
+          <Route
+            path="/views/view-builder"
             element={
               <ProtectedRoute>
                 <ViewBuilder />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/views/create-view/new" 
+          <Route
+            path="/views/create-view/new"
             element={
               <ProtectedRoute>
                 <CreateView />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Roles Routes */}
-          <Route 
-            path="/roles/create" 
+          <Route
+            path="/roles/create"
             element={
               <ProtectedRoute>
                 <RolesCreator />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/roles/assign" 
+          <Route
+            path="/roles/assign"
             element={
               <ProtectedRoute>
                 <RolesAssignment />
               </ProtectedRoute>
-            } 
+            }
+          />
+
+                   <Route
+            path="/roles/manager"
+            element={
+              <ProtectedRoute>
+                <RolesViewer />
+              </ProtectedRoute>
+            }
           />
 
           {/* Admin Routes */}
@@ -907,46 +920,76 @@ function App() {
           />
 
           {/* Test/Demo Routes */}
-          <Route 
-            path="/testing" 
+          <Route
+            path="/testing"
             element={
               <ProtectedRoute>
                 <Testing />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/spread" 
+          <Route
+            path="/spread"
             element={
               <ProtectedRoute>
                 <SpreadsheetDemo />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/autocomplete" 
+          <Route
+            path="/autocomplete"
             element={
               <ProtectedRoute>
                 <AutocompleteInput />
               </ProtectedRoute>
-            } 
+            }
           />
 
+          {/* Form Builder */}
+          <Route
+            path="/forms/viewer"
+            element={
+              <ProtectedRoute>
+                <FormViewer />
+              </ProtectedRoute>
+            }
+          />
+
+                    <Route
+            path="/forms/create"
+            element={
+              <ProtectedRoute>
+                <FormBuilder />
+              </ProtectedRoute>
+            }
+          />
+
+
+                            <Route
+            path="/forms/manager"
+            element={
+              <ProtectedRoute>
+                <FormsManagement/>
+              </ProtectedRoute>
+            }
+          />
+
+
           {/* Catch-all route */}
-          <Route 
-            path="*" 
+          <Route
+            path="*"
             element={
               <ProtectedRoute>
                 <Home />
               </ProtectedRoute>
-            } 
+            }
           />
 
           <Route
-          path="/pro"
-          element={
-            <Pro/>
-          }
+            path="/pro"
+            element={
+              <Pro />
+            }
           />
         </Routes>
       </Suspense>

@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { useSelector } from "react-redux";
+import axios from "axios";
 
 function useIsMobile(breakpoint = 640) {
   // returns true if viewport width is < breakpoint (default 640 = sm)
@@ -25,6 +27,7 @@ export default function ResponsivePagination({
   totalRecords = 0,
 }) {
   const isMobile = useIsMobile(640); // matches Tailwind "sm" breakpoint
+    const userData = useSelector((state) => state.user);
 
   // Windowed pages logic: show fewer buttons on mobile
   const maxButtons = isMobile ? 3 : 7; // 3 on mobile, 7 on desktop
@@ -49,6 +52,36 @@ export default function ResponsivePagination({
     return arr;
   }, [totalPages, currentPage, maxButtons]);
 
+
+      const fetchTableStructure = async () => {
+      try {
+        const apiParams = {
+          schemaName: userData.schema_name,
+          tableName: "jobstatus",
+          userId: userData.id,
+          userEmail: userData.email,
+          page: 2 
+        };
+  
+        // console.log('Fetching table structure for:', tableName);
+  
+        // Fetch all data to extract columns
+        const response = await axios.post(
+          `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`,
+          apiParams
+        );
+  
+        console.log('Response:', response.data);
+  
+        const fetchedData = response.data.data || [];
+        console.log(fetchedData)
+  
+       
+      } catch (error) {
+        console.error('Error fetching table structure:', error);
+        throw error;
+      }
+    };
   return (
     <div className="flex items-center justify-between mt-4 w-full px-4">
       {/* Left info: hidden on mobile to save space */}
@@ -141,9 +174,11 @@ export default function ResponsivePagination({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
+                    fetchTableStructure()
                     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    
                   }}
-                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  // className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>

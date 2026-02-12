@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { TABLE_CONFIG } from '../constants/tableConstants';
+import { useSelector } from 'react-redux';
 
 /**
  * Custom hook for managing table pagination
@@ -7,9 +8,16 @@ import { TABLE_CONFIG } from '../constants/tableConstants';
  * @param {number} initialPageSize - Initial page size
  * @returns {Object} Pagination state and methods
  */
+
+
 export const usePagination = (records, initialPageSize = TABLE_CONFIG.DEFAULT_PAGE_SIZE) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
+
+
+  
+
+  
 
   /**
    * Calculate pagination values
@@ -40,6 +48,7 @@ export const usePagination = (records, initialPageSize = TABLE_CONFIG.DEFAULT_PA
   const nextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
+      fetchTableStructure();
     }
   }, [currentPage, totalPages]);
 
@@ -81,3 +90,5 @@ export const usePagination = (records, initialPageSize = TABLE_CONFIG.DEFAULT_PA
     resetPagination
   };
 };
+
+

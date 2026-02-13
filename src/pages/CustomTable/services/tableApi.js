@@ -23,6 +23,7 @@ export const tableApi = {
       return {
         data: response.data.data || [],
         columns: response.data.columns || [],
+        pagination: response.data.pagination || null,
         success: true
       };
     } catch (error) {

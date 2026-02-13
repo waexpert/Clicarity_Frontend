@@ -9,7 +9,7 @@
 // import { useTableData } from './hooks/useTableData';
 // import { useColumnPreferences } from './hooks/useColumnPreferences';
 // import { useTableFilters } from './hooks/useTableFilters';
-// import { usePagination } from './hooks/usePagination';
+// // usePagination no longer needed - pagination is now server-side via useTableData
 // import { useRecordForm } from './hooks/useRecordForm';
 // import { useDropdownSetup } from './hooks/useDropdownSetup';
 
@@ -854,7 +854,7 @@ import Papa from 'papaparse';
 import { useTableData } from './hooks/useTableData';
 import { useColumnPreferences } from './hooks/useColumnPreferences';
 import { useTableFilters } from './hooks/useTableFilters';
-import { usePagination } from './hooks/usePagination';
+// usePagination no longer needed - pagination is now server-side via useTableData
 import { useRecordForm } from './hooks/useRecordForm';
 import { useDropdownSetup } from './hooks/useDropdownSetup';
 
@@ -965,7 +965,13 @@ const CustomTable = ({ type = 'normal' }) => {
     setColumns: setBaseColumns,
     metaData,
     loading,
-    refreshData
+    refreshData,
+    // Server-side pagination
+    currentPage,
+    pageSize,
+    paginationInfo,
+    goToPage,
+    resetPagination
   } = useTableData(apiParams, type, owner_id);
 
   const {
@@ -1033,15 +1039,11 @@ const sortedRecords = useMemo(() => {
   });
 }, [filteredRecords, sortColumn, sortDirection]); 
 
-  const {
-    currentPage,
-    pageSize,
-    totalRecords,
-    totalPages,
-    currentRecords,
-    setCurrentPage,
-    resetPagination
-  } = usePagination(sortedRecords);
+  // Server-side pagination: records from useTableData are already the current page
+  // sortedRecords are the records for the current page after client-side sorting
+  const currentRecords = sortedRecords;
+  const totalPages = paginationInfo.totalPages;
+  const totalRecords = paginationInfo.totalRecords;
 
   const {
     formData,
@@ -1674,8 +1676,11 @@ const sortedRecords = useMemo(() => {
         {/* Pagination */}
         <ResponsivePagination
           currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+          setCurrentPage={goToPage}
           totalPages={totalPages}
+          records={currentRecords}
+          pageSize={pageSize}
+          totalRecords={totalRecords}
         />
       </CardContent>
 

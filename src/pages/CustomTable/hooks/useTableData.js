@@ -3,9 +3,10 @@ import { tableApi } from '../services/tableApi';
 import { formatColumnName, getColumnType } from '../utils/tableHelpers';
 import { logger } from '../utils/logger';
 import { toast } from 'sonner';
+import { TABLE_CONFIG } from '../constants/tableConstants';
 
 /**
- * Custom hook for managing table data
+ * Custom hook for managing table data with server-side pagination
  * @param {Object} apiParams - API parameters (schemaName, tableName, userId, userEmail)
  * @param {string} type - Table type ('normal' or 'payment')
  * @param {number} ownerId - Owner ID for payment records
@@ -18,16 +19,37 @@ export const useTableData = (apiParams, type = 'normal', ownerId) => {
   const [metaData, setMetaData] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
+  // Server-side pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(TABLE_CONFIG.DEFAULT_PAGE_SIZE);
+  const [paginationInfo, setPaginationInfo] = useState({
+    currentPage: 1,
+    pageSize: TABLE_CONFIG.DEFAULT_PAGE_SIZE,
+    totalRecords: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  });
+
+  const fetchData = useCallback(async (page = currentPage, limit = pageSize) => {
     try {
       setLoading(true);
-      logger.debug('Fetching table data', { apiParams, type });
+      logger.debug('Fetching table data', { apiParams, type, page, limit });
 
       let result;
 
       if (type === 'normal') {
-        result = await tableApi.fetchRecords(apiParams);
+        result = await tableApi.fetchRecords({
+          ...apiParams,
+          page,
+          limit
+        });
         setMetaData(result.columns);
+
+        // Update pagination info from server response
+        if (result.pagination) {
+          setPaginationInfo(result.pagination);
+        }
       } else {
         result = await tableApi.fetchPaymentRecords(ownerId);
       }
@@ -53,7 +75,8 @@ export const useTableData = (apiParams, type = 'normal', ownerId) => {
           type: getColumnType(sampleRecord[key], key)
         }));
         setColumns(dynamicColumns);
-      } else {
+      } else if (page === 1) {
+        // Only clear columns on first page with no data
         setColumns([]);
       }
 
@@ -66,12 +89,30 @@ export const useTableData = (apiParams, type = 'normal', ownerId) => {
     } finally {
       setLoading(false);
     }
-  }, [apiParams.schemaName, apiParams.tableName, type, ownerId]);
+  }, [apiParams.schemaName, apiParams.tableName, type, ownerId, currentPage, pageSize]);
 
-  // ✅ THIS WAS MISSING
+  // Fetch when page or pageSize changes
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(currentPage, pageSize);
+  }, [currentPage, pageSize, apiParams.schemaName, apiParams.tableName, type, ownerId]);
+
+  // Go to a specific page
+  const goToPage = useCallback((page) => {
+    const pageNum = Math.max(1, Math.min(page, paginationInfo.totalPages || 1));
+    setCurrentPage(pageNum);
+  }, [paginationInfo.totalPages]);
+
+  // Change page size (resets to page 1)
+  const changePageSize = useCallback((newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  }, []);
+
+  // Reset pagination to page 1
+  const resetPagination = useCallback(() => {
+    setCurrentPage(1);
+    setPageSize(TABLE_CONFIG.DEFAULT_PAGE_SIZE);
+  }, []);
 
   return {
     records,
@@ -82,6 +123,13 @@ export const useTableData = (apiParams, type = 'normal', ownerId) => {
     metaData,
     loading,
     fetchData,
-    refreshData: fetchData
+    refreshData: () => fetchData(currentPage, pageSize),
+    // Pagination
+    currentPage,
+    pageSize,
+    paginationInfo,
+    goToPage,
+    changePageSize,
+    resetPagination
   };
 };

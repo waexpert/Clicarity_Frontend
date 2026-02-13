@@ -1,10 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { useSelector } from "react-redux";
-import axios from "axios";
 
 function useIsMobile(breakpoint = 640) {
-  // returns true if viewport width is < breakpoint (default 640 = sm)
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < breakpoint : false
   );
@@ -26,11 +23,9 @@ export default function ResponsivePagination({
   pageSize = 10,
   totalRecords = 0,
 }) {
-  const isMobile = useIsMobile(640); // matches Tailwind "sm" breakpoint
-    const userData = useSelector((state) => state.user);
+  const isMobile = useIsMobile(640);
 
-  // Windowed pages logic: show fewer buttons on mobile
-  const maxButtons = isMobile ? 3 : 7; // 3 on mobile, 7 on desktop
+  const maxButtons = isMobile ? 3 : 7;
   const pagesToShow = useMemo(() => {
     if (totalPages <= maxButtons) return [...Array(totalPages)].map((_, i) => i + 1);
 
@@ -38,7 +33,6 @@ export default function ResponsivePagination({
     let start = Math.max(1, currentPage - half);
     let end = Math.min(totalPages, currentPage + half);
 
-    // Adjust when near edges
     if (currentPage <= half) {
       start = 1;
       end = maxButtons;
@@ -52,39 +46,9 @@ export default function ResponsivePagination({
     return arr;
   }, [totalPages, currentPage, maxButtons]);
 
-
-      const fetchTableStructure = async () => {
-      try {
-        const apiParams = {
-          schemaName: userData.schema_name,
-          tableName: "jobstatus",
-          userId: userData.id,
-          userEmail: userData.email,
-          page: 2 
-        };
-  
-        // console.log('Fetching table structure for:', tableName);
-  
-        // Fetch all data to extract columns
-        const response = await axios.post(
-          `${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`,
-          apiParams
-        );
-  
-        console.log('Response:', response.data);
-  
-        const fetchedData = response.data.data || [];
-        console.log(fetchedData)
-  
-       
-      } catch (error) {
-        console.error('Error fetching table structure:', error);
-        throw error;
-      }
-    };
   return (
     <div className="flex items-center justify-between mt-4 w-full px-4">
-      {/* Left info: hidden on mobile to save space */}
+      {/* Left info */}
       <div className="hidden sm:block text-sm text-slate-500">
         Showing <span className="font-medium">{Math.min(records.length, pageSize)}</span> of{" "}
         <span className="font-medium">{totalRecords}</span> records
@@ -92,7 +56,6 @@ export default function ResponsivePagination({
 
       {/* Pagination */}
       <div className="flex-1 flex justify-center sm:justify-end">
-        {/* Allow horizontal scroll on very small screens */}
         <div className="flex items-center gap-2 overflow-x-auto sm:overflow-visible py-1">
           <Pagination>
             <PaginationContent>
@@ -108,7 +71,7 @@ export default function ResponsivePagination({
                 />
               </PaginationItem>
 
-              {/* If we collapsed pages (mobile) show first page + ellipsis when needed */}
+              {/* First page + ellipsis */}
               {pagesToShow[0] > 1 && (
                 <>
                   <PaginationItem>
@@ -123,15 +86,13 @@ export default function ResponsivePagination({
                       1
                     </PaginationLink>
                   </PaginationItem>
-
-                  {/* show ellipsis - hide on larger screens? Keep simple */}
                   <PaginationItem>
                     <span className="inline-flex items-center px-2">…</span>
                   </PaginationItem>
                 </>
               )}
 
-              {/* Render the windowed page numbers */}
+              {/* Windowed page numbers */}
               {pagesToShow.map((p) => (
                 <PaginationItem key={p}>
                   <PaginationLink
@@ -147,7 +108,7 @@ export default function ResponsivePagination({
                 </PaginationItem>
               ))}
 
-              {/* If last shown page < totalPages show ellipsis + last page */}
+              {/* Last page + ellipsis */}
               {pagesToShow[pagesToShow.length - 1] < totalPages && (
                 <>
                   <PaginationItem>
@@ -174,11 +135,9 @@ export default function ResponsivePagination({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    fetchTableStructure()
                     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                    
                   }}
-                  // className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>

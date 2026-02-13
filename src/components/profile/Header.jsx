@@ -178,7 +178,7 @@ const Header = () => {
                             >
                                 <Avatar className="avatar-image">
                                     <AvatarImage 
-                                        src="https://github.com/shadcn.png" 
+                                        src="https://lakshysharma.netlify.app/assets/favicon_portfolio-Bjs1LOnZ.png" 
                                         alt={`${userData?.first_name || 'User'} avatar`}
                                     />
                                     <AvatarFallback className="avatar-fallback">

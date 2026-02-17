@@ -22,7 +22,7 @@
 .logo {
   width: 20rem;
   height: auto;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
   max-width: 100%;
 }
 
@@ -332,7 +332,7 @@
 
   .logo {
     width: 16rem;
-    margin-bottom: 1.25rem;
+    /* margin-bottom: 1.25rem; */
   }
 
   .header-section {
@@ -375,7 +375,7 @@
 
   .logo {
     width: 14rem;
-    margin-bottom: 1rem;
+    /* margin-bottom: 1rem; */
   }
 
   .header-section {
@@ -456,7 +456,7 @@
 
   .logo {
     width: 12rem;
-    margin-bottom: 0.875rem;
+    /* margin-bottom: 0.875rem; */
   }
 
   .header-section {
@@ -583,7 +583,7 @@
 
   .logo {
     width: 12rem;
-    margin-bottom: 0.75rem;
+    /* margin-bottom: 0.75rem; */
   }
 
   .header-section {

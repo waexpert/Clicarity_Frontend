@@ -474,9 +474,9 @@ import Register from "./pages/Auth/Register";
 import Home from "./pages/Home";
 import Pro from "./pages/Profile/Profile"
 import FormViewer from "./pages/FormBuilder/FormViewer";
-import FormBuilder from "./pages/Testing";
 import FormsManagement from "./pages/FormBuilder/FormManager";
 import RolesViewer from "./pages/Roles/RolesViewer";
+import FormBuilder from "./pages/FormBuilder/FormBuilder";
 // Lazy-loaded components for code splitting
 
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
@@ -490,7 +490,7 @@ const Task = lazy(() => import("./pages/TaskStatus/Task"));
 const TaskManagementTable = lazy(() => import("./pages/TaskStatus/TaskManagementTable"));
 const Job = lazy(() => import("./pages/JobStatus/Job"));
 const StructureJobStatus = lazy(() => import("./pages/JobStatus/StructureJobStatus"));
-const Testing = lazy(() => import("./pages/Testing"));
+// const Testing = lazy(() => import("./pages/Testing"));
 const SheetComment = lazy(() => import("./pages/CustomForms/SheetComment"));
 const PostgresComment = lazy(() => import("./pages/CustomForms/PostgresComment"));
 const UploadFile = lazy(() => import("./pages/CustomForms/UploadFile"));
@@ -920,14 +920,14 @@ function App() {
           />
 
           {/* Test/Demo Routes */}
-          <Route
+          {/* <Route
             path="/testing"
             element={
               <ProtectedRoute>
                 <Testing />
               </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/spread"
             element={
@@ -959,7 +959,7 @@ function App() {
             path="/forms/create"
             element={
               <ProtectedRoute>
-                <FormBuilder />
+                <FormBuilder/>
               </ProtectedRoute>
             }
           />

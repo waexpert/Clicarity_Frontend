@@ -125,8 +125,16 @@
   }
 }
 
+*text{
+  color: rgb(44, 62, 80);
+}
 
 body {
   padding-left: 10rem;
   padding-right: 10rem;
+  color: rgb(44, 62, 80) !important;
+}
+
+p, span, div, li, h1, h2, h3, h4, h5, h6, label {
+  color: inherit;
 }

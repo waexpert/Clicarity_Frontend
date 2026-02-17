@@ -1,13 +1,107 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 
 // ---------------- STYLED FORM PREVIEW COMPONENT (Clicarity Theme) ----------------
-function FormPreview({ fields, onSubmit,formId}) {
+function FormPreview({ fields, onSubmit, formId ,tableName,submit}) {
   const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+  const userData = useSelector((state) => state.user);
 
-  const handleSubmit = (e) => {
+  const [params,setParams] = useSearchParams();
+  const recordId = params.get("recordId");
+
+  console.log(submit)
+
+    const formRef = useRef(null);
+
+    useEffect(() => {
+    if (submit) {
+      formRef.current?.requestSubmit();
+    }
+  }, [submit]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(formData);
+    
+    try {
+      setLoading(true);
+      setSubmitStatus({ type: '', message: '' });
+
+      // Build the updates object from formData
+      // Map form field names to their columnNames
+      const updates = {};
+      
+      fields.forEach(field => {
+        // Only include fields that have a columnName and have data
+        if (field.columnName && formData[field.name] !== undefined) {
+          updates[field.columnName] = formData[field.name];
+        }
+      });
+
+      console.log('Form data to submit:', formData);
+      console.log('Mapped updates:', updates);
+
+      // Check if there are any updates to send
+      if (Object.keys(updates).length === 0) {
+        setSubmitStatus({ 
+          type: 'warning', 
+          message: 'No data to submit. Please fill in at least one field.' 
+        });
+        setLoading(false);
+        return;
+      }
+
+      const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple`;
+      console.log(tableName)
+      
+      const response = await axios.post(updateUrl, {
+        schemaName: userData.schema_name, // Adjust as needed
+        tableName: tableName,
+        recordId: recordId, 
+        updates: updates,
+        // Optional fields:
+        // ownerId: 'owner_id_if_needed',
+        // wid: 'webhook_id_if_needed',
+        // userTableName: 'user_table_name_if_needed',
+        // userSchemaName: 'user_schema_name_if_needed'
+      });
+
+      console.log('Update response:', response.data);
+
+      setSubmitStatus({ 
+        type: 'success', 
+        message: 'Form submitted successfully!' 
+      });
+
+      // Call the parent's onSubmit callback if provided
+      if (onSubmit) {
+        onSubmit(formData);
+      }
+
+      // Optionally reset form after successful submission
+      // setFormData({});
+
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      
+      let errorMessage = 'Failed to submit form. ';
+      if (error.response) {
+        errorMessage += error.response.data?.error || error.response.data?.details || error.response.statusText;
+      } else if (error.request) {
+        errorMessage += 'Please check if the server is running.';
+      } else {
+        errorMessage += error.message;
+      }
+
+      setSubmitStatus({ 
+        type: 'error', 
+        message: errorMessage 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -21,7 +115,7 @@ function FormPreview({ fields, onSubmit,formId}) {
   return (
     <div style={{
       maxWidth: '500px',
-      margin: '40px auto',
+      margin: '10px auto',
       padding: '30px',
       background: '#fff',
       border: '1px solid #ddd',
@@ -29,8 +123,28 @@ function FormPreview({ fields, onSubmit,formId}) {
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
     }}>
 
-      <p style={{color:"gray" ,fontSize:"0.5rem"}}>form Id {formId}</p>
-      <form onSubmit={handleSubmit}>
+      {/* <p style={{ color: "gray", fontSize: "0.5rem" }}>form Id {formId}</p> */}
+
+      {/* Status Message */}
+      {submitStatus.message && (
+        <div style={{
+          padding: '12px 16px',
+          marginBottom: '16px',
+          borderRadius: '6px',
+          fontSize: '14px',
+          backgroundColor: submitStatus.type === 'success' ? '#D1FAE5' : 
+                          submitStatus.type === 'error' ? '#FEE2E2' : '#FEF3C7',
+          color: submitStatus.type === 'success' ? '#065F46' : 
+                 submitStatus.type === 'error' ? '#991B1B' : '#92400E',
+          border: `1px solid ${submitStatus.type === 'success' ? '#A7F3D0' : 
+                               submitStatus.type === 'error' ? '#FECACA' : '#FDE68A'}`
+        }}>
+          {submitStatus.message}
+        </div>
+      )}
+
+
+      <form onSubmit={handleSubmit} ref={formRef}>
         {fields.map((field) => (
           <div key={field.id} style={{ marginBottom: 8 }}>
             {renderClicaryField(field, formData, handleChange)}
@@ -38,26 +152,28 @@ function FormPreview({ fields, onSubmit,formId}) {
         ))}
         
         {/* Submit Button - Clicarity Green */}
-        <button
+        {/* <button
           type="submit"
+          disabled={loading}
           style={{
             width: '100%',
             padding: '14px 20px',
-            background: '#5B9BD5',
+            background: loading ? '#9CA3AF' : '#5B9BD5',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             fontSize: '16px',
             fontWeight: '600',
             marginTop: 10,
-            transition: 'background 0.2s ease'
+            transition: 'background 0.2s ease',
+            opacity: loading ? 0.7 : 1
           }}
-          onMouseEnter={(e) => e.target.style.background = '#5B9BD5'}
-          onMouseLeave={(e) => e.target.style.background = '#5B9BD5'}
+          onMouseEnter={(e) => !loading && (e.target.style.background = '#4A8BC2')}
+          onMouseLeave={(e) => !loading && (e.target.style.background = '#5B9BD5')}
         >
-          Submit
-        </button>
+          {loading ? 'Submitting...' : 'Submit'}
+        </button> */}
       </form>
     </div>
   );

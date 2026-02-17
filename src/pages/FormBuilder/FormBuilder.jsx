@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { use, useEffect, useState } from 'react';
 import {
   Heading,
   Type,
@@ -25,8 +26,16 @@ import {
   Copy,
   Download,
   Plus,
-  X
+  X,
+  Save,
+  Trash2
 } from 'lucide-react';
+import shortId from '../../utils/randomId';
+import FormPreview from './components/FormPreview';
+import axios from 'axios';
+import { createRecord } from '../../api/apiConfig';
+import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 
 // ---------------- ICON REGISTRY ----------------
 const ICONS = {
@@ -67,7 +76,7 @@ const FIELD_TYPES = {
   TEXTAREA: { type: 'textarea', label: 'Textarea', category: 'input', icon: 'textarea' },
   CHECKBOX: { type: 'checkbox', label: 'Checkbox', category: 'input', icon: 'checkbox' },
   DROPDOWN: { type: 'select', label: 'Dropdown', category: 'input', icon: 'select' },
-  RADIO: { type: 'radio', label: 'Radio Button', category: 'input', icon: 'radio' },
+  RADIO: { type: 'radio', label: 'Radio button', category: 'input', icon: 'radio' },
   DATE: { type: 'datetime-local', label: 'Date', category: 'input', icon: 'date' },
   OPTIN: { type: 'optin', label: 'Opt-in', category: 'input', icon: 'optin' },
   IMAGE_UPLOAD: { type: 'file-image', label: 'Image Upload', category: 'input', icon: 'file-image' },
@@ -76,11 +85,141 @@ const FIELD_TYPES = {
 
 // ---------------- MAIN COMPONENT ----------------
 function FormBuilder() {
-  const [formSchema, setFormSchema] = useState([]);
+  const [formSchema, setFormSchema] = useState({
+    form_id: `form_${shortId()}`,
+    fields: []
+  });
+
+  const userData = useSelector((state) => state.user);
+  
+  // Form metadata for the three input fields
+  const [formMetadata, setFormMetadata] = useState({
+    name: '',
+    tableName: '',
+    description: ''
+  });
+  
   const [selectedField, setSelectedField] = useState(null);
   const [draggedItem, setDraggedItem] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [showProperties, setShowProperties] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const loadForm = async () => {
+      const form_id = searchParams.get('form_id');
+      
+      if (!form_id) return;
+
+      try {
+        setLoading(true);
+        setError('');
+
+        const apiUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTargetAll`;
+
+        const response = await axios.post(apiUrl, {
+          schemaName: "public",
+          tableName: 'form_setup',
+          targetColumn: 'us_id',
+          targetValue: form_id
+        });
+
+        console.log('Full Response:', response);
+        console.log('Response Data:', response.data);
+        const data = response.data;
+        console.log('All form data', data);
+        console.log('Form data length:', data?.length);
+        
+        if (data && data.length > 0) {
+          setFormSchema(data[0].form_schema);
+          // Load form metadata if available
+          if (data[0].name) {
+            setFormMetadata({
+              name: data[0].name || '',
+              tableName: data[0].table_name || '',
+              description: data[0].description || ''
+            });
+          }
+        }
+      } catch (err) {
+        let errorMessage = 'Failed to load forms. ';
+        if (err.response) {
+          errorMessage += `Server error (${err.response.status}): ${err.response.data?.error || err.response.statusText}`;
+        } else if (err.request) {
+          errorMessage += 'Please check if the server is running.';
+        } else {
+          errorMessage += err.message;
+        }
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadForm();
+  }, [searchParams]);
+
+  const saveFormToDatabase = async () => {
+    setIsSaving(true);
+    setSaveStatus({ type: '', message: '' });
+    
+    try {
+      // Validate metadata
+      if (!formMetadata.name.trim()) {
+        setSaveStatus({ type: 'error', message: 'Form name is required' });
+        setIsSaving(false);
+        return;
+      }
+
+      if (!formMetadata.tableName.trim()) {
+        setSaveStatus({ type: 'error', message: 'Table name is required' });
+        setIsSaving(false);
+        return;
+      }
+
+      const jsonStr = JSON.stringify(formSchema, null, 2);
+      const record = {
+        us_id: formSchema.form_id,
+        owner_id: userData?.id || null,
+        schema_name: userData.schema_name,
+        table_name: formMetadata.tableName,
+        name: formMetadata.name,
+        description: formMetadata.description,
+        form_schema: jsonStr,
+        status: "PUBLISHED"
+      };
+
+      console.log('Saving form:', record);
+
+      const response = await axios.post(createRecord, {
+        schemaName: 'public',
+        tableName: "form_setup",
+        record: record
+      });
+
+      setSaveStatus({ 
+        type: 'success', 
+        message: `Form "${formMetadata.name}" saved successfully!` 
+      });
+      
+      setTimeout(() => {
+        setSaveStatus({ type: '', message: '' });
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving form:', error);
+      setSaveStatus({ 
+        type: 'error', 
+        message: 'Error saving form: ' + error.message 
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const addField = (fieldType) => {
     const fieldConfig = Object.values(FIELD_TYPES).find(f => f.type === fieldType);
@@ -92,7 +231,7 @@ function FormBuilder() {
       label: fieldConfig?.label || 'New Field',
       placeholder: '',
       required: false,
-      columnName: '', // NEW: Database column mapping
+      columnName: '',
       options: ['select', 'radio'].includes(fieldType)
         ? ['Option 1', 'Option 2', 'Option 3']
         : [],
@@ -103,35 +242,47 @@ function FormBuilder() {
       maxLength: fieldType === 'passcode' ? 6 : undefined,
     };
 
-    setFormSchema(prev => [...prev, newField]);
+    setFormSchema(prev => ({
+      ...prev,
+      fields: [...prev.fields, newField]
+    }));
     setSelectedField(newField.id);
   };
 
   const updateField = (id, updates) => {
-    setFormSchema(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    setFormSchema(prev => ({
+      ...prev,
+      fields: prev.fields.map(f => f.id === id ? { ...f, ...updates } : f)
+    }));
   };
 
   const removeField = (id) => {
-    setFormSchema(prev => prev.filter(f => f.id !== id));
+    setFormSchema(prev => ({
+      ...prev,
+      fields: prev.fields.filter(f => f.id !== id)
+    }));
     setSelectedField(null);
   };
 
   const handleDragStart = (e, index) => {
     setDraggedItem(index);
-    e.dataTransfer.effectAllowed =  'move';
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e, index) => {
     e.preventDefault();
     if (draggedItem === null || draggedItem === index) return;
 
-    const newSchema = [...formSchema];
-    const draggedItemContent = newSchema[draggedItem];
-    newSchema.splice(draggedItem, 1);
-    newSchema.splice(index, 0, draggedItemContent);
+    const newFields = [...formSchema.fields];
+    const draggedItemContent = newFields[draggedItem];
+    newFields.splice(draggedItem, 1);
+    newFields.splice(index, 0, draggedItemContent);
 
     setDraggedItem(index);
-    setFormSchema(newSchema);
+    setFormSchema(prev => ({
+      ...prev,
+      fields: newFields
+    }));
   };
 
   const handleDragEnd = () => {
@@ -150,7 +301,7 @@ function FormBuilder() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'form-schema.json';
+    a.download = `${formSchema.form_id}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -158,100 +309,254 @@ function FormBuilder() {
   const contentFields = Object.values(FIELD_TYPES).filter(f => f.category === 'content');
   const inputFields = Object.values(FIELD_TYPES).filter(f => f.category === 'input');
 
-  const currentField = formSchema.find(f => f.id === selectedField);
-
-  
+  const currentField = formSchema.fields.find(f => f.id === selectedField);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f5f5f5' }}>
+    <div style={{ 
+      display: 'flex', 
+      height: '100vh',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    }} className='mx-[6rem]'>
       {/* LEFT SIDEBAR */}
-      <Sidebar title="Content Components" fields={contentFields} onAdd={addField} />
-      <Sidebar title="Form Input Components" fields={inputFields} onAdd={addField} />
+      <div style={{ display: 'flex', flexDirection: "column", height: '100vh' }}>
+        <Sidebar title="Content Components" fields={contentFields} onAdd={addField} />
+        <Sidebar title="Form Input Components" fields={inputFields} onAdd={addField} />
+      </div>
 
       {/* FORM BUILDER */}
-      <div style={{ flex: 1, padding: 20, overflowY: 'auto' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', background: '#fff', padding: 30, borderRadius: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <h2 style={{ margin: 0 }}>Form Builder</h2>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', background: '#fff', padding: 20, borderRadius: 8 }}>
+          
+          {/* ========== FORM METADATA SECTION (NEW) ========== */}
+          <div style={{ 
+            marginBottom: 24, 
+            padding: 20, 
+            // background: '#F0F4F8', 
+            borderRadius: 8,
+            border: '2px solid #5B9BD5'
+          }}>
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: 16, 
+              color: '#1F2937', 
+              fontSize: '18px',
+              fontWeight: '600'
+            }}>
+              Form Information
+            </h3>
+            
+            {/* Status Message */}
+            {saveStatus.message && (
+              <div style={{
+                padding: '12px 16px',
+                marginBottom: '16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                backgroundColor: saveStatus.type === 'success' ? '#D1FAE5' : '#FEE2E2',
+                color: saveStatus.type === 'success' ? '#065F46' : '#991B1B',
+                border: `1px solid ${saveStatus.type === 'success' ? '#A7F3D0' : '#FECACA'}`
+              }}>
+                {saveStatus.message}
+              </div>
+            )}
+
+            {/* Form Name and Table Name in 2 columns */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, marginBottom: 15 }}>
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: 6, 
+                  fontWeight: '600', 
+                  fontSize: '13px',
+                  color: '#374151'
+                }}>
+                  Form Name <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formMetadata.name}
+                  onChange={(e) => setFormMetadata(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., Contact Form, Survey Form"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #D1D5DB',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                    fontWeight: '400'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#5B9BD5'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+                />
+              </div>
+
+              <div>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: 6, 
+                  fontWeight: '600', 
+                  fontSize: '13px',
+                  color: '#374151'
+                }}>
+                  Table Name <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formMetadata.tableName}
+                  onChange={(e) => setFormMetadata(prev => ({ ...prev, tableName: e.target.value }))}
+                  placeholder="e.g., contacts, survey_responses"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #D1D5DB',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box',
+                    fontWeight: '400'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#5B9BD5'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+                />
+              </div>
+            </div>
+
+            {/* Description - full width */}
+            <div>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: 6, 
+                fontWeight: '600', 
+                fontSize: '13px',
+                color: '#374151'
+              }}>
+                Description
+              </label>
+              <textarea
+                value={formMetadata.description}
+                onChange={(e) => setFormMetadata(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of this form..."
+                rows={2}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: 6,
+                  fontSize: 14,
+                  outline: 'none',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box',
+                  fontWeight: '400'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#5B9BD5'}
+                onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
+              />
+            </div>
+          </div>
+          {/* ========== END FORM METADATA SECTION ========== */}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, flexDirection: "column", gap: '16px' }}>
+            <div>
+              <h2 style={{ 
+                margin: 0, 
+                fontSize: '24px', 
+                fontWeight: '600',
+                color: '#2C3E50',
+                letterSpacing: '-0.5px'
+              }}>
+                Form Builder
+              </h2>
+              <small style={{ 
+                color: '#7F8C8D',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'block',
+                marginTop: '4px'
+              }}>
+                Form ID: {formSchema.form_id}
+              </small>
+            </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <button
-                onClick={exportJSON}
+                onClick={saveFormToDatabase}
+                disabled={isSaving}
+                className="bg-primary text-white p-2 rounded-md cursor-pointer flex flex-col items-center gap-1 w-24 hover:opacity-90 transition-opacity"
                 style={{
-                  padding: '10px 20px',
-                  background: '#4CAF50',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  opacity: isSaving ? 0.6 : 1,
+                  cursor: isSaving ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <Save size={18} />
+                <span>{isSaving ? 'Saving...' : 'Save Form'}</span>
+              </button>
+              <button
+                onClick={exportJSON}
+                className="bg-primary text-white p-2 rounded-md cursor-pointer flex flex-col items-center gap-1 w-24 hover:opacity-90 transition-opacity"
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '600'
                 }}
               >
                 <Copy size={18} />
-                Copy JSON
+                <span>Copy JSON</span>
               </button>
               <button
                 onClick={downloadJSON}
+                className="bg-primary text-white p-2 rounded-md cursor-pointer flex flex-col items-center gap-1 w-24 hover:opacity-90 transition-opacity"
                 style={{
-                  padding: '10px 20px',
-                  background: '#FF9800',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
+                  fontSize: '12px',
+                  fontWeight: '600'
                 }}
               >
                 <Download size={18} />
-                Download JSON
+                <span>Download</span>
               </button>
               <button
                 onClick={() => setShowProperties(!showProperties)}
+                className="bg-primary text-white p-2 rounded-md cursor-pointer flex flex-col items-center gap-1 w-24 hover:opacity-90 transition-opacity"
                 style={{
-                  padding: '10px 20px',
-                  background: '#9C27B0',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
+                  fontSize: '12px',
+                  fontWeight: '600'
                 }}
               >
                 <Settings size={18} />
-                Properties
+                <span>Properties</span>
               </button>
               <button
                 onClick={() => setShowPreview(!showPreview)}
+                className="bg-primary text-white p-2 rounded-md cursor-pointer flex flex-col items-center gap-1 w-24 hover:opacity-90 transition-opacity"
                 style={{
-                  padding: '10px 20px',
-                  background: '#2196F3',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8
+                  fontSize: '12px',
+                  fontWeight: '600'
                 }}
               >
                 <Eye size={18} />
-                {showPreview ? 'Hide Preview' : 'Show Preview'}
+                <span>{showPreview ? 'Hide' : 'Preview'}</span>
               </button>
             </div>
           </div>
 
-          {formSchema.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+          {formSchema.fields.length === 0 && (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: 40, 
+              color: '#95A5A6',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}>
               Click on components from the sidebar to start building your form
             </div>
           )}
 
-          {formSchema.map((field, index) => (
+          {formSchema.fields.map((field, index) => (
             <div
               key={field.id}
               draggable
@@ -272,12 +577,19 @@ function FormBuilder() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <GripVertical size={18} color="#999" />
-                  <strong>{field.label}</strong>
+                  <strong style={{
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    color: '#2C3E50'
+                  }}>
+                    {field.label}
+                  </strong>
                   {field.columnName && (
-                    <span style={{ 
-                      fontSize: 11, 
-                      background: '#E3F2FD', 
-                      padding: '2px 8px', 
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      background: '#E3F2FD',
+                      padding: '2px 8px',
                       borderRadius: 4,
                       color: '#1976D2'
                     }}>
@@ -291,15 +603,20 @@ function FormBuilder() {
                     removeField(field.id);
                   }}
                   style={{
-                    padding: '4px 12px',
-                    background: '#f44336',
-                    color: '#fff',
+                    padding: '6px',
+                    color: '#f44336',
                     border: 'none',
                     borderRadius: 4,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'background 0.2s'
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#ffebee'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  ✕
+                  <Trash2 size={18} />
                 </button>
               </div>
               <FieldPreview field={field} />
@@ -310,8 +627,8 @@ function FormBuilder() {
 
       {/* PROPERTIES PANEL */}
       {showProperties && currentField && (
-        <PropertiesPanel 
-          field={currentField} 
+        <PropertiesPanel
+          field={currentField}
           onUpdate={(updates) => updateField(currentField.id, updates)}
           onClose={() => setSelectedField(null)}
         />
@@ -326,17 +643,31 @@ function FormBuilder() {
           overflowY: 'auto',
           padding: 20
         }}>
-          <h3 style={{ marginTop: 0 }}>Live Preview</h3>
+          <h3 style={{ 
+            marginTop: 0,
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#2C3E50'
+          }}>
+            Live Preview
+          </h3>
           <div style={{
             border: '1px solid #ddd',
             borderRadius: 8,
             padding: 20,
             background: '#fafafa'
           }}>
-            {formSchema.length === 0 ? (
-              <p style={{ color: '#999', textAlign: 'center' }}>No fields added yet</p>
+            {formSchema.fields.length === 0 ? (
+              <p style={{ 
+                color: '#95A5A6', 
+                textAlign: 'center',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                No fields added yet
+              </p>
             ) : (
-              <FormPreview fields={formSchema} />
+              <FormPreview fields={formSchema.fields} formId={formSchema.form_id} />
             )}
           </div>
         </div>
@@ -376,7 +707,14 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       padding: 20
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h3 style={{ margin: 0 }}>Properties</h3>
+        <h3 style={{ 
+          margin: 0,
+          fontSize: '18px',
+          fontWeight: '600',
+          color: '#2C3E50'
+        }}>
+          Properties
+        </h3>
         <button
           onClick={onClose}
           style={{
@@ -392,7 +730,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
 
       {/* Label */}
       <div style={{ marginBottom: 15 }}>
-        <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+        <label style={{ 
+          display: 'block', 
+          marginBottom: 6, 
+          fontWeight: '600', 
+          fontSize: '14px',
+          color: '#34495E'
+        }}>
           Label
         </label>
         <input
@@ -404,7 +748,9 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
             padding: 8,
             border: '1px solid #ddd',
             borderRadius: 4,
-            fontSize: 14
+            fontSize: '14px',
+            fontWeight: '400',
+            boxSizing: 'border-box'
           }}
         />
       </div>
@@ -412,7 +758,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {/* Column Name (for input fields) */}
       {isInput && (
         <div style={{ marginBottom: 15 }}>
-          <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: 6, 
+            fontWeight: '600', 
+            fontSize: '14px',
+            color: '#34495E'
+          }}>
             Database Column Name
           </label>
           <input
@@ -425,10 +777,18 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               padding: 8,
               border: '1px solid #ddd',
               borderRadius: 4,
-              fontSize: 14
+              fontSize: '14px',
+              fontWeight: '400',
+              boxSizing: 'border-box'
             }}
           />
-          <small style={{ color: '#666', fontSize: 12 }}>
+          <small style={{ 
+            color: '#7F8C8D', 
+            fontSize: '12px',
+            fontWeight: '400',
+            display: 'block',
+            marginTop: '4px'
+          }}>
             The database column this field will update
           </small>
         </div>
@@ -437,7 +797,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {/* Field Name */}
       {isInput && (
         <div style={{ marginBottom: 15 }}>
-          <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: 6, 
+            fontWeight: '600', 
+            fontSize: '14px',
+            color: '#34495E'
+          }}>
             Field Name
           </label>
           <input
@@ -449,7 +815,9 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               padding: 8,
               border: '1px solid #ddd',
               borderRadius: 4,
-              fontSize: 14
+              fontSize: '14px',
+              fontWeight: '400',
+              boxSizing: 'border-box'
             }}
           />
         </div>
@@ -458,7 +826,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {/* Content (for content fields) */}
       {isContent && (
         <div style={{ marginBottom: 15 }}>
-          <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: 6, 
+            fontWeight: '600', 
+            fontSize: '14px',
+            color: '#34495E'
+          }}>
             Content
           </label>
           <textarea
@@ -470,8 +844,10 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               padding: 8,
               border: '1px solid #ddd',
               borderRadius: 4,
-              fontSize: 14,
-              fontFamily: 'inherit'
+              fontSize: '14px',
+              fontWeight: '400',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box'
             }}
           />
         </div>
@@ -480,7 +856,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {/* Placeholder (for input fields) */}
       {isInput && !['checkbox', 'radio', 'optin'].includes(field.type) && (
         <div style={{ marginBottom: 15 }}>
-          <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: 6, 
+            fontWeight: '600', 
+            fontSize: '14px',
+            color: '#34495E'
+          }}>
             Placeholder
           </label>
           <input
@@ -492,7 +874,9 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               padding: 8,
               border: '1px solid #ddd',
               borderRadius: 4,
-              fontSize: 14
+              fontSize: '14px',
+              fontWeight: '400',
+              boxSizing: 'border-box'
             }}
           />
         </div>
@@ -508,7 +892,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               onChange={(e) => onUpdate({ required: e.target.checked })}
               style={{ marginRight: 8 }}
             />
-            <span style={{ fontWeight: 'bold', fontSize: 14 }}>Required Field</span>
+            <span style={{ 
+              fontWeight: '600', 
+              fontSize: '14px',
+              color: '#34495E'
+            }}>
+              Required Field
+            </span>
           </label>
         </div>
       )}
@@ -517,7 +907,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {hasOptions && (
         <div style={{ marginBottom: 15 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <label style={{ fontWeight: 'bold', fontSize: 14 }}>Options</label>
+            <label style={{ 
+              fontWeight: '600', 
+              fontSize: '14px',
+              color: '#34495E'
+            }}>
+              Options
+            </label>
             <button
               onClick={addOption}
               style={{
@@ -530,7 +926,8 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 5,
-                fontSize: 12
+                fontSize: '12px',
+                fontWeight: '600'
               }}
             >
               <Plus size={14} />
@@ -548,7 +945,9 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
                   padding: 8,
                   border: '1px solid #ddd',
                   borderRadius: 4,
-                  fontSize: 14
+                  fontSize: '14px',
+                  fontWeight: '400',
+                  boxSizing: 'border-box'
                 }}
               />
               <button
@@ -573,7 +972,13 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
       {/* Max Length (for passcode) */}
       {field.type === 'passcode' && (
         <div style={{ marginBottom: 15 }}>
-          <label style={{ display: 'block', marginBottom: 5, fontWeight: 'bold', fontSize: 14 }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: 6, 
+            fontWeight: '600', 
+            fontSize: '14px',
+            color: '#34495E'
+          }}>
             Max Length
           </label>
           <input
@@ -586,7 +991,9 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
               padding: 8,
               border: '1px solid #ddd',
               borderRadius: 4,
-              fontSize: 14
+              fontSize: '14px',
+              fontWeight: '400',
+              boxSizing: 'border-box'
             }}
           />
         </div>
@@ -598,17 +1005,19 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
         padding: 15,
         background: '#f5f5f5',
         borderRadius: 6,
-        fontSize: 13
+        fontSize: '13px',
+        fontWeight: '400',
+        color: '#34495E'
       }}>
         <div style={{ marginBottom: 8 }}>
-          <strong>Field Type:</strong> {field.type}
+          <strong style={{ fontWeight: '600' }}>Field Type:</strong> {field.type}
         </div>
         <div style={{ marginBottom: 8 }}>
-          <strong>Field ID:</strong> {field.id}
+          <strong style={{ fontWeight: '600' }}>Field ID:</strong> {field.id}
         </div>
         {field.columnName && (
           <div>
-            <strong>Maps to Column:</strong> {field.columnName}
+            <strong style={{ fontWeight: '600' }}>Maps to Column:</strong> {field.columnName}
           </div>
         )}
       </div>
@@ -619,9 +1028,16 @@ function PropertiesPanel({ field, onUpdate, onClose }) {
 // ---------------- SIDEBAR COMPONENT ----------------
 function Sidebar({ title, fields, onAdd }) {
   return (
-    <div style={{ width: 280, background: '#fff', padding: 20, borderRight: '1px solid #ddd', overflowY: 'auto' }}>
-      <h3>{title}</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+    <div style={{ width: 380, background: '#fff', padding: 20, borderRight: '1px solid #ddd', overflowY: 'auto' }}>
+      <h3 style={{
+        fontSize: '16px',
+        fontWeight: '600',
+        color: '#2C3E50',
+        marginBottom: '16px'
+      }}>
+        {title}
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {fields.map(field => {
           const Icon = ICONS[field.icon];
           return (
@@ -642,7 +1058,13 @@ function Sidebar({ title, fields, onAdd }) {
               }}
             >
               {Icon && <Icon size={20} />}
-              <span style={{ fontSize: 12 }}>{field.label}</span>
+              <span style={{ 
+                fontSize: '12px',
+                fontWeight: '500',
+                color: '#2C3E50'
+              }}>
+                {field.label}
+              </span>
             </button>
           );
         })}
@@ -653,15 +1075,28 @@ function Sidebar({ title, fields, onAdd }) {
 
 // ---------------- FIELD PREVIEW (Builder) ----------------
 function FieldPreview({ field }) {
-  const style = { width: '100%', padding: 8, marginTop: 8, pointerEvents: 'none' };
+  const style = { 
+    width: '100%', 
+    padding: 8, 
+    marginTop: 8, 
+    pointerEvents: 'none',
+    fontSize: '14px',
+    fontWeight: '400'
+  };
 
   switch (field.type) {
-    case 'heading': return <h1>{field.content}</h1>;
-    case 'subheading': return <h2>{field.content}</h2>;
-    case 'body': return <p>{field.content}</p>;
-    case 'caption': return <small>{field.content}</small>;
-    case 'image': return <div style={{ padding: 40, background: '#eee', marginTop: 8 }}>Image Placeholder</div>;
-    case 'textarea': return <textarea style={style} rows={4} placeholder={field.placeholder} />;
+    case 'heading': 
+      return <h1 style={{ fontSize: '28px', fontWeight: '600', margin: '8px 0' }}>{field.content}</h1>;
+    case 'subheading': 
+      return <h2 style={{ fontSize: '20px', fontWeight: '600', margin: '8px 0' }}>{field.content}</h2>;
+    case 'body': 
+      return <p style={{ fontSize: '14px', fontWeight: '400', margin: '8px 0' }}>{field.content}</p>;
+    case 'caption': 
+      return <small style={{ fontSize: '12px', fontWeight: '400', color: '#7F8C8D' }}>{field.content}</small>;
+    case 'image': 
+      return <div style={{ padding: 40, background: '#eee', marginTop: 8, fontSize: '14px', fontWeight: '500', color: '#95A5A6' }}>Image Placeholder</div>;
+    case 'textarea': 
+      return <textarea style={style} rows={4} placeholder={field.placeholder} />;
     case 'select':
       return (
         <select style={style}>
@@ -673,163 +1108,23 @@ function FieldPreview({ field }) {
       return (
         <div style={{ marginTop: 8 }}>
           {field.options.map((o, i) => (
-            <label key={i} style={{ display: 'block', marginBottom: 4 }}>
+            <label key={i} style={{ display: 'block', marginBottom: 4, fontSize: '14px', fontWeight: '400' }}>
               <input type="radio" name={field.name} /> {o}
             </label>
           ))}
         </div>
       );
-    case 'checkbox': return <input type="checkbox" style={{ marginTop: 8 }} />;
-    case 'optin': return <label style={{ marginTop: 8, display: 'block' }}><input type="checkbox" /> {field.label}</label>;
+    case 'checkbox': 
+      return <input type="checkbox" style={{ marginTop: 8 }} />;
+    case 'optin': 
+      return <label style={{ marginTop: 8, display: 'block', fontSize: '14px', fontWeight: '400' }}><input type="checkbox" /> {field.label}</label>;
     case 'file':
-    case 'file-image': return <input type="file" style={style} accept={field.accept} />;
-    case 'passcode': return <input type="text" maxLength={field.maxLength} style={style} placeholder={field.placeholder} />;
-    default: return <input type={field.type} style={style} placeholder={field.placeholder} />;
-  }
-}
-
-// ---------------- FORM PREVIEW (Live Preview) ----------------
-function FormPreview({ fields }) {
-  return (
-    <div>
-      {fields.map((field) => (
-        <div key={field.id} style={{ marginBottom: 20 }}>
-          {renderLiveField(field)}
-        </div>
-      ))}
-      <button
-        type="submit"
-        style={{
-          width: '100%',
-          padding: 12,
-          background: '#4CAF50',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 6,
-          cursor: 'pointer',
-          fontSize: 16,
-          fontWeight: 'bold',
-          marginTop: 10
-        }}
-      >
-        Submit
-      </button>
-    </div>
-  );
-}
-
-function renderLiveField(field) {
-  const inputStyle = {
-    width: '100%',
-    padding: 10,
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    fontSize: 14
-  };
-
-  switch (field.type) {
-    case 'heading':
-      return <h1 style={{ margin: 0, fontSize: 28 }}>{field.content}</h1>;
-    case 'subheading':
-      return <h2 style={{ margin: 0, fontSize: 20 }}>{field.content}</h2>;
-    case 'body':
-      return <p style={{ margin: 0, lineHeight: 1.6 }}>{field.content}</p>;
-    case 'caption':
-      return <small style={{ color: '#666' }}>{field.content}</small>;
-    case 'image':
-      return <div style={{ width: '100%', height: 200, background: '#e0e0e0', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>Image Placeholder</div>;
-    case 'textarea':
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          <textarea
-            style={inputStyle}
-            rows={4}
-            placeholder={field.placeholder}
-            required={field.required}
-          />
-        </div>
-      );
-    case 'select':
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          <select style={inputStyle} required={field.required}>
-            <option value="">Select an option...</option>
-            {field.options.map((o, i) => <option key={i} value={o}>{o}</option>)}
-          </select>
-        </div>
-      );
-    case 'radio':
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          {field.options.map((o, i) => (
-            <label key={i} style={{ display: 'block', marginBottom: 6, cursor: 'pointer' }}>
-              <input type="radio" name={field.name} value={o} required={field.required} /> {o}
-            </label>
-          ))}
-        </div>
-      );
-    case 'checkbox':
-      return (
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-          <input type="checkbox" style={{ marginRight: 8 }} required={field.required} />
-          <span>{field.label} {field.required && <span style={{ color: 'red' }}>*</span>}</span>
-        </label>
-      );
-    case 'optin':
-      return (
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-          <input type="checkbox" style={{ marginRight: 8 }} required={field.required} />
-          <span>{field.label} {field.required && <span style={{ color: 'red' }}>*</span>}</span>
-        </label>
-      );
-    case 'file':
-    case 'file-image':
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          <input type="file" style={inputStyle} accept={field.accept} required={field.required} />
-        </div>
-      );
-    case 'passcode':
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          <input
-            type="text"
-            maxLength={field.maxLength}
-            style={inputStyle}
-            placeholder={field.placeholder}
-            required={field.required}
-          />
-        </div>
-      );
-    default:
-      return (
-        <div>
-          <label style={{ display: 'block', marginBottom: 6, fontWeight: 'bold' }}>
-            {field.label} {field.required && <span style={{ color: 'red' }}>*</span>}
-          </label>
-          <input
-            type={field.type}
-            style={inputStyle}
-            placeholder={field.placeholder}
-            required={field.required}
-          />
-        </div>
-      );
+    case 'file-image': 
+      return <input type="file" style={style} accept={field.accept} />;
+    case 'passcode': 
+      return <input type="text" maxLength={field.maxLength} style={style} placeholder={field.placeholder} />;
+    default: 
+      return <input type={field.type} style={style} placeholder={field.placeholder} />;
   }
 }
 

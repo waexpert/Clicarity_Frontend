@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FileText,
   Plus,
@@ -11,8 +11,13 @@ import {
   List,
   MoreVertical,
   Calendar,
-  Database
+  Database,
+  Trash
+
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // Dummy data for forms
 const DUMMY_FORMS = [
@@ -54,62 +59,80 @@ const DUMMY_FORMS = [
     created_at: '2026-01-20T13:00:00Z',
     updated_at: '2026-02-05T16:30:00Z',
     fields_count: 15
-  },
-  {
-    id: 4,
-    us_id: 'form_jkl012',
-    name: 'Product Survey',
-    description: 'Gather user opinions on new product features',
-    schema_name: 'public',
-    table_name: 'product_surveys',
-    status: 'PENDING',
-    category: 'Product',
-    created_at: '2026-02-03T08:45:00Z',
-    updated_at: '2026-02-10T09:00:00Z',
-    fields_count: 10
-  },
-  {
-    id: 5,
-    us_id: 'form_mno345',
-    name: 'Support Ticket Form',
-    description: 'Customer support ticket submission',
-    schema_name: 'support_schema',
-    table_name: 'support_tickets',
-    status: 'PUBLISH',
-    category: 'Support',
-    created_at: '2026-01-15T12:00:00Z',
-    updated_at: '2026-02-07T10:15:00Z',
-    fields_count: 6
-  },
-  {
-    id: 6,
-    us_id: 'form_pqr678',
-    name: 'Event Registration',
-    description: 'Register attendees for company events',
-    schema_name: 'events_schema',
-    table_name: 'event_registrations',
-    status: 'DRAFT',
-    category: 'Events',
-    created_at: '2026-02-06T14:30:00Z',
-    updated_at: '2026-02-09T17:00:00Z',
-    fields_count: 9
   }
 ];
 
 const STATUS_COLORS = {
-  PUBLISH: { bg: '#D4EDDA', text: '#155724', label: 'Published' },
+  PUBLISHED: { bg: '#D4EDDA', text: '#155724', label: 'Published' },
   DRAFT: { bg: '#FFF3CD', text: '#856404', label: 'Draft' },
-  PENDING: { bg: '#D1ECF1', text: '#0C5460', label: 'Pending' }
 };
 
 function FormsManagement() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState([]);
+  const userData = useSelector((state) => state.user);
 
-  const filteredForms = DUMMY_FORMS.filter(form => {
+
+
+
+  useEffect(() => {
+    const loadForms = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        if (!userData || !userData.schema_name) {
+          throw new Error('User schema not found. Please log in again.');
+        }
+
+        const schemaName = userData.schema_name;
+        console.log('Fetching data for schema:', schemaName);
+
+        const apiUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTargetAll`;
+
+        const response = await axios.post(apiUrl, {
+          schemaName: "public",
+          tableName: 'form_setup',
+          targetColumn: 'schema_name',
+          targetValue: schemaName
+        });
+
+        console.log('Full Response:', response); // Add this
+        console.log('Response Data:', response.data); // Add this
+        const data = response.data;
+        console.log('All form data', data);
+        const formsArray = Array.isArray(data) ? data : [];
+        setFormData(formsArray);
+        console.log('Form data length:', data?.length); // Add this
+
+      } catch (err) {
+        let errorMessage = 'Failed to load forms. ';
+        if (err.response) {
+          errorMessage += `Server error (${err.response.status}): ${err.response.data?.error || err.response.statusText}`;
+        } else if (err.request) {
+          errorMessage += 'Please check if the server is running.';
+        } else {
+          errorMessage += err.message;
+        }
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userData?.schema_name) {
+      loadForms();
+    }
+  }, [userData]);
+
+  console.log(formData)
+  const filteredForms = formData.filter(form => {
     const matchesSearch = form.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         form.description.toLowerCase().includes(searchQuery.toLowerCase());
+      form.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || form.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -120,7 +143,7 @@ function FormsManagement() {
   };
 
   return (
-    <div style={{background: '#FFFFFF', minHeight: '100vh' }} className='mx-[6rem]'>
+    <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className='mx-[6rem]'>
       {/* Header */}
       <div style={{ marginBottom: '30px' }} >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -153,15 +176,15 @@ function FormsManagement() {
         {/* Filters and Search */}
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-            <Search 
-              size={18} 
-              style={{ 
-                position: 'absolute', 
-                left: '12px', 
-                top: '50%', 
+            <Search
+              size={18}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
                 transform: 'translateY(-50%)',
                 color: '#95A5A6'
-              }} 
+              }}
             />
             <input
               type="text"
@@ -197,11 +220,11 @@ function FormsManagement() {
             <option value="DRAFT">Draft</option>
           </select>
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '5px', 
-            background: '#fff', 
-            padding: '4px', 
+          <div style={{
+            display: 'flex',
+            gap: '5px',
+            background: '#fff',
+            padding: '4px',
             borderRadius: '6px',
             border: '1px solid #D1D5DB'
           }}>
@@ -251,11 +274,14 @@ function FormsManagement() {
 
 // Grid View Component (Card Layout)
 function GridView({ forms, formatDate }) {
+  const navigate = useNavigate();
+
+
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-      gap: '20px' 
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+      gap: '20px'
     }}>
       {forms.map((form) => (
         <div
@@ -305,10 +331,10 @@ function GridView({ forms, formatDate }) {
           </div>
 
           {/* Form Info */}
-          <h3 style={{ 
-            margin: '0 0 8px 0', 
-            fontSize: '18px', 
-            fontWeight: '600', 
+          <h3 style={{
+            margin: '0 0 8px 0',
+            fontSize: '18px',
+            fontWeight: '600',
             color: '#2C3E50',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -316,9 +342,9 @@ function GridView({ forms, formatDate }) {
           }}>
             {form.name}
           </h3>
-          <p style={{ 
-            margin: '0 0 16px 0', 
-            fontSize: '13px', 
+          <p style={{
+            margin: '0 0 16px 0',
+            fontSize: '13px',
             color: '#7F8C8D',
             lineHeight: '1.5',
             height: '40px',
@@ -332,7 +358,7 @@ function GridView({ forms, formatDate }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
               <Database size={14} color="#95A5A6" />
               <span style={{ fontSize: '12px', color: '#7F8C8D' }}>
-                {form.schema_name}.{form.table_name}
+                {form.table_name}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -341,6 +367,13 @@ function GridView({ forms, formatDate }) {
                 Updated {formatDate(form.updated_at)}
               </span>
             </div>
+            <span style={{
+              fontSize: '12px',
+              color: '#000000',
+              fontWeight: '400'
+            }}>
+              Form id : {form.us_id}
+            </span>
           </div>
 
           <div style={{
@@ -355,12 +388,32 @@ function GridView({ forms, formatDate }) {
               color: '#95A5A6',
               fontWeight: '500'
             }}>
-              {form.fields_count} fields
+              {form.form_schema.fields.length} fields
             </span>
+
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 onClick={(e) => {
-                  e.stopPropagation();
+                  navigate(`/forms/viewer?form_id=${form.us_id}`)
+
+                }}
+                style={{
+                  padding: '8px 16px',
+                  background: '#5B9BD5',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}
+              >
+                <Eye size={16} />
+              </button>
+
+              <button
+                onClick={(e) => {
+                  navigate(`/forms/create?form_id=${form.us_id}`)
                   console.log('Edit', form.us_id);
                 }}
                 style={{
@@ -384,7 +437,7 @@ function GridView({ forms, formatDate }) {
                 style={{
                   padding: '8px',
                   background: 'transparent',
-                  color: '#7F8C8D',
+                  color: 'red',
                   border: '1px solid #D1D5DB',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -392,7 +445,7 @@ function GridView({ forms, formatDate }) {
                   alignItems: 'center'
                 }}
               >
-                <MoreVertical size={16} />
+                <Trash size={16} />
               </button>
             </div>
           </div>
@@ -405,9 +458,9 @@ function GridView({ forms, formatDate }) {
 // Table View Component
 function TableView({ forms, formatDate }) {
   return (
-    <div style={{ 
-      background: '#fff', 
-      borderRadius: '8px', 
+    <div style={{
+      background: '#fff',
+      borderRadius: '8px',
       overflow: 'hidden',
       boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
     }}>
@@ -439,9 +492,9 @@ function TableView({ forms, formatDate }) {
         </thead>
         <tbody>
           {forms.map((form, index) => (
-            <tr 
+            <tr
               key={form.id}
-              style={{ 
+              style={{
                 borderBottom: '1px solid #E9ECEF',
                 transition: 'background 0.2s'
               }}

@@ -209,10 +209,10 @@ const handleSave = async () => {
   const availableColumns = tableColumns;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br  p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900">Data Access Filter Configuration</h1>
+    <div className="min-h-screen bg-gradient-to-br">
+      <div className="w-full px-[6rem] space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-medium ">Data Access Filter Configuration</h1>
           <p className="text-slate-600">Configure data access permissions for non-privileged team members</p>
         </div>
 
@@ -259,7 +259,7 @@ const handleSave = async () => {
               </CardHeader>
               <CardContent>
                 {loadingColumns ? (
-                  <div className="flex items-center justify-center py-8">
+                  <div className="flex items-center justify-center">
                     <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
                     <span className="ml-2 text-slate-600">Loading columns...</span>
                   </div>

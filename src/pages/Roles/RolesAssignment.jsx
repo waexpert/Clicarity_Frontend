@@ -268,22 +268,14 @@ export default function RolesAssignment() {
   console.log('📊 Unassigned Roles:', unassignedRoles.length);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900">Team Member Role Assignment</h1>
+    <div className="min-h-screen">
+      <div className="w-full px-[6rem] space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-medium text-slate-900">Team Member Role Assignment</h1>
           <p className="text-slate-600">Manage data access permissions for your team members</p>
         </div>
 
-        {/* Debug Info (Remove in production) */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <p className="text-xs font-mono">
-              Schema: {schemaName || 'N/A'} | Owner: {ownerId || 'N/A'} | 
-              Members: {teamMembers.length} | Roles: {availableRoles.length}
-            </p>
-          </CardContent>
-        </Card>
+    
 
         {/* Show error message if any */}
         {error && (

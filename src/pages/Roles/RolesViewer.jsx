@@ -15,7 +15,8 @@ import {
   Database,
   Users,
   Filter,
-  Loader2
+  Loader2,
+  ArrowUpWideNarrow
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,10 +49,10 @@ function RolesViewer() {
     try {
       setLoading(true);
       console.log('📡 Fetching roles for schema:', schemaName);
-      
+
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/getAllRoles?schemaName=${schemaName}&ownerId=${ownerId}`;
       const { data } = await axios.get(route);
-      
+
       console.log('✅ Roles fetched:', data.data);
       setRoles(data.data || []);
     } catch (error) {
@@ -79,7 +80,7 @@ function RolesViewer() {
     try {
       const route = `${import.meta.env.VITE_APP_BASE_URL}/roles/deleteRole/${roleId}`;
       await axios.delete(route);
-      
+
       toast.success('Role deleted successfully!');
       fetchRoles(); // Refresh the list
     } catch (error) {
@@ -90,7 +91,7 @@ function RolesViewer() {
 
   const filteredRoles = roles.filter(role => {
     const matchesSearch = role.role_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         role.table_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      role.table_name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTable = selectedTable === 'all' || role.table_name === selectedTable;
     return matchesSearch && matchesTable;
   });
@@ -105,7 +106,7 @@ function RolesViewer() {
   const uniqueTables = [...new Set(roles.map(role => role.table_name))];
 
   return (
-    <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className='mx-[6rem] py-8'>
+    <div style={{ background: '#FFFFFF', minHeight: '100vh' }} className='mx-[6rem] '>
       {/* Header */}
       <div style={{ marginBottom: '30px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -117,40 +118,67 @@ function RolesViewer() {
               Manage and view all configured data access roles
             </p>
           </div>
-          <button
-            onClick={() => window.location.href = '/roles/create'}
-            style={{
-              padding: '12px 24px',
-              background: '#5B9BD5',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '15px',
-              fontWeight: '600',
-              boxShadow: '0 2px 4px rgba(91, 155, 213, 0.3)'
-            }}
-          >
-            <Plus size={20} />
-            Create New Role
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => window.location.href = '/roles/create'}
+              style={{
+                padding: '12px 24px',
+                background: '#5B9BD5',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 2px 4px rgba(91, 155, 213, 0.3)'
+              }}
+            >
+              <Plus size={20} />
+              Create New Role
+            </button>
+
+            <button
+              onClick={() => window.location.href = '/roles/assign'}
+              style={{
+                padding: '12px 24px',
+                background: '#5B9BD5',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '15px',
+                fontWeight: '600',
+                boxShadow: '0 2px 4px rgba(91, 155, 213, 0.3)'
+              }}
+            >
+
+              <ArrowUpWideNarrow size={20}/>
+           
+              Assign Role
+            </button>
+
+          </div>
+
         </div>
 
         {/* Filters and Search */}
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-            <Search 
-              size={18} 
-              style={{ 
-                position: 'absolute', 
-                left: '12px', 
-                top: '50%', 
+            <Search
+              size={18}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
                 transform: 'translateY(-50%)',
                 color: '#95A5A6'
-              }} 
+              }}
             />
             <input
               type="text"
@@ -187,11 +215,11 @@ function RolesViewer() {
             ))}
           </select>
 
-          <div style={{ 
-            display: 'flex', 
-            gap: '5px', 
-            background: '#fff', 
-            padding: '4px', 
+          <div style={{
+            display: 'flex',
+            gap: '5px',
+            background: '#fff',
+            padding: '4px',
             borderRadius: '6px',
             border: '1px solid #D1D5DB'
           }}>
@@ -231,11 +259,11 @@ function RolesViewer() {
 
       {/* Loading State */}
       {loading ? (
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
+          alignItems: 'center',
+          justifyContent: 'center',
           padding: '60px',
           color: '#7F8C8D'
         }}>
@@ -243,8 +271,8 @@ function RolesViewer() {
           <p>Loading roles...</p>
         </div>
       ) : filteredRoles.length === 0 ? (
-        <div style={{ 
-          textAlign: 'center', 
+        <div style={{
+          textAlign: 'center',
           padding: '60px',
           background: '#F8F9FA',
           borderRadius: '8px'
@@ -252,8 +280,8 @@ function RolesViewer() {
           <Shield size={64} color="#D1D5DB" style={{ margin: '0 auto 16px' }} />
           <h3 style={{ color: '#2C3E50', marginBottom: '8px' }}>No roles found</h3>
           <p style={{ color: '#7F8C8D' }}>
-            {searchQuery || selectedTable !== 'all' 
-              ? 'Try adjusting your filters' 
+            {searchQuery || selectedTable !== 'all'
+              ? 'Try adjusting your filters'
               : 'Create your first role to get started'}
           </p>
         </div>
@@ -280,10 +308,10 @@ function GridView({ roles, formatDate, onDelete }) {
   };
 
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', 
-      gap: '20px' 
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '20px'
     }}>
       {roles.map((role) => {
         const config = parseRoleConfig(role.role_config);
@@ -338,10 +366,10 @@ function GridView({ roles, formatDate, onDelete }) {
             </div>
 
             {/* Role Info */}
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '18px', 
-              fontWeight: '600', 
+            <h3 style={{
+              margin: '0 0 8px 0',
+              fontSize: '18px',
+              fontWeight: '600',
               color: '#2C3E50',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -349,9 +377,9 @@ function GridView({ roles, formatDate, onDelete }) {
             }}>
               {role.role_name}
             </h3>
-            <p style={{ 
-              margin: '0 0 16px 0', 
-              fontSize: '13px', 
+            <p style={{
+              margin: '0 0 16px 0',
+              fontSize: '13px',
               color: '#7F8C8D',
               lineHeight: '1.5',
               height: '40px',
@@ -483,9 +511,9 @@ function TableView({ roles, formatDate, onDelete }) {
   };
 
   return (
-    <div style={{ 
-      background: '#fff', 
-      borderRadius: '8px', 
+    <div style={{
+      background: '#fff',
+      borderRadius: '8px',
       overflow: 'hidden',
       boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
     }}>
@@ -522,9 +550,9 @@ function TableView({ roles, formatDate, onDelete }) {
             const conditionsCount = config?.conditions?.length || 0;
 
             return (
-              <tr 
+              <tr
                 key={role.id}
-                style={{ 
+                style={{
                   borderBottom: '1px solid #E9ECEF',
                   transition: 'background 0.2s'
                 }}

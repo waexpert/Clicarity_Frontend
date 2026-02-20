@@ -133,6 +133,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import UserProfileCard from '../../pages/Profile/UserProfileCard';
+import Menus from '../../pages/Dashboard/components/Menus';
+
 
 const Header = () => {
     const location = useLocation();
@@ -157,7 +159,7 @@ const Header = () => {
     const shouldHideBreadcrumb = currentPage === "verify-mfa" || currentPage === "generate-secret";
 
     return (
-        <div className='header-wrapper'>
+        <div className='header-wrapper h-[8rem]'>
             <div className="header-top">
                 <Link to="/" className="header-logo">
                     <img 
@@ -200,9 +202,10 @@ const Header = () => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
+              
             </div>
-            
-            {!shouldHideBreadcrumb && (
+              <Menus/>
+            {/* {!shouldHideBreadcrumb && (
                 <nav className="breadcrumb-navigation" aria-label="Breadcrumb">
                     <Breadcrumb>
                         <BreadcrumbList>
@@ -220,7 +223,9 @@ const Header = () => {
                         </BreadcrumbList>
                     </Breadcrumb>
                 </nav>
-            )}
+            )} */}
+
+           
         </div>
     );
 };

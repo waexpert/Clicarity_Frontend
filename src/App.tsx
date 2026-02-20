@@ -471,12 +471,13 @@ import AdminProtectedRoute from "./pages/Helper/AdminProtectedRoute";
 // Eager-loaded critical components (small, frequently used)
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
-import Home from "./pages/Home";
+import Home from "./pages/Dashboard/Home";
 import Pro from "./pages/Profile/Profile"
 import FormViewer from "./pages/FormBuilder/FormViewer";
 import FormsManagement from "./pages/FormBuilder/FormManager";
 import RolesViewer from "./pages/Roles/RolesViewer";
 import FormBuilder from "./pages/FormBuilder/FormBuilder";
+import ActionButton from "./pages/Tools/ActionButton";
 // Lazy-loaded components for code splitting
 
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
@@ -505,8 +506,8 @@ const DropDownSetup = lazy(() => import("./pages/Setup/DropDownSetup"));
 const SheetTransfer = lazy(() => import("./pages/JSR_Services/SheetTransfer"));
 const AdminHome = lazy(() => import("./pages/Admin/AdminHome"));
 const SpreadsheetDemo = lazy(() => import("./pages/Profile/SpreadSheet"));
-// const WastageInput = lazy(() => import("./pages/CustomForms/WastageInput"));
-const WastageInput = lazy(() => import("./pages/CustomForms/New_Wastage"));
+const WastageInput = lazy(() => import("./pages/CustomForms/WastageInput"));
+// const WastageInput = lazy(() => import("./pages/CustomForms/New_Wastage"));
 const AssignTeamMember = lazy(() => import("./pages/CustomForms/AssignTeamMember"));
 const CustomUpdateForm = lazy(() => import("./pages/CustomForms/CustomUpdateForm"));
 const StatusUpdate = lazy(() => import("./pages/CustomForms/StatusUpdate"));
@@ -617,14 +618,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+
           <Route
             path="/profile/teamMember"
             element={
@@ -901,6 +895,15 @@ function App() {
             }
           />
 
+                    <Route
+            path="/roles/team-members"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Admin Routes */}
           <Route
             path="/admin"
@@ -919,6 +922,7 @@ function App() {
             }
           />
 
+          
           {/* Test/Demo Routes */}
           {/* <Route
             path="/testing"
@@ -965,7 +969,7 @@ function App() {
           />
 
 
-                            <Route
+          <Route
             path="/forms/manager"
             element={
               <ProtectedRoute>
@@ -974,6 +978,14 @@ function App() {
             }
           />
 
+          <Route
+            path="/tools/action-btn"
+            element={
+              <ProtectedRoute>
+                <ActionButton/>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Catch-all route */}
           <Route

@@ -2241,8 +2241,9 @@ export default function WastageInput() {
                 const steps = data.setup.process_steps || [];
                 setProcessSteps(steps);
                 setWebhook(data?.setup.webhook);
+                console.log("webhook",data.setup.webhook)
                 console.log("Process Steps from setup:", steps);
-
+                console.log("Full setup object:", JSON.stringify(data.setup, null, 2));
                 // Fetch the actual record data
                 const getRecordRoute = `${import.meta.env.VITE_APP_BASE_URL}/data/getRecordByTarget`;
                 const recordResponse = await axios.post(getRecordRoute, {
@@ -2278,7 +2279,7 @@ export default function WastageInput() {
             }
         };
 
-        if (owner_id && tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
+        if (tableName && queryData.schemaName && queryData.tableName && queryData.recordId) {
             fetchData();
         }
     }, [owner_id, tableName, queryData.schemaName, queryData.tableName, queryData.recordId, queryData.current_process]);
@@ -2326,166 +2327,305 @@ export default function WastageInput() {
         }
     }, [submitted, navigate]);
 
+    // const handleSubmit = async () => {
+    //     if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
+    //         !wastageValue.trim() || isNaN(wastageValue) || Number(wastageValue) < 0
+    //     ) {
+    //         setError("Please enter a valid positive number.");
+    //         return;
+    //     }
+
+    //     // Validation: Check if total exceeds current balance
+    //     const totalUsed = Number(receivedValue) + Number(wastageValue);
+    //     if (totalUsed > currentBalance) {
+    //         setError(`Total (Received + Wastage = ${totalUsed}) cannot exceed Current Balance (${currentBalance})`);
+    //         return;
+    //     }
+
+    //     if (!queryData.schemaName || !queryData.tableName || !queryData.recordId || !queryData.ownerId) {
+    //         setError("Please provide required details");
+    //         return;
+    //     }
+
+    //     if (!responseData) {
+    //         setError("Parent record data not loaded");
+    //         return;
+    //     }
+
+    //     try {
+    //         setIsSubmitting(true);
+    //         setError("");
+
+    //         const currentProcessBase = queryData.current_process;
+    //         const nextProcessBase = nextProcess;
+
+    //         // Current process columns
+    //         const currentBalanceColumn = currentProcessBase + "_balance";
+
+    //         // Next process columns
+    //         const nextReceivedColumn = nextProcessBase + "_quantity_received";
+    //         const nextWastageColumn = nextProcessBase + "_wastage";
+    //         const nextBalanceColumn = nextProcessBase + "_balance";
+
+    //         // Calculate balance for next process
+    //         const nextBalance = Number(receivedValue);
+
+    //         // Use currentBalance state directly
+    //         const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
+
+    //         // Get existing wastage from parent and ADD new wastage
+    //         const parentWastage = responseData?.wastage || 0;
+    //         const newTotalWastage = Number(parentWastage) + Number(wastageValue);
+
+    //         // Get existing values from parent for the next process columns
+    //         const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
+    //         const parentWastageQty = responseData?.[nextWastageColumn] || 0;
+    //         const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
+
+    //         // ADD to parent's existing values (not overwrite)
+    //         const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
+    //         const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
+    //         const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
+
+    //         // Build the update URL
+    //         const queryString = new URLSearchParams(queryData).toString();
+    //         let colIndex = 7;
+    //         let updateUrl = `${basemultiupdate}${queryString}`
+    //             + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
+    //             + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
+    //             + `&col3=wastage&val3=${newTotalWastage}`
+    //             + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
+    //             + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
+    //             // + (Number(updatedCurrentBalance) <= 0
+    //             //     ? `&col6=${currentProcessBase}&val6=Completed`
+    //             //     : "")
+    //             + `&col6=${currentProcessBase}&val6=${Number(updatedCurrentBalance) <= 0 ? 'Completed' : responseData[currentProcessBase]}`
+
+    //             + `&col7=${queryData.current_process}_date&val7=${new Date().toISOString()}`;
+
+    //         // Add vendor if selected
+    //         if (selectedVendor) {
+    //             colIndex++;
+    //             updateUrl += `&col${colIndex}=${nextProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
+    //         }
+
+    //         // Add webhook if available
+    //         console.log(webhook)
+    //         if (webhook) {
+    //             const webhookId = encrypt(webhook); // encrypt fresh here, webhook is guaranteed to have value
+    //             updateUrl += `&wid=${webhookId}`; // send as standalone param, not as col/val pair
+    //             console.log(webhookId);
+    //         }
+    //         // Add comment if provided
+    //         if (comment) {
+    //             colIndex++;
+    //             updateUrl += `&col${colIndex}=${queryData.current_process}_comment&val${colIndex}=${encodeURIComponent(comment)}`;
+    //         }
+
+    //         console.log('Update Parent URL:', updateUrl);
+    //         const updateResponse = await axios.get(updateUrl);
+    //         console.log('Parent Update Response:', updateResponse);
+
+    //         // Step 2: Create new child record
+    //         const newRecordUsId = Math.floor(Date.now() / 1000);
+
+    //         // Copy all fields from parent record
+    //         const newRecordData = {
+    //             ...responseData,
+    //             us_id: newRecordUsId,
+    //             pa_id: queryData.us_id,
+    //             [nextReceivedColumn]: receivedValue,
+    //             [nextWastageColumn]: wastageValue,
+    //             [nextBalanceColumn]: nextBalance,
+    //             [currentBalanceColumn]: updatedCurrentBalance,
+    //             wastage: wastageValue,
+    //         };
+
+    //         // Add vendor to child record if selected
+    //         if (selectedVendor) {
+    //             newRecordData[`${nextProcessBase}_vendor`] = selectedVendor;
+    //         }
+
+    //         // Add comment to child record if provided
+    //         if (comment) {
+    //             newRecordData[`${queryData.current_process}_comment`] = comment;
+    //         }
+
+    //         // Remove fields that shouldn't be copied
+    //         delete newRecordData.id;
+    //         delete newRecordData.recordId;
+
+    //         console.log('Creating new child record:', newRecordData);
+
+    //         const createResponse = await axios.post(createRecord, {
+    //             schemaName: queryData.schemaName,
+    //             tableName: queryData.tableName,
+    //             record: newRecordData
+    //         });
+
+    //         console.log('Child Record Created:', createResponse);
+
+    //         setSubmitted(true);
+    //         setWastageValue("");
+    //         setReceivedValue("");
+    //         setComment("");
+    //         setSelectedVendor("");
+
+    //         // Only reset nextProcess if it wasn't from params
+    //         if (!isNextProcessProvided) {
+    //             setNextProcess("");
+    //         }
+
+    //         toast.success("Wastage submitted and new record created successfully!");
+
+    //     } catch (err) {
+    //         console.error('Submit Error:', err);
+    //         setError("Failed to submit. Please try again.");
+    //         toast.error("Failed to submit wastage");
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
+    // };
+
     const handleSubmit = async () => {
-        if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
-            !wastageValue.trim() || isNaN(wastageValue) || Number(wastageValue) < 0
-        ) {
-            setError("Please enter a valid positive number.");
-            return;
+    if (!receivedValue.trim() || isNaN(receivedValue) || Number(receivedValue) < 0 ||
+        !wastageValue.trim() || isNaN(wastageValue) || Number(wastageValue) < 0
+    ) {
+        setError("Please enter a valid positive number.");
+        return;
+    }
+
+    const totalUsed = Number(receivedValue) + Number(wastageValue);
+    if (totalUsed > currentBalance) {
+        setError(`Total (Received + Wastage = ${totalUsed}) cannot exceed Current Balance (${currentBalance})`);
+        return;
+    }
+
+    if (!queryData.schemaName || !queryData.tableName || !queryData.recordId || !queryData.ownerId) {
+        setError("Please provide required details");
+        return;
+    }
+
+    if (!responseData) {
+        setError("Parent record data not loaded");
+        return;
+    }
+
+    try {
+        setIsSubmitting(true);
+        setError("");
+
+        const currentProcessBase = queryData.current_process;
+        const nextProcessBase = nextProcess;
+
+        const currentBalanceColumn = currentProcessBase + "_balance";
+        const nextReceivedColumn = nextProcessBase + "_quantity_received";
+        const nextWastageColumn = nextProcessBase + "_wastage";
+        const nextBalanceColumn = nextProcessBase + "_balance";
+
+        const nextBalance = Number(receivedValue);
+        const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
+
+        const parentWastage = responseData?.wastage || 0;
+        const newTotalWastage = Number(parentWastage) + Number(wastageValue);
+
+        const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
+        const parentWastageQty = responseData?.[nextWastageColumn] || 0;
+        const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
+
+        const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
+        const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
+        const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
+
+        const queryString = new URLSearchParams(queryData).toString();
+
+        // ✅ FIX: colIndex starts at 8 since col7 is already used for date
+        let colIndex = 7;
+
+        let updateUrl = `${basemultiupdate}${queryString}`
+            + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
+            + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
+            + `&col3=wastage&val3=${newTotalWastage}`
+            + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
+            + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
+            + `&col6=${currentProcessBase}&val6=${Number(updatedCurrentBalance) <= 0 ? 'Completed' : responseData[currentProcessBase]}`
+            + `&col7=${queryData.current_process}_date&val7=${new Date().toISOString()}`;
+
+        // Add vendor if selected
+        if (selectedVendor) {
+            colIndex++;  // becomes 8
+            updateUrl += `&col${colIndex}=${nextProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
         }
 
-        // Validation: Check if total exceeds current balance
-        const totalUsed = Number(receivedValue) + Number(wastageValue);
-        if (totalUsed > currentBalance) {
-            setError(`Total (Received + Wastage = ${totalUsed}) cannot exceed Current Balance (${currentBalance})`);
-            return;
+        // Add comment if provided
+        if (comment) {
+            colIndex++;  // becomes 8 or 9 depending on vendor
+            updateUrl += `&col${colIndex}=${queryData.current_process}_comment&val${colIndex}=${encodeURIComponent(comment)}`;
         }
 
-        if (!queryData.schemaName || !queryData.tableName || !queryData.recordId || !queryData.ownerId) {
-            setError("Please provide required details");
-            return;
+        // ✅ FIX: Append webhook AFTER all col/val pairs, not in between
+        if (webhook) {
+            const webhookId = encrypt(webhook);
+            updateUrl += `&wid=${webhookId}`;
         }
 
-        if (!responseData) {
-            setError("Parent record data not loaded");
-            return;
+        console.log('Update Parent URL:', updateUrl);
+        const updateResponse = await axios.get(updateUrl);
+        console.log('Parent Update Response:', updateResponse);
+
+        // Create new child record
+        const newRecordUsId = Math.floor(Date.now() / 1000);
+
+        const newRecordData = {
+            ...responseData,
+            us_id: newRecordUsId,
+            pa_id: queryData.us_id,
+            [nextReceivedColumn]: receivedValue,
+            [nextWastageColumn]: wastageValue,
+            [nextBalanceColumn]: nextBalance,
+            [currentBalanceColumn]: updatedCurrentBalance,
+            wastage: wastageValue,
+        };
+
+        if (selectedVendor) {
+            newRecordData[`${nextProcessBase}_vendor`] = selectedVendor;
         }
 
-        try {
-            setIsSubmitting(true);
-            setError("");
-
-            const currentProcessBase = queryData.current_process;
-            const nextProcessBase = nextProcess;
-
-            // Current process columns
-            const currentBalanceColumn = currentProcessBase + "_balance";
-
-            // Next process columns
-            const nextReceivedColumn = nextProcessBase + "_quantity_received";
-            const nextWastageColumn = nextProcessBase + "_wastage";
-            const nextBalanceColumn = nextProcessBase + "_balance";
-
-            // Calculate balance for next process
-            const nextBalance = Number(receivedValue);
-
-            // Use currentBalance state directly
-            const updatedCurrentBalance = Number(currentBalance) - Number(receivedValue) - Number(wastageValue);
-
-            // Get existing wastage from parent and ADD new wastage
-            const parentWastage = responseData?.wastage || 0;
-            const newTotalWastage = Number(parentWastage) + Number(wastageValue);
-
-            // Get existing values from parent for the next process columns
-            const parentReceivedQty = responseData?.[nextReceivedColumn] || 0;
-            const parentWastageQty = responseData?.[nextWastageColumn] || 0;
-            const parentBalanceQty = responseData?.[nextBalanceColumn] || 0;
-
-            // ADD to parent's existing values (not overwrite)
-            const updatedParentReceived = Number(parentReceivedQty) + Number(receivedValue);
-            const updatedParentWastage = Number(parentWastageQty) + Number(wastageValue);
-            const updatedParentBalance = Number(parentBalanceQty) + nextBalance;
-
-            // Build the update URL
-            const queryString = new URLSearchParams(queryData).toString();
-            let colIndex = 7;
-            let updateUrl = `${basemultiupdate}${queryString}`
-                + `&col1=${currentBalanceColumn}&val1=${updatedCurrentBalance}`
-                + `&col2=${nextWastageColumn}&val2=${updatedParentWastage}`
-                + `&col3=wastage&val3=${newTotalWastage}`
-                + `&col4=${nextReceivedColumn}&val4=${updatedParentReceived}`
-                + `&col5=${nextBalanceColumn}&val5=${updatedParentBalance}`
-                // + (Number(updatedCurrentBalance) <= 0
-                //     ? `&col6=${currentProcessBase}&val6=Completed`
-                //     : "")
-                + `&col6=${currentProcessBase}&val6=${Number(updatedCurrentBalance) <= 0 ? 'Completed' : responseData[currentProcessBase]}`
-
-                + `&col7=${queryData.current_process}_date&val7=${new Date().toISOString()}`;
-
-            // Add vendor if selected
-            if (selectedVendor) {
-                colIndex++;
-                updateUrl += `&col${colIndex}=${nextProcessBase}_vendor&val${colIndex}=${encodeURIComponent(selectedVendor)}`;
-            }
-
-            // Add webhook if available
-            console.log(webhook)
-            if (webhook) {
-                const webhookId = encrypt(webhook); // encrypt fresh here, webhook is guaranteed to have value
-                updateUrl += `&wid=${webhookId}`; // send as standalone param, not as col/val pair
-                console.log(webhookId);
-            }
-            // Add comment if provided
-            if (comment) {
-                colIndex++;
-                updateUrl += `&col${colIndex}=${queryData.current_process}_comment&val${colIndex}=${encodeURIComponent(comment)}`;
-            }
-
-            console.log('Update Parent URL:', updateUrl);
-            const updateResponse = await axios.get(updateUrl);
-            console.log('Parent Update Response:', updateResponse);
-
-            // Step 2: Create new child record
-            const newRecordUsId = Math.floor(Date.now() / 1000);
-
-            // Copy all fields from parent record
-            const newRecordData = {
-                ...responseData,
-                us_id: newRecordUsId,
-                pa_id: queryData.us_id,
-                [nextReceivedColumn]: receivedValue,
-                [nextWastageColumn]: wastageValue,
-                [nextBalanceColumn]: nextBalance,
-                [currentBalanceColumn]: updatedCurrentBalance,
-                wastage: wastageValue,
-            };
-
-            // Add vendor to child record if selected
-            if (selectedVendor) {
-                newRecordData[`${nextProcessBase}_vendor`] = selectedVendor;
-            }
-
-            // Add comment to child record if provided
-            if (comment) {
-                newRecordData[`${queryData.current_process}_comment`] = comment;
-            }
-
-            // Remove fields that shouldn't be copied
-            delete newRecordData.id;
-            delete newRecordData.recordId;
-
-            console.log('Creating new child record:', newRecordData);
-
-            const createResponse = await axios.post(createRecord, {
-                schemaName: queryData.schemaName,
-                tableName: queryData.tableName,
-                record: newRecordData
-            });
-
-            console.log('Child Record Created:', createResponse);
-
-            setSubmitted(true);
-            setWastageValue("");
-            setReceivedValue("");
-            setComment("");
-            setSelectedVendor("");
-
-            // Only reset nextProcess if it wasn't from params
-            if (!isNextProcessProvided) {
-                setNextProcess("");
-            }
-
-            toast.success("Wastage submitted and new record created successfully!");
-
-        } catch (err) {
-            console.error('Submit Error:', err);
-            setError("Failed to submit. Please try again.");
-            toast.error("Failed to submit wastage");
-        } finally {
-            setIsSubmitting(false);
+        if (comment) {
+            newRecordData[`${queryData.current_process}_comment`] = comment;
         }
-    };
 
+        delete newRecordData.id;
+        delete newRecordData.recordId;
+
+        const createResponse = await axios.post(createRecord, {
+            schemaName: queryData.schemaName,
+            tableName: queryData.tableName,
+            record: newRecordData
+        });
+
+        console.log('Child Record Created:', createResponse);
+
+        setSubmitted(true);
+        setWastageValue("");
+        setReceivedValue("");
+        setComment("");
+        setSelectedVendor("");
+
+        if (!isNextProcessProvided) {
+            setNextProcess("");
+        }
+
+        toast.success("Wastage submitted and new record created successfully!");
+
+    } catch (err) {
+        console.error('Submit Error:', err);
+        setError("Failed to submit. Please try again.");
+        toast.error("Failed to submit wastage");
+    } finally {
+        setIsSubmitting(false);
+    }
+};
     const handleWastageInputChange = (e) => {
         setWastageValue(e.target.value);
         if (error) setError("");

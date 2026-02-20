@@ -49,11 +49,11 @@ const dashboardCards = [
 
   {
     id: 2,
-    title: "Lead Management",
+    title: "Contact Manager",
     description: "Track and manage potential clients through your sales pipeline.",
     icon: "leads",
     iconColor: "#4285B4",
-    route: "/leadstatus/record"
+    route: "/contact/record"
   },
     {
     id: 11,

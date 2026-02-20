@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
-import "../css/Home.css"
+import "../../css/Home.css"
 import { useSelector } from 'react-redux'
-import ProfileHeader from '../components/profile/ProfileHeader'
+
 import { Button } from "@/components/ui/button";
 
 // Shadcn ui
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card"
 
 
-import dashboardCards, { getIconComponent } from '../data/dashboardCards';
+import dashboardCards, { getIconComponent } from '../../data/dashboardCards';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {

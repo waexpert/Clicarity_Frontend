@@ -535,6 +535,8 @@ const HIDDEN_HEADER_PATHS = [
   "/pro"
 ];
 
+
+
 // Loading fallback component
 const PageLoader = () => (
   <div style={{
@@ -980,7 +982,7 @@ function App() {
 
           <Route
             path="/tools/action-btn"
-            element={
+            element={ 
               <ProtectedRoute>
                 <ActionButton/>
               </ProtectedRoute>

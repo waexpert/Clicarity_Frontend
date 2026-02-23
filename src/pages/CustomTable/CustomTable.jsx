@@ -996,6 +996,41 @@ const CustomTable = ({ type = 'normal' }) => {
     clearFilters,
     hasActiveFilters
   } = useTableFilters(originalRecords);
+
+  // Search state
+const [searchResults, setSearchResults] = useState(null);
+const [isSearching, setIsSearching] = useState(false);
+
+// Debounced search via API
+useEffect(() => {
+  if (!searchTerm || searchTerm.trim() === '') {
+    setSearchResults(null); // Clear search results, fall back to normal records
+    return;
+  }
+
+  const delay = setTimeout(async () => {
+    try {
+      setIsSearching(true);
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/data/search-table`,
+        {
+          schemaName: userData.schema_name,
+          tableName: tableNameFromUrl,
+          keyword: searchTerm.trim()
+        }
+      );
+      setSearchResults(response.data.data || []);
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast.error('Search failed');
+      setSearchResults(null);
+    } finally {
+      setIsSearching(false);
+    }
+  }, 400); // 400ms debounce
+
+  return () => clearTimeout(delay);
+}, [searchTerm, userData.schema_name, tableNameFromUrl]);
     /**
    * Handle sort
    */
@@ -1008,11 +1043,12 @@ const handleSort = useCallback((columnId) => {
   }
 }, [sortColumn]);
 
+const activeRecords = searchResults !== null ? searchResults : filteredRecords;
 // Derive sorted records AFTER filtering, BEFORE pagination
 const sortedRecords = useMemo(() => {
-  if (!sortColumn) return filteredRecords;
+  if (!sortColumn) return activeRecords;
 
-  return [...filteredRecords].sort((a, b) => {
+  return [...activeRecords].sort((a, b) => {
     const valueA = a[sortColumn];
     const valueB = b[sortColumn];
 
@@ -1037,10 +1073,12 @@ const sortedRecords = useMemo(() => {
       ? (valueA ?? 0) - (valueB ?? 0)
       : (valueB ?? 0) - (valueA ?? 0);
   });
-}, [filteredRecords, sortColumn, sortDirection]); 
+}, [activeRecords, sortColumn, sortDirection]); 
 
   // Server-side pagination: records from useTableData are already the current page
   // sortedRecords are the records for the current page after client-side sorting
+  // Use search results if search is active, otherwise use filtered records
+
   const currentRecords = sortedRecords;
   const totalPages = paginationInfo.totalPages;
   const totalRecords = paginationInfo.totalRecords;
@@ -1393,12 +1431,16 @@ const sortedRecords = useMemo(() => {
   /**
    * Handle search input
    */
-  const handleSearchChange = useCallback((e) => {
-    setSearchTerm(e.target.value);
-    resetPagination();
-  }, [setSearchTerm, resetPagination]);
+  // const handleSearchChange = useCallback((e) => {
+  //   setSearchTerm(e.target.value);
+  //   resetPagination();
+  // }, [setSearchTerm, resetPagination]);
 
-
+const handleSearchChange = useCallback((e) => {
+  setSearchTerm(e.target.value);
+  setSearchResults(null); // Clear stale results immediately on new input
+  resetPagination();
+}, [setSearchTerm, resetPagination]);
 
 
   /**
@@ -1661,7 +1703,7 @@ const sortedRecords = useMemo(() => {
         <DataTable
           records={currentRecords}
           columns={columns}
-          loading={loading}
+          loading={loading || isSearching}
           editEnabled={editEnabled}
           canDelete={userData.owner_id === null}
           onSort={handleSort}

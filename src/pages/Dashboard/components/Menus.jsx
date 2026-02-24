@@ -880,7 +880,7 @@ function TablesDropdown() {
   const menuRef = useRef(null);
   const [tables, setTables] = useState([]);
   const userData = useSelector((state) => state.user);
-
+  const schemaName = userData.schema_name;
   const openMenu = () => {
     if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
@@ -891,10 +891,10 @@ function TablesDropdown() {
 
   useEffect(() => {
     getAllTables();
-  }, [userData.schema_name]);
+  }, [schemaName]);
 
   const getAllTables = async () => {
-    const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=lakshy_76190723`
+    const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`
     const { data } = await axios.get(route);
     setTables(data.data);
     console.log(data.data);

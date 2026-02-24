@@ -11,7 +11,7 @@ import Filter from '../../components/customUpdateForm/Filter';
 import '../../css/pages/CustomViewForm.css';
 
 const CustomViewForm = () => {
-  const [currentTable, setCurrentTable] = useState('jobstatus');
+  const [currentTable, setCurrentTable] = useState('');
   const [error, setError] = useState(null);
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -369,15 +369,15 @@ const fadeRight = keyframes`
 const Nav = styled.nav`
   font-family: ${UI_FONT};
   background: #ffffff;
-  border-bottom: 1px solid #e8ecf0;
-  padding: 0 24px;
+  // border-bottom: 1px solid #e8ecf0;
+  font-weight:bold;
   display: flex;
   align-items: center;
   gap: 4px;
   height: 52px;
   position: sticky;
   top: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  // box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 `;
 
 const NavItem = styled.div`
@@ -420,9 +420,9 @@ const DashboardIcon = styled.div`
   align-items: center;
   gap: 7px;
   padding: 6px 14px 6px 4px;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-primary);
+  // color: var(--color-primary);
   cursor: pointer;
   svg {
     width: 18px;
@@ -659,25 +659,15 @@ const NAV_ITEMS = [
       { icon: <Shredder size={15}/>, label: "Create Form", route: "/forms/create" , bg: "#e0f2fe",},
     ],
   },
-  {
-    label: "Tools",
-    items: [
-      { icon: <ClockArrowUp size={15}/>, label: "Custom Update", route: "/custom-update" , bg: "#eef2ff",},
-      { icon: <CreditCard size={15}/>, label: "Custom View", route: "/custom-view", bg: "#e0f2fe", },
-    ],
-  },
+  // {
+  //   label: "Tools",
+  //   items: [
+  //     { icon: <ClockArrowUp size={15}/>, label: "Custom Update", route: "/custom-update" , bg: "#eef2ff",},
+  //     { icon: <CreditCard size={15}/>, label: "Custom View", route: "/custom-view", bg: "#e0f2fe", },
+  //   ],
+  // },
 ];
 
-// Mock tables — replace with your real API data
-const MOCK_TABLES = [
-  { id: "users", name: "users", rows: "12,430" },
-  { id: "products", name: "products", rows: "8,201" },
-  { id: "orders", name: "orders", rows: "45,992" },
-  { id: "invoices", name: "invoices", rows: "21,005" },
-  { id: "roles", name: "roles", rows: "34" },
-  { id: "sessions", name: "sessions", rows: "3,210" },
-  { id: "audit_logs", name: "audit_logs", rows: "99,120" },
-];
 
 // 3 actions per table
 const TABLE_ACTIONS = [
@@ -935,7 +925,6 @@ function TablesDropdown() {
   return (
     <NavItem>
       <NavButton ref={btnRef} $open={open} onClick={openMenu}>
-        <Table size={14} />
         Tables
         <Chevron />
       </NavButton>
@@ -986,21 +975,32 @@ export default function Menus() {
   return (
     <Nav>
       {/* Home — unchanged */}
-      <DashboardIcon>
+      <DashboardIcon style={{ color: "var(--color-primary)" }}>
         <Link to={"/"} className="flex items-center gap-2">
           <Grid2x2 />
           Home
         </Link>
       </DashboardIcon>
-
+      
+        <TablesDropdown />
       {/* Original dropdowns — Data Base, Roles, Forms, Tools */}
       {NAV_ITEMS.map((item) => (
         <Dropdown key={item.label} label={item.label} items={item.items} />
       ))}
 
-      {/* ★ Tables — flyout tree menu (inserted after Data Base, before Roles) */}
-      {/* Move this <TablesDropdown /> anywhere in the Nav order you prefer */}
-      <TablesDropdown />
+      <DashboardIcon>
+        <Link to={"/custom-update"} className="flex items-center gap-2">
+          Custom Update
+        </Link>
+      </DashboardIcon>
+
+      <DashboardIcon>
+        <Link to={"/custom-view"} className="flex items-center gap-2">
+          Custom View
+        </Link>
+      </DashboardIcon>
+
+    
     </Nav>
   );
 }

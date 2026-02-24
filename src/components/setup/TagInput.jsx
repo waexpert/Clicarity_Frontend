@@ -12,7 +12,7 @@ function TagInput({ webhooks, setWebhooks, disabled = false }) {
   const handleKeyDown = (e) => {
     if ((e.key === "Enter" || e.key === ",") && inputValue.trim() !== "") {
       e.preventDefault();
-      if (!webhooks.includes(inputValue.trim())) {
+      if (!webhooks.includes(inputValue.trim()) || inputValue.includes("form_")) {
         setWebhooks([...webhooks, inputValue.trim()]);
       }
       setInputValue("");

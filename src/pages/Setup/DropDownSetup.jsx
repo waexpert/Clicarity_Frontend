@@ -1772,6 +1772,7 @@ const DropDownSetup = () => {
                     <div className="text-sm md:text-base">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                             <h4 className="text-base md:text-lg font-semibold text-gray-700">Define Process Type:</h4>
+                           
                             {Object.keys(processTypes).length > 0 && (
                                 <Button
                                     variant="destructive"
@@ -1798,7 +1799,7 @@ const DropDownSetup = () => {
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {processSteps.map((step, index) => (
+                                {processSteps.filter(e=> !e.includes("form_")).map((step, index) => (
                                     <div 
                                         key={index} 
                                         className="flex flex-col md:flex-row gap-3 md:gap-4 items-start md:items-center p-3 md:p-4 bg-white rounded-lg border hover:border-blue-300 transition-colors"

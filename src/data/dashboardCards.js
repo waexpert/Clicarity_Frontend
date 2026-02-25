@@ -10,7 +10,8 @@ import {
   Network,
   ContactRound,
   ClockArrowUp ,
-  Form
+  Form,
+  MousePointerClick 
 } from "lucide-react";
 
 const dashboardCards = [
@@ -79,13 +80,21 @@ const dashboardCards = [
     iconColor: "#4285B4", 
     route: "/roles/manager"
   },
-    {
+  //   {
+  //   id: 10,
+  //   title: "Follow Up Reminders",
+  //   description: "Smart reminders to keep your processes flowing smoothly.",
+  //   icon: "bell-ring",
+  //   iconColor: "#4285B4",
+  //   route: "/reminder"
+  // },
+      {
     id: 10,
-    title: "Follow Up Reminders",
-    description: "Smart reminders to keep your processes flowing smoothly.",
-    icon: "bell-ring",
+    title: "Smart Actions",
+    description: "Modify information anytime using Smart Actions, with accurate change history and date tracking.",
+    icon: "smart-actions",
     iconColor: "#4285B4",
-    route: "/reminder"
+    route: "/tools/actions"
   },
   // {
   //   id: 3,
@@ -150,7 +159,9 @@ export const getIconComponent = (iconName) => {
     case "time":
       return ClockArrowUp; 
     case "form":
-      return Form; 
+      return Form;
+          case "smart-actions":
+      return MousePointerClick ;  
     default:
       return DatabaseZap;
   }

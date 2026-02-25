@@ -342,7 +342,8 @@ import {
   LayoutGrid,
   ShieldCheck,
   Settings,
-  SquarePen
+  SquarePen,
+  MousePointerClick
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -659,16 +660,16 @@ const NAV_ITEMS = [
       { icon: <Shredder size={15}/>, label: "Create Form", route: "/forms/create" , bg: "#e0f2fe",},
     ],
   },
-  // {
-  //   label: "Tools",
-  //   items: [
-  //     { icon: <ClockArrowUp size={15}/>, label: "Custom Update", route: "/custom-update" , bg: "#eef2ff",},
-  //     { icon: <CreditCard size={15}/>, label: "Custom View", route: "/custom-view", bg: "#e0f2fe", },
-  //   ],
-  // },
+  {
+    label: "Tools",
+    items: [
+      { icon: <MousePointerClick size={15}/>, label: "Smart Actions", route: "/tools/actions" , bg: "#eef2ff",},
+      // { icon: <CreditCard size={15}/>, label: "Custom View", route: "/custom-view", bg: "#e0f2fe", },
+    ],
+  },
 ];
 
-
+ 
 // 3 actions per table
 const TABLE_ACTIONS = [
   {
@@ -973,7 +974,7 @@ function TablesDropdown() {
 // ── Main Export ───────────────────────────────────────────────────────────────
 export default function Menus() {
   return (
-    <Nav>
+    <Nav className="">
       {/* Home — unchanged */}
       <DashboardIcon style={{ color: "var(--color-primary)" }}>
         <Link to={"/"} className="flex items-center gap-2">

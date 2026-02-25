@@ -1371,6 +1371,7 @@ const DropDownSetup = () => {
 
             console.log('Save response:', response.data);
             alert(setupExists ? 'Setup updated successfully!' : 'Setup created successfully!');
+                     window.location.reload();
         } catch (err) {
             console.error('Error saving setup:', err);
             alert('Error saving setup. Please try again.');
@@ -1407,7 +1408,9 @@ const DropDownSetup = () => {
             );
 
             alert('Process type mapping saved successfully!');
+            
             setFetchedProcessTypes({ ...processTypes });
+                     window.location.reload();
         } catch (err) {
             console.error('Error saving process type mapping:', err);
             alert(`Error: ${err.response?.data?.error || 'Failed to save process type mapping'}`);
@@ -1485,6 +1488,7 @@ const DropDownSetup = () => {
 
             alert('Process steps updated successfully!');
             setFetchedProcessSteps([...processSteps]);
+                     window.location.reload();
         } catch (err) {
             console.error('Error saving process steps:', err);
             alert(`Error: ${err.response?.data?.error || 'Failed to save process steps'}`);

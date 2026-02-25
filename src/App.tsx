@@ -478,6 +478,7 @@ import FormsManagement from "./pages/FormBuilder/FormManager";
 import RolesViewer from "./pages/Roles/RolesViewer";
 import FormBuilder from "./pages/FormBuilder/FormBuilder";
 import ActionButton from "./pages/Tools/ActionButton";
+import SmartActions from "./pages/SmartActions/SmartActions";
 // Lazy-loaded components for code splitting
 
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
@@ -503,7 +504,6 @@ const StructurePaymentStatus = lazy(() => import("./pages/PaymentStatus/Structur
 const CustomSchemaDashboard = lazy(() => import("./pages/DatabaseConnection/CustomSchemaDashboard"));
 const CustomStructure = lazy(() => import("./pages/DatabaseConnection/CustomStructure"));
 const DropDownSetup = lazy(() => import("./pages/Setup/DropDownSetup"));
-const SheetTransfer = lazy(() => import("./pages/JSR_Services/SheetTransfer"));
 const AdminHome = lazy(() => import("./pages/Admin/AdminHome"));
 const SpreadsheetDemo = lazy(() => import("./pages/Profile/SpreadSheet"));
 const WastageInput = lazy(() => import("./pages/CustomForms/WastageInput"));
@@ -572,7 +572,7 @@ function App() {
       </Helmet>
 
       {/* <GlobalLoading /> */}
-      {location.pathname !== '/custom-update' && <GlobalLoading />}
+      {location.pathname !== '/custom-update' && location.pathname !== '/tools/actions' && <GlobalLoading />}
       {!shouldHideHeader && <Header />}
 
       <Suspense fallback={<PageLoader />}>
@@ -843,14 +843,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/sheetTransfer/:us_id"
-            element={
-              <ProtectedRoute>
-                <SheetTransfer />
-              </ProtectedRoute>
-            }
-          />
 
           {/* Views Routes */}
           <Route
@@ -985,6 +977,15 @@ function App() {
             element={ 
               <ProtectedRoute>
                 <ActionButton/>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/tools/actions"
+            element={ 
+              <ProtectedRoute>
+                <SmartActions/>
               </ProtectedRoute>
             }
           />

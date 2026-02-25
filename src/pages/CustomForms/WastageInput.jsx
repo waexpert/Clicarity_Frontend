@@ -2264,7 +2264,7 @@ export default function WastageInput() {
 
                 const filteredSteps = steps.filter((step, index) =>
                     index > currentIdx &&
-                    fetchedRecordData[step] !== "Not Required"
+                    fetchedRecordData[step] == "Required"
                 );
 
                 console.log('Filtered steps:', filteredSteps);

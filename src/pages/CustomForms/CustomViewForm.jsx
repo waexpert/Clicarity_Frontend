@@ -274,9 +274,9 @@ const CustomViewForm = () => {
   }, [selectedRecord, selectedColumns, visibleColumns]);
 
   return (
-    <div className="container">
+    <div className="px-[6rem]">
       {/* Compact Search Section */}
-      <div className="form-group-1">
+      <div className="form-group-1 border">
         <div className="top-section">
           <h2 className="heading">Check Process Status</h2>
           <Button

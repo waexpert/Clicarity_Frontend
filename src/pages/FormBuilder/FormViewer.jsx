@@ -109,7 +109,7 @@ import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import FormPreview from './components/FormPreview';
 
-function FormViewer({ prop_form_id,submit }) {
+function FormViewer({ prop_form_id,submit,formData,recordId }) {
   const [formSchema, setFormSchema] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -201,11 +201,12 @@ function FormViewer({ prop_form_id,submit }) {
   return (
     <div>
       <FormPreview
-        fields={formSchema.fields}
-        tableName={tableName}
+        fields={formData.form_schema.fields ||formSchema.fields}
+        tableName={formData.table_name ||tableName}
         onSubmit={handleFormSubmit}
         formId={prop_form_id ? prop_form_id : formSchema.form_id}
         submit={submit}
+        recordId={recordId}
       />
     </div>
   );

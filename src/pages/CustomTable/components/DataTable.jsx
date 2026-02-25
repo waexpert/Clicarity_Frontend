@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, Trash2, FileText } from 'lucide-react';
 import { getBadgeColor } from '../utils/tableHelpers';
-import { STATUS_BADGE_COLORS, PRIORITY_BADGE_COLORS } from '../constants/tableConstants';
+import { STATUS_BADGE_COLORS, PRIORITY_BADGE_COLORS, DATE_COLORS } from '../constants/tableConstants';
 
 /**
  * Data Table Component
@@ -114,6 +114,16 @@ const DataTable = ({
         </Badge>
       );
     }
+
+    // Date badge
+    if (column.id.includes("date")) {
+      return (
+        <Badge className={`font-medium bg-[#E8F0FE]`}>
+          {value}
+        </Badge>
+      );
+    }
+
 
     // File indicator
     if (column.id === 'task_file' && value) {

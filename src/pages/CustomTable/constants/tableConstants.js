@@ -55,6 +55,7 @@ export const PRIORITY_BADGE_COLORS = {
   default: 'bg-gray-100 text-gray-700 border-gray-200',
 };
 
+export const DATE_COLORS = 'bg-red-100 text-red-700 border-red-200'
 // Excluded Columns
 export const EXCLUDED_COLUMNS = {
   FROM_DISPLAY: ['id'],

@@ -201,8 +201,8 @@ function FormViewer({ prop_form_id,submit,formData,recordId }) {
   return (
     <div>
       <FormPreview
-        fields={formData.form_schema.fields ||formSchema.fields}
-        tableName={formData.table_name ||tableName}
+        fields={formSchema.fields || formData?.form_schema.fields}
+        tableName={formData?.table_name ||tableName}
         onSubmit={handleFormSubmit}
         formId={prop_form_id ? prop_form_id : formSchema.form_id}
         submit={submit}

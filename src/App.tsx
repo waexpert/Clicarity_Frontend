@@ -479,6 +479,7 @@ import RolesViewer from "./pages/Roles/RolesViewer";
 import FormBuilder from "./pages/FormBuilder/FormBuilder";
 import ActionButton from "./pages/Tools/ActionButton";
 import SmartActions from "./pages/SmartActions/SmartActions";
+import { AlertTest } from "./pages/test/AlertTest";
 // Lazy-loaded components for code splitting
 
 const QRSetup = lazy(() => import("./pages/Auth/QrCode"));
@@ -1006,6 +1007,14 @@ function App() {
               <Pro />
             }
           />
+          
+                    <Route
+            path="/t"
+            element={
+              <AlertTest/>
+            }
+          />
+
         </Routes>
       </Suspense>
     </>

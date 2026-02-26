@@ -274,7 +274,7 @@ const CustomViewForm = () => {
   }, [selectedRecord, selectedColumns, visibleColumns]);
 
   return (
-    <div className="px-[6rem]">
+    <div className="px-[1rem] md:px-[6rem]">
       {/* Compact Search Section */}
       <div className="form-group-1 border">
         <div className="top-section">

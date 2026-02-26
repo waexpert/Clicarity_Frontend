@@ -540,6 +540,7 @@ import { useParams } from 'react-router-dom';
 import axios from "axios";
 import { useSelector, useDispatch } from 'react-redux';
 import { setDynamicData, addDynamicField, setLoading, setError } from '../../features/productMethod/jobStatusSlice';
+import {toast} from 'sonner'
 
 // Lucide React icons
 import {
@@ -587,7 +588,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const fieldTypes = ['Text', 'Number', 'Date', 'Boolean'];
+const fieldTypes = ['Text', 'Number', 'Date', 'Boolean','Timestamp'];
 
 // Default predefined system fields
 const defaultPredefinedFields = [
@@ -705,7 +706,7 @@ const CustomReportDataStore = ({
         name: columnName,
         type: capitalizeFirstLetter(mappedType),
         originalType: dataType,
-        required: element.required || false,
+        required: !element.nullable || false,
         defaultValue: element.column_default || element.defaultValue || null
       };
       
@@ -873,14 +874,21 @@ const CustomReportDataStore = ({
     try {
       setLoading(true);
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/createTable`, data);
-      alert("Table created successfully!");
+      // alert("Table created successfully!");
+      toast("Table Created Successfully", {
+          description: "Sunday, December 03, 2023 at 9:00 AM",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        })
       console.log(res);
       if (setShowDialog) {
         setShowDialog(0); // Close the dialog after successful submission
       }
     } catch (error) {
       console.error("Creation failed:", error);
-      alert("Creation failed! Please try again.");
+      // alert("Creation failed! Please try again.");
     } finally {
       setLoading(false);
     }
@@ -894,11 +902,14 @@ const CustomReportDataStore = ({
     try {
       setLoading(true);
       const res = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/secure/alterTable`, data);
-      alert("Columns added successfully!");
+      // alert("Columns added successfully!");
       console.log(res);
       if (setShowDialog) {
         setShowDialog(0); // Close the dialog after successful submission
       }
+
+      setTimeout(()=>
+      window.location.reload(),1000)
     } catch (error) {
       console.error("Alter failed:", error);
       alert("Alter failed! Please try again.");
@@ -1001,7 +1012,9 @@ const CustomReportDataStore = ({
                     <TableHead>Type</TableHead>
                     <TableHead>Default Value</TableHead>
                     <TableHead>Required</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px]">
+                      Drop
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

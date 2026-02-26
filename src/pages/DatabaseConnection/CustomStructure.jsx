@@ -12,7 +12,7 @@ const CustomStructure = () => {
   console.log(location)
   const column = splittedArray[splittedArray.length-1];
   return (
-    <div style={{display:"flex"}} className='w-full px-6 py-6'>
+    <div style={{display:"flex"}} className='w-full py-6'>
         <CustomReportDataStore columnFields={columnFields}/>
         <CustomCaptureWebhook setColumnFields={setColumnFields} columnName={`in_${column}_webhook`}/>
     </div>

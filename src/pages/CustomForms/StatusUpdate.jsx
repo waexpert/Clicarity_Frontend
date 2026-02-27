@@ -611,7 +611,7 @@ export default function StatusUpdate() {
                         for (let i = currentIdx + 1; i < steps.length; i++) {
                             const step = steps[i];
                             // ✅ Fix 3: actually filter form_ steps in the loop
-                            if (!step.startsWith('form_') && record[step] == "Required") {
+                            if (!step.startsWith('form_') && (record[step] == "Required" || record[step] == "Pending" )) {
                                 availableSteps.push(step);
                             }
                         }
@@ -622,7 +622,7 @@ export default function StatusUpdate() {
                         for (let i = currentIdx + 1; i < steps.length; i++) {
                             const step = steps[i];
                             // ✅ Fix 3: actually filter form_ steps in the loop
-                            if (!step.startsWith('form_') && record[step] == "Required") {
+                            if (!step.startsWith('form_') && (record[step] == "Required" || record[step] == "Pending" )) {
                                 nextValidProcess = step;
                                 break;
                             }

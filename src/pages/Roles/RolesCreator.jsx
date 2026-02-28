@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const OPERATORS = {
   string: ['=', '!=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN'],
@@ -61,7 +62,24 @@ export default function RolesCreator() {
       setTables(data.data);
     } catch (error) {
       console.error("Error fetching tables:", error);
-      alert("Failed to fetch tables. Please try again.");
+ 
+
+      toast("Failed to fetch tables. Please try again.", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     } finally {
       setLoading(false);
     }
@@ -75,7 +93,24 @@ export default function RolesCreator() {
       setTableColumns(data.data);
     } catch (error) {
       console.error("Error fetching table columns:", error);
-      alert("Failed to fetch columns. Please try again.");
+
+
+      toast("Failed to fetch columns. Please try again.", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     } finally {
       setLoadingColumns(false);
     }
@@ -148,15 +183,64 @@ export default function RolesCreator() {
 const handleSave = async () => {
   // Validate inputs
   if (!filterName.trim()) {
-    alert('Please enter a filter name');
+
+    toast("Please enter a filter name", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     return;
   }
   if (!selectedTable) {
-    alert('Please select a table');
+
+    toast("Please select a table", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     return;
   }
   if (selectedColumns.length === 0) {
-    alert('Please select at least one column');
+
+
+    toast("Please select at least one column", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     return;
   }
 
@@ -187,7 +271,24 @@ const handleSave = async () => {
     });
 
     console.log('Role created:', response.data);
-    alert('Role configuration saved successfully!');
+
+
+    toast("Role configuration saved successfully!", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     
     // Reset form
     setFilterName('');
@@ -199,9 +300,42 @@ const handleSave = async () => {
   } catch (error) {
     console.error('Error saving role:', error);
     if (error.response?.data?.message) {
-      alert(`Failed to save: ${error.response.data.message}`);
+
+
+      toast(`Failed to save: ${error.response.data.message}`, {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     } else {
-      alert('Failed to save role configuration. Please try again.');
+
+      toast("Failed to save role configuration. Please try again.", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
     }
   }
 };

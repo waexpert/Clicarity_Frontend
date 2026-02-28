@@ -35,7 +35,7 @@ root.render(
     <BrowserRouter>
       <PersistGate loading={null} persistor={persistor}>
         <App />
-        <Toaster />
+          <Toaster position="top-center" />
       </PersistGate>
     </BrowserRouter>
   </Provider>

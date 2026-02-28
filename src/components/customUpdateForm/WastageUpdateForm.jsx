@@ -226,6 +226,7 @@ import { Button } from '../ui/button'
 import '../../css/components/fixedUpdateForm.css'
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { toast } from 'sonner';
 
 const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName, schemaName, childRecords = [], selectedColumns }) => {
   const navigate = useNavigate();
@@ -314,7 +315,23 @@ const WastageUpdateForm = ({ data, loading, visibleColumns, setupData, tableName
   const handleMoveToWastage = () => {
     if (!selectedChildId || !selectedProcessData) {
       setError('Please select a process first');
-      alert('Please select a process from the dropdown');
+      // alert('Please select a process from the dropdown');
+      toast("Please select a process from the dropdown", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
       return;
     }
 

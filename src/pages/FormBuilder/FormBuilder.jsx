@@ -292,7 +292,22 @@ function FormBuilder() {
   const exportJSON = () => {
     const jsonStr = JSON.stringify(formSchema, null, 2);
     navigator.clipboard.writeText(jsonStr);
-    alert('JSON copied to clipboard!');
+    toast("JSON copied to clipboard!", {
+  description: `Created at ${new Date().toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })}`
+  // ,
+  // action: {
+  //   label: "Undo",
+  //   onClick: () => console.log("Undo"),
+  // },
+})
   };
 
   const downloadJSON = () => {

@@ -88,7 +88,8 @@ const AdminHome = () => {
 
   const apiParams = {
     schemaName: "public",
-    tableName: "users"
+    tableName: "users",
+    limit:100,
   };
 
   useEffect(() => {

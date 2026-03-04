@@ -1616,16 +1616,49 @@ const handleSearchChange = useCallback((e) => {
   }, [recordToDelete, deleteConfirmInput, apiParams, refreshData]);
 
   /**
-   * Handle save record (inline edit)
+   * Handle save record (inline edit) Getting Error that id is undefined since it was comparing current record with the early fetched records 
    */
-  const handleSaveRecord = useCallback(async (recordId, updates) => {
-    try {
-      // Filter out unchanged values
-      const originalRecord = originalRecords.find(r => r.id === recordId);
-      const changes = {};
+  // const handleSaveRecord = useCallback(async (recordId, updates) => {
+  //   try {
+  //     // Filter out unchanged values
+  //     const originalRecord = originalRecords.find(r => r?.id === recordId);
+  //     const changes = {};
 
+  //     Object.entries(updates).forEach(([key, val]) => {
+  //       if (val !== originalRecord[key] && key !== 'id' && key !== 'pa_id' && key !== 'us_id') {
+  //         changes[key] = val;
+  //       }
+  //     });
+
+  //     if (Object.keys(changes).length === 0) {
+  //       toast.warning('No changes to save');
+  //       return;
+  //     }
+
+  //     await tableApi.updateRecord(apiParams, recordId, owner_id, changes);
+  //     toast.success('Record updated successfully');
+  //     refreshData();
+  //   } catch (error) {
+  //     logger.error('Update failed:', error);
+  //     toast.error('Failed to update record');
+  //   }
+  // }, [originalRecords, apiParams, owner_id, refreshData]);
+
+
+  const handleSaveRecord = useCallback(async (recordId, updates) => {
+  try {
+    // ✅ FIX: Look in searchResults first, then fall back to originalRecords
+    const sourceRecords = searchResults && searchResults.length > 0 
+      ? searchResults 
+      : originalRecords;
+      
+    const originalRecord = sourceRecords.find(r => r?.id === recordId);
+
+    // ✅ Guard: if still not found, skip comparison and just save all updates
+    if (!originalRecord) {
+      const changes = {};
       Object.entries(updates).forEach(([key, val]) => {
-        if (val !== originalRecord[key] && key !== 'id' && key !== 'pa_id' && key !== 'us_id') {
+        if (key !== 'id' && key !== 'pa_id' && key !== 'us_id') {
           changes[key] = val;
         }
       });
@@ -1638,11 +1671,30 @@ const handleSearchChange = useCallback((e) => {
       await tableApi.updateRecord(apiParams, recordId, owner_id, changes);
       toast.success('Record updated successfully');
       refreshData();
-    } catch (error) {
-      logger.error('Update failed:', error);
-      toast.error('Failed to update record');
+      return;
     }
-  }, [originalRecords, apiParams, owner_id, refreshData]);
+
+    // Normal flow — compare against original
+    const changes = {};
+    Object.entries(updates).forEach(([key, val]) => {
+      if (val !== originalRecord[key] && key !== 'id' && key !== 'pa_id' && key !== 'us_id') {
+        changes[key] = val;
+      }
+    });
+
+    if (Object.keys(changes).length === 0) {
+      toast.warning('No changes to save');
+      return;
+    }
+
+    await tableApi.updateRecord(apiParams, recordId, owner_id, changes);
+    toast.success('Record updated successfully');
+    refreshData();
+  } catch (error) {
+    logger.error('Update failed:', error);
+    toast.error('Failed to update record');
+  }
+}, [originalRecords, searchResults, apiParams, owner_id, refreshData]); // ✅ add searchResults to deps
 
   // Don't render if show=true (modal will handle it)
   if (urlParams.show === 'true') return null;

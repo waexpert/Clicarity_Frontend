@@ -2585,6 +2585,7 @@ export default function WastageInput() {
             [nextBalanceColumn]: nextBalance,
             [currentBalanceColumn]: updatedCurrentBalance,
             wastage: wastageValue,
+            created_at : new Date().toISOString()
         };
 
         if (selectedVendor) {

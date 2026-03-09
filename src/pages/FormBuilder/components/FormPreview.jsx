@@ -12,13 +12,13 @@
 
 //   const [params,setParams] = useSearchParams();
 //   let recId ;
-  
+
 //   if(recordId){
 //     recId = recordId;
 //   }else{
 //   recId = params.get("recordId");
 //   }
-  
+
 //   console.log(submit)
 
 //     const formRef = useRef(null);
@@ -31,7 +31,7 @@
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
-    
+
 //     try {
 //       setLoading(true);
 //       setSubmitStatus({ type: '', message: '' });
@@ -39,7 +39,7 @@
 //       // Build the updates object from formData
 //       // Map form field names to their columnNames
 //       const updates = {};
-      
+
 //       fields.forEach(field => {
 //         // Only include fields that have a columnName and have data
 //         if (field.columnName && formData[field.name] !== undefined) {
@@ -63,7 +63,7 @@
 
 //       const updateUrl = `${import.meta.env.VITE_APP_BASE_URL}/data/updateMultiple`;
 //       console.log(tableName)
-      
+
 //       const response = await axios.post(updateUrl, {
 //         schemaName: userData.schema_name, // Adjust as needed
 //         tableName: tableName,
@@ -93,7 +93,7 @@
 
 //     } catch (error) {
 //       console.error('Error submitting form:', error);
-      
+
 //       let errorMessage = 'Failed to submit form. ';
 //       if (error.response) {
 //         errorMessage += error.response.data?.error || error.response.data?.details || error.response.statusText;
@@ -157,7 +157,7 @@
 //             {renderClicaryField(field, formData, handleChange)}
 //           </div>
 //         ))}
-        
+
 //         {/* Submit Button - Clicarity Green */}
 //         {/* <button
 //           type="submit"
@@ -229,7 +229,7 @@
 //           {field.content}
 //         </h1>
 //       );
-    
+
 //     case 'subheading':
 //       return (
 //         <h2 style={{ 
@@ -242,7 +242,7 @@
 //           {field.content}
 //         </h2>
 //       );
-    
+
 //     case 'body':
 //       return (
 //         <p style={{ 
@@ -254,7 +254,7 @@
 //           {field.content}
 //         </p>
 //       );
-    
+
 //     case 'caption':
 //       return (
 //         <small style={{ 
@@ -265,7 +265,7 @@
 //           {field.content}
 //         </small>
 //       );
-    
+
 //     case 'image':
 //       return (
 //         <div style={{ 
@@ -282,7 +282,7 @@
 //           Image Placeholder
 //         </div>
 //       );
-    
+
 //     case 'textarea':
 //       return (
 //         <div>
@@ -306,7 +306,7 @@
 //           />
 //         </div>
 //       );
-    
+
 //     case 'select':
 //       return (
 //         <div>
@@ -337,7 +337,7 @@
 //           </select>
 //         </div>
 //       );
-    
+
 //     case 'radio':
 //       return (
 //         <div>
@@ -379,7 +379,7 @@
 //           </div>
 //         </div>
 //       );
-    
+
 //     case 'checkbox':
 //       return (
 //         <label style={{ 
@@ -408,7 +408,7 @@
 //           </span>
 //         </label>
 //       );
-    
+
 //     case 'optin':
 //       return (
 //         <label style={{ 
@@ -440,7 +440,7 @@
 //           </span>
 //         </label>
 //       );
-    
+
 //     case 'file':
 //     case 'file-image':
 //       return (
@@ -461,7 +461,7 @@
 //           />
 //         </div>
 //       );
-    
+
 //     case 'passcode':
 //       return (
 //         <div>
@@ -482,7 +482,7 @@
 //           />
 //         </div>
 //       );
-    
+
 //     default:
 //       return (
 //         <div>
@@ -551,7 +551,8 @@ function FormPreview({ fields, onSubmit, formId, tableName, submit, recordId }) 
       fields.forEach(field => {
         if (field.columnName && formData[field.name] !== undefined) {
           updates[field.columnName] = formData[field.name];
-          updates[field.columnName + "_date"] = new Date().toISOString();
+          updates[field.columnName + "_date"] = String(new Date().toISOString());;
+
         }
       });
 

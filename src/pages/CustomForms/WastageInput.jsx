@@ -2737,7 +2737,7 @@ export default function WastageInput() {
 
 
                     <Label htmlFor="received-number" style={styles.inputLabel}>
-                        Enter Received Quantity
+                        Enter Qty to send ahead
                     </Label>
                     <input
                         id="received-number"
@@ -2745,7 +2745,7 @@ export default function WastageInput() {
                         value={receivedValue}
                         onChange={handleReceivedInputChange}
                         onKeyDown={handleKeyDown}
-                        placeholder="Enter received quantity..."
+                        placeholder="Enter Quantity to send..."
                         style={{
                             marginBottom: '12px',
                             ...styles.input,

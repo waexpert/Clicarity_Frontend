@@ -1446,20 +1446,32 @@ const handleSearchChange = useCallback((e) => {
   /**
    * Export to CSV
    */
-  const handleExportCSV = useCallback(() => {
+  const handleExportCSV = useCallback(async() => {
     if (!filteredRecords.length) {
       toast.error('No records to export');
       return;
     }
 
+
     try {
-      const exportData = filteredRecords.map(record => {
-        const filteredRecord = {};
-        visibleColumns.forEach(column => {
-          filteredRecord[column.name] = record[column.id];
-        });
-        return filteredRecord;
-      });
+      const {data} = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/data/getAllData`,{
+        schemaName:userData.schema_name,
+        tableName: apiParams.tableName,
+        limit:100000
+      })
+
+      const entireData = data.data;
+
+      console.log("entireData", entireData);
+      const exportData = entireData;
+      // const exportData = filteredRecords.map(record => {
+      
+      //   const filteredRecord = {};
+      //   visibleColumns.forEach(column => {
+      //     filteredRecord[column.name] = record[column.id];
+      //   });
+      //   return filteredRecord;
+      // });
 
       const csv = Papa.unparse(exportData, {
         quotes: true,

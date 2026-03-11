@@ -2737,7 +2737,7 @@ export default function WastageInput() {
 
 
                     <Label htmlFor="received-number" style={styles.inputLabel}>
-                        Enter Qty to send ahead
+                        Enter Quantity To Send Ahead
                     </Label>
                     <input
                         id="received-number"

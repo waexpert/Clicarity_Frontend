@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Layout,
   Home,
+  BadgePlus,
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -301,13 +302,13 @@ const DASH_LINKS = [
     route: "/",
   },
   {
-    label: "Custom Update",
+    label: "Quick Update",
     icon: <RefreshCw size={13} />,
     iconBg: "#fef3c7", iconColor: "#d97706",
     route: "/custom-update",
   },
   {
-    label: "Custom View",
+    label: "Quick View",
     icon: <Layout size={13} />,
     iconBg: "#fce7f3", iconColor: "#db2777",
     route: "/custom-view",
@@ -316,34 +317,34 @@ const DASH_LINKS = [
 
 // Dropdown items — each has label, icon, iconBg, iconColor for the NavButton
 const NAV_ITEMS = [
-  {
-    label: "Database",
-    icon: <Database size={13} />, iconBg: "#eef2ff", iconColor: "#6366f1",
-    items: [
-      { icon: <Database size={13}/>,       label: "Database",     route: "/database",                              bg: "#eef2ff" },
-      { icon: <Table2 size={13}/>,         label: "Tables",       route: "/db/da0bf972-df97-4b2d-82fb-edc7f45a0cd1", bg: "#e0f2fe" },
-      { icon: <FileSpreadsheet size={13}/>,label: "Create Table", route: "/db/custom/capture",                     bg: "#d1fae5" },
-    ],
-  },
-  {
-    label: "Roles",
-    icon: <UserStar size={13} />, iconBg: "#fef3c7", iconColor: "#d97706",
-    items: [
-      { icon: <UserStar size={13}/>,  label: "Roles Manager",  route: "/roles/manager",      bg: "#eef2ff" },
-      { icon: <UserLock size={13}/>,  label: "Create Roles",   route: "/roles/create",        bg: "#e0f2fe" },
-      { icon: <Key size={13}/>,       label: "Assign Roles",   route: "/roles/assign",        bg: "#d1fae5" },
-      { divider: true },
-      { icon: <Users size={13}/>,     label: "Team Members",   route: "/roles/team-members",  bg: "#eef2ff" },
-    ],
-  },
-  {
-    label: "Forms",
-    icon: <BookMarked size={13} />, iconBg: "#fce7f3", iconColor: "#db2777",
-    items: [
-      { icon: <BookMarked size={13}/>, label: "Form Manager", route: "/forms/manager", bg: "#eef2ff" },
-      { icon: <Shredder size={13}/>,   label: "Create Form",  route: "/forms/create",  bg: "#e0f2fe" },
-    ],
-  },
+  // {
+  //   label: "Database",
+  //   icon: <Database size={13} />, iconBg: "#eef2ff", iconColor: "#6366f1",
+  //   items: [
+  //     { icon: <Database size={13}/>,       label: "Database",     route: "/database",                              bg: "#eef2ff" },
+  //     { icon: <Table2 size={13}/>,         label: "Tables",       route: "/db/da0bf972-df97-4b2d-82fb-edc7f45a0cd1", bg: "#e0f2fe" },
+  //     { icon: <FileSpreadsheet size={13}/>,label: "Create Table", route: "/db/custom/capture",                     bg: "#d1fae5" },
+  //   ],
+  // },
+  // {
+  //   label: "Roles",
+  //   icon: <UserStar size={13} />, iconBg: "#fef3c7", iconColor: "#d97706",
+  //   items: [
+  //     { icon: <UserStar size={13}/>,  label: "Roles Manager",  route: "/roles/manager",      bg: "#eef2ff" },
+  //     { icon: <UserLock size={13}/>,  label: "Create Roles",   route: "/roles/create",        bg: "#e0f2fe" },
+  //     { icon: <Key size={13}/>,       label: "Assign Roles",   route: "/roles/assign",        bg: "#d1fae5" },
+  //     { divider: true },
+  //     { icon: <Users size={13}/>,     label: "Team Members",   route: "/roles/team-members",  bg: "#eef2ff" },
+  //   ],
+  // },
+  // {
+  //   label: "Forms",
+  //   icon: <BookMarked size={13} />, iconBg: "#fce7f3", iconColor: "#db2777",
+  //   items: [
+  //     { icon: <BookMarked size={13}/>, label: "Form Manager", route: "/forms/manager", bg: "#eef2ff" },
+  //     { icon: <Shredder size={13}/>,   label: "Create Form",  route: "/forms/create",  bg: "#e0f2fe" },
+  //   ],
+  // },
   {
     label: "Tools",
     icon: <MousePointerClick size={13} />, iconBg: "#d1fae5", iconColor: "#059669",
@@ -414,20 +415,23 @@ function Dropdown({ label, icon, iconBg, iconColor, items }) {
         <Chevron />
       </NavButton>
 
-      {open && createPortal(
-        <DropMenu ref={menuRef} $top={coords.top} $left={coords.left}>
-          {items.map((item, i) =>
-            item.divider ? <Divider key={i} /> : (
-              <DropItem key={i} to={item.route}>
-                <span className="icon" style={{ background: item.bg }}>{item.icon}</span>
-                <span className="label">{item.label}</span>
-                {item.badge && <span className="badge">{item.badge}</span>}
-              </DropItem>
-            )
-          )}
-        </DropMenu>,
-        document.body
-      )}
+      {open &&
+        createPortal(
+          <DropMenu ref={menuRef} $top={coords.top} $left={coords.left}>
+            {items.map((item, i) =>
+              item.divider ? (
+                <Divider key={i} />
+              ) : (
+                <DropItem key={i} to={item.route || item.title+"/record?show=true"}>
+                  <span className="icon" style={{background:item.bg || "#eef2ff"}}>{item.icon || <BadgePlus/>}</span>
+                  <span className="label">{item.label ? item.label:  item.title}</span>
+                  {item.badge && <span className="badge">{item.badge}</span>}
+                </DropItem>
+              )
+            )}
+          </DropMenu>,
+          document.body
+        )}
     </NavItem>
   );
 }
@@ -507,6 +511,8 @@ function TableRowItem({ table, parentLeft, parentWidth, onClose }) {
               key={action.id}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
+
+               to={action.route(table.id)}
               onClick={() => {
                 navigate(action.route(table.title));
                 setOpen(false);
@@ -618,10 +624,25 @@ function TablesDropdown() {
 
 // ── Main Export ───────────────────────────────────────────────────────────────
 export default function MobileMenu() {
+
+    const [tables,setTables] = useState();
+    const userData = useSelector((state) => state.user);
+    const schemaName = userData.schema_name;
+  
+     useEffect(() => {
+      getAllTables();
+    }, [schemaName]);
+  
+    const getAllTables = async () => {
+      const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`
+      const { data } = await axios.get(route);
+      setTables(data.data);
+      console.log(data.data);
+    }
   return (
     <Nav>
       {/* Dashboard links with colored icons */}
-      <LogoutButton/>
+      
       {DASH_LINKS.map((link) => (
         <DashboardIcon key={link.route}>
           <Link to={link.route}>
@@ -633,10 +654,11 @@ export default function MobileMenu() {
         </DashboardIcon>
       ))}
 
+      <Dropdown key={new Date} icon={<BadgePlus size={15}/>} label={"Quick Add"} items={tables} />
       <Divider style={{ margin: "6px 8px" }} />
 
       {/* Tables dropdown with icon */}
-      <TablesDropdown />
+      {/* <TablesDropdown /> */}
 
       {/* Nav dropdowns with icons */}
       {NAV_ITEMS.map((item) => (
@@ -649,6 +671,8 @@ export default function MobileMenu() {
           items={item.items}
         />
       ))}
+      <div className="" style={{width:"1rem",height:"2rem"}}></div>
+      <LogoutButton/>
     </Nav>
   );
 }

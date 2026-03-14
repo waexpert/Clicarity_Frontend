@@ -343,7 +343,8 @@ import {
   ShieldCheck,
   Settings,
   SquarePen,
-  MousePointerClick
+  MousePointerClick,
+  BadgePlus
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -422,7 +423,7 @@ const DashboardIcon = styled.div`
   gap: 7px;
   padding: 6px 14px 6px 4px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   // color: var(--color-primary);
   cursor: pointer;
   svg {
@@ -595,7 +596,7 @@ const SubMenuHeader = styled.div`
     flex-shrink: 0;
   }
 `;
-const ActionItem = styled.button`
+const ActionItem = styled(Link)`
   display: flex;
  align-items: flex-start;
   gap: 10px;
@@ -636,6 +637,14 @@ const ActionItem = styled.button`
 // Your existing nav items (Tables removed — handled separately below)
 const NAV_ITEMS = [
   {
+    label: "Database",
+    items: [
+      { icon: <Database size={15}/>, label: "Database", route: "/database" , bg: "#eef2ff",},
+      { icon: <Table2 size={15}/>, label: "Tables", route: "/db/da0bf972-df97-4b2d-82fb-edc7f45a0cd1" ,  bg: "#e0f2fe", },
+      { icon: <FileSpreadsheet size={15}/>, label: "Create Table", route: "/db/custom/capture",bg: "#d1fae5", },
+    ],
+  },
+    {
     label: "Database",
     items: [
       { icon: <Database size={15}/>, label: "Database", route: "/database" , bg: "#eef2ff",},
@@ -763,9 +772,9 @@ function Dropdown({ label, items }) {
               item.divider ? (
                 <Divider key={i} />
               ) : (
-                <DropItem key={i} to={item.route}>
-                  <span className="icon" style={{background:item.bg}}>{item.icon}</span>
-                  <span className="label">{item.label}</span>
+                <DropItem key={i} to={item.route || item.title+"/record?show=true"}>
+                  <span className="icon" style={{background:item.bg || "#eef2ff"}}>{item.icon || <BadgePlus/>}</span>
+                  <span className="label">{item.label ? item.label:  item.title}</span>
                   {item.badge && <span className="badge">{item.badge}</span>}
                 </DropItem>
               )
@@ -836,8 +845,8 @@ function TableRowItem({ table, parentLeft, parentWidth, onClose }) {
               <ActionItem
                 key={action.id}
                 onMouseDown={(e) => e.stopPropagation()}  // added this other wise the routing was not happening since after mouse down the component was unmounted
+                to={action.route(table.title)}
                 onClick={() => {
-                  navigate(action.route(table.title));
                   onClose();
                 }}
               >
@@ -973,6 +982,21 @@ function TablesDropdown() {
 
 // ── Main Export ───────────────────────────────────────────────────────────────
 export default function Menus() {
+
+  const [tables,setTables] = useState();
+  const userData = useSelector((state) => state.user);
+  const schemaName = userData.schema_name;
+
+   useEffect(() => {
+    getAllTables();
+  }, [schemaName]);
+
+  const getAllTables = async () => {
+    const route = `${import.meta.env.VITE_APP_BASE_URL}/data/getAllTables?schemaName=${schemaName}`
+    const { data } = await axios.get(route);
+    setTables(data.data);
+    console.log(data.data);
+  }
   return (
     <Nav className="">
       {/* Home — unchanged */}
@@ -983,23 +1007,30 @@ export default function Menus() {
         </Link>
       </DashboardIcon>
       
+       <Dropdown key={new Date} label={"Quick Add"} items={tables} />
+
+             <DashboardIcon>
+        <Link to={"/custom-update"} className="flex items-center gap-2">
+          Quick Update
+        </Link>
+      </DashboardIcon>
+
+      <DashboardIcon>
+        <Link to={"/custom-view"} className="flex items-center gap-2">
+          Quick View
+        </Link>
+      </DashboardIcon>
+
         <TablesDropdown />
       {/* Original dropdowns — Data Base, Roles, Forms, Tools */}
       {NAV_ITEMS.map((item) => (
         <Dropdown key={item.label} label={item.label} items={item.items} />
       ))}
 
-      <DashboardIcon>
-        <Link to={"/custom-update"} className="flex items-center gap-2">
-          Custom Update
-        </Link>
-      </DashboardIcon>
 
-      <DashboardIcon>
-        <Link to={"/custom-view"} className="flex items-center gap-2">
-          Custom View
-        </Link>
-      </DashboardIcon>
+     
+
+
 
     
     </Nav>

@@ -17,7 +17,7 @@ import {
 const dashboardCards = [
       {
     id: 4,
-    title: "Custom View",
+    title: "Quick View",
     description: "Monitor and Filter process on the basis of there status.",
     icon: "expenses",
     iconColor: "#4285B4",
@@ -33,7 +33,7 @@ const dashboardCards = [
   },
      {
     id: 4,
-    title: "Custom Update",
+    title: "Quick Update",
     description: "Monitor and Filter process on the basis of there status.",
     icon: "time",
     iconColor: "#4285B4",

@@ -23,6 +23,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import LogoutButton from "../../../components/profile/Logout";
 
 const UI_FONT = `'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
 const MONO_FONT = `'JetBrains Mono', 'SF Mono', Menlo, monospace`;
@@ -287,6 +288,12 @@ const ActionItem = styled.button`
 
 // Top-level dashboard links — each has its own icon + color
 const DASH_LINKS = [
+  //   {
+  //   label: "Logout",
+  //   icon: <Home size={13} />,
+  //   iconBg: "#eef2ff", iconColor: "#6366f1",
+  //   route: "/",
+  // },
   {
     label: "Home",
     icon: <Home size={13} />,
@@ -614,6 +621,7 @@ export default function MobileMenu() {
   return (
     <Nav>
       {/* Dashboard links with colored icons */}
+      <LogoutButton/>
       {DASH_LINKS.map((link) => (
         <DashboardIcon key={link.route}>
           <Link to={link.route}>

@@ -1,0 +1,73 @@
+# llms.txt — Machine-readable summary for AI crawlers and LLMs
+# Standard: https://llmstxt.org
+# Last updated: 2026-03-14
+
+# PRODUCT
+> Clicarity is a live job process tracking system built for SMEs and growing enterprises.
+> It solves two specific operational problems: JSR (Job Status Report) and TAT (Turnaround Time).
+> The entire product consists of two screens: one to create a job record, one to update a job status.
+> White-glove setup by the Clicarity team. Your process, your language, your system.
+> No IT involvement. No disruption to existing operations.
+
+# TAGLINE
+> Click. Track. Grow.
+
+# THE PROBLEMS IT SOLVES
+> JSR — Job Status Report: SME owners and managers waste hours every day asking "what's the job status?" Clicarity eliminates this by giving everyone live visibility of every job, at every stage, at any time — without anyone having to ask.
+> TAT — Turnaround Time: Jobs take too long because delays are invisible until it's too late. Clicarity shows exactly where a job is stuck and since when, so action can be taken before a deadline is missed.
+
+# WHO IT IS FOR
+> SMEs and growing enterprises handling jobs that move through process stages.
+> Industries: Manufacturing, Production, Trading, B2B Distribution, Field Services, Contracting, Projects.
+> Businesses that currently rely on WhatsApp and phone calls to track job status.
+
+# KEY FEATURES
+> Real-Time Job Status Visibility — know where every job stands, live, without asking anyone
+> Unified Live Operations Dashboard — every active job, every stage, every delay on one screen
+> Multi-Component Job Intelligence — split one job into components, each tracked independently
+> Stage-wise Wastage & Quantity Control — track input, output, and wastage at every stage
+> Role-Based Access Control — team members see only their work, managers see everything
+> Dynamic Data Capture at Every Stage — custom forms trigger at each status change
+> Automated WhatsApp Workflow Alerts (Add-on) — instant notifications at every stage change
+> Dedicated Vendor Command Portal (Add-on) — vendors update their own jobs, you see it live
+
+# PLANS
+> Single Licence — for single process or location, annual billing, no per-user fees
+> Multi Licence — for multiple processes, teams, and vendor ecosystems, annual billing
+> No per-user fees. One annual licence. White-glove setup included.
+
+# POSITIONING
+> Clicarity is NOT project management software.
+> Clicarity is NOT task management software.
+> Clicarity is NOT an ERP replacement.
+> Clicarity tracks movement — how jobs move through process stages — not tasks or to-do lists.
+> "We track movement. Not tasks."
+
+# PRESS
+> Featured in PrintWeek India: https://www.printweek.in/news/a-simple-system-that-simplified-the-factory-chaos-61834
+
+# COMPANY
+> Company: Clicarity
+> Website: https://www.clicarity.com
+> Contact: +91-9867800451
+> WhatsApp: https://wa.me/919867800451
+> Demo booking: https://calendly.com/clicarity/demo
+> Email: hello@clicarity.com
+> Location: Mumbai, Maharashtra, India
+
+# TEAM
+> Puneet — Founder & CEO
+> Lakshy — Co-Founder & Head of Product
+> Jayesh — Head of Accounts
+> Prakash — Head of Administration
+
+# ADVISORS
+> Arvind Rawat, Arun Rawat, Dhiren Thakkar, Roshan Fernando, Jehangir Surti, summIT Group
+
+# TESTIMONIALS
+> Vivek Tibrewal, GP Offset: "Earlier, we used to call each other for job status. Now everything is visible on one screen. We didn't add manpower. We added clarity."
+> Sanjit, Chaturthi Arts: "We had machines running, but no structured tracking. Now every job and component is visible. We are no longer guessing. We are tracking."
+
+# LEGAL
+> Privacy Policy: https://www.clicarity.com/privacy-policy
+> Terms & Conditions: https://www.clicarity.com/terms

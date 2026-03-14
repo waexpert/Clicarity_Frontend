@@ -2746,6 +2746,7 @@ export default function WastageInput() {
                         onChange={handleReceivedInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Enter Quantity to send..."
+
                         style={{
                             marginBottom: '12px',
                             ...styles.input,

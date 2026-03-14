@@ -765,7 +765,7 @@ const SplitModal = ({
           onClick={handleSubmitAndAddDetails}
           disabled={isSubmitting || isMainSubmitting}
           variant="secondary"
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto bg-black text-white hover:bg-black"
         >
           {isMainSubmitting ? 'Creating...' : 'Create & Add Details'}
         </Button>
